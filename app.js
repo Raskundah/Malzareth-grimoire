@@ -185,9 +185,11 @@
   }
   function toast(message){const el=$('#toast');el.textContent=message;el.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('show'),3500);}
   function currentCount(level){return state.prepared.filter(p=>state.spells.find(s=>s.id===p.spellId)?.level===level).length;}
+  function cogitationOccupies(level){return state.cogitation?.level===level ? 1 : 0;}
+  function prepLimit(level){return Math.max(0,(state.slots[level]||0)-cogitationOccupies(level));}
   function updateStats(){
     $('#stat-spells').textContent=state.spells.length;
-    $('#stat-prep').textContent=`${state.prepared.length} / ${state.slots.reduce((a,b)=>a+b,0)}`;
+    $('#stat-prep').textContent=`${state.prepared.length + (state.cogitation?.level!==null?1:0)} / ${state.slots.reduce((a,b)=>a+b,0)}`;
     $('#stat-cast').textContent=state.prepared.filter(p=>p.used).length;
     const selectedLevel = levelFilter==='all' ? 6 : Number(levelFilter);
     $('#stat-dc').textContent=dcFor(selectedLevel,'Necromancy');
@@ -210,7 +212,7 @@
     const spells=state.spells.filter(s=>(levelFilter==='all'||s.level===Number(levelFilter)) && (status==='all'||s.status===status) && (!favorites||s.favorite) && (!q||[s.name,s.school,s.source,s.description,s.notes,s.components].join(' ').toLocaleLowerCase().includes(q))).sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name));
     $('#result-count').textContent=`${spells.length} ${spells.length===1?'spell':'spells'} shown`;
     $('#spell-list').innerHTML=spells.length?spells.map(s=>{
-      const available=currentCount(s.level)<state.slots[s.level];
+      const available=currentCount(s.level)<prepLimit(s.level);
       return `<article class="spell-card">
         <div class="spell-top"><span class="spell-level" title="${esc(labelLevel(s.level))}">${s.level}</span><div class="spell-head"><h3>${esc(s.name)}</h3><div class="spell-tags">${s.school?`<span class="tag ${s.school==='Necromancy'?'necro':''}">${esc(s.school)}</span>`:'<span class="tag">School unverified</span>'}${s.status==='cyst'?'<span class="tag cyst">Mother Cyst</span>':''}<span class="tag spell-dc" title="Saving throw DC, if applicable">DC ${dcFor(s.level,s.school)}</span></div></div></div>
         <p class="spell-description ${s.description?'':'empty'}">${s.description?esc(s.description):'Add effects, components, and tactics in this spell record.'}</p>
@@ -222,7 +224,7 @@
   function prepare(spellId){
     const s=state.spells.find(x=>x.id===spellId);
     if(!s)return;
-    if(currentCount(s.level)>=state.slots[s.level]){toast(`${labelLevel(s.level)} has no free slots. Adjust daily slots in Notes & data.`);return;}
+    if(currentCount(s.level)>=prepLimit(s.level)){toast(`${labelLevel(s.level)} has no free preparation slots (one may be reserved for Alacritous Cogitation).`);return;}
     state.prepared.push({id:uid(),spellId:s.id,used:false});
     persist();render();toast(`${s.name} prepared.`);
   }
@@ -232,20 +234,54 @@
       const spells=state.spells.filter(s=>s.level===level).sort((a,b)=>a.name.localeCompare(b.name));
       const entries=state.prepared.filter(p=>state.spells.find(s=>s.id===p.spellId)?.level===level);
       const total=state.slots[level]||0;
+      const count=entries.length, reserved=cogitationOccupies(level);
       const used=entries.filter(p=>p.used).length;
-      const count=entries.length;
       const hasNecro=entries.some(p=>state.spells.find(s=>s.id===p.spellId)?.school==='Necromancy');
-      const overLimit=Math.max(0,count-total);
-      const open=Array.from({length:Math.max(total-count,0)},(_,n)=>{
-        const reserve=level===6 && n===0;
-        return `<div class="prep-item is-open ${reserve?'is-reserved':''}"><span class="prep-name">${reserve?'✧ Open — Alacritous Cogitation':'Empty spell slot'}</span></div>`;
-      }).join('');
+      const overLimit=Math.max(0,count+reserved-total);
+      const open=Array.from({length:Math.max(total-count-reserved,0)},
+        ()=>'<div class="prep-item is-open"><span class="prep-name">Empty spell slot</span></div>').join('');
       const content=entries.map(p=>{
-        const s=state.spells.find(s=>s.id===p.spellId);
-        return `<div class="prep-item ${p.used?'is-cast':''}" title="${esc(s.school||'School unverified')}"><span class="prep-name">${esc(s.name)}${s.school==='Necromancy'?' ✦':''}</span><button type="button" data-action="toggle-cast" data-id="${esc(p.id)}" class="cast-button ${p.used?'is-restoring':''}">${p.used?'Restore':'Cast'}</button><button type="button" class="remove-prep" data-action="remove-prep" data-id="${esc(p.id)}" title="Remove prepared spell" aria-label="Remove ${esc(s.name)}">×</button></div>`;
+        const spell=state.spells.find(s=>s.id===p.spellId);
+        if(!spell)return '';
+        return `<div class="prep-item ${p.used?'is-cast':''}" title="${esc(spell.school||'School unverified')}"><span class="prep-name">${esc(spell.name)}${spell.school==='Necromancy'?' ✦':''}</span><button type="button" data-action="toggle-cast" data-id="${esc(p.id)}" class="cast-button ${p.used?'is-restoring':''}">${p.used?'Restore':'Cast'}</button><button type="button" class="remove-prep" data-action="remove-prep" data-id="${esc(p.id)}" title="Remove prepared spell" aria-label="Remove ${esc(spell.name)}">×</button></div>`;
       }).join('');
-      return `<section class="prep-section"><div class="prep-top"><div class="prep-heading"><div class="prep-symbol">${level===0?'◌':level}</div><div><h3>${esc(labelLevel(level))}</h3><p>${used} cast · ${count-used} ready</p></div></div><div><div class="prep-meter">${count} / ${total} slots</div><div class="meter-track"><div class="meter-fill" style="width:${total?Math.min(100,100*count/total):0}%"></div></div></div></div><div class="prep-content"><div class="prep-items">${content||(!open?'<div class="prep-item is-open"><span class="prep-name">No daily slots set</span></div>':'')}${open}</div><div class="prep-controls"><select aria-label="Choose a spell for ${esc(labelLevel(level))}" id="prep-select-${level}" ${spells.length?'':'disabled'}>${spells.length?spells.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join(''):'<option>No known spells at this level</option>'}</select><button type="button" class="btn btn-outline" data-action="prepare-level" data-level="${level}" ${count>=total||!spells.length?'disabled':''}>＋ Prepare</button></div>${overLimit?`<div class="prep-warning">⚠ ${overLimit} spell${overLimit===1?' is':'s are'} over the current slot limit. Nothing was deleted; unprepare excess spells or adjust settings.</div>`:''}${total>0&&!hasNecro?'<div class="prep-warning">✧ Necromancy specialist slot not yet represented at this level.</div>':''}</div></section>`;
+      const cog=state.cogitation;
+      const castSpell=cog?.spellId?state.spells.find(s=>s.id===cog.spellId):null;
+      const feat=reserved
+        ? `<div class="prep-item is-reserved ${cog.used?'is-cast':''}"><span class="prep-name">✧ Alacritous Cogitation — ${cog.used?'expended'+(castSpell?' ('+esc(castSpell.name)+')':''):'open reserved slot'}</span></div>`
+        : '';
+      return `<section class="prep-section"><div class="prep-top"><div class="prep-heading"><div class="prep-symbol">${level===0?'◌':level}</div><div><h3>${esc(labelLevel(level))}</h3><p>${used} cast · ${count-used} ready${reserved?' · 1 feat slot':''}</p></div></div><div><div class="prep-meter">${count+reserved} / ${total} slots</div><div class="meter-track"><div class="meter-fill" style="width:${total?Math.min(100,100*(count+reserved)/total):0}%"></div></div></div></div><div class="prep-content"><div class="prep-items">${content}${feat}${open || (!content&&!feat?'<div class="prep-item is-open"><span class="prep-name">No open slots</span></div>':'')}</div><div class="prep-controls"><select aria-label="Choose a spell for ${esc(labelLevel(level))}" id="prep-select-${level}" ${spells.length?'':'disabled'}>${spells.length?spells.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join(''):'<option>No known spells at this level</option>'}</select><button type="button" class="btn btn-outline" data-action="prepare-level" data-level="${level}" ${count>=prepLimit(level)||!spells.length?'disabled':''}>＋ Prepare</button></div>${overLimit?`<div class="prep-warning">⚠ ${overLimit} slot${overLimit===1?' is':'s are'} over the current limit. No spells were deleted; free a slot or adjust the reservation.</div>`:''}${total>0&&!hasNecro?'<div class="prep-warning">✧ A Necromancy spell is still required for the specialist slot at this level.</div>':''}</div></section>`;
     }).join('');
+  }
+  function renderCogitation(){
+    const feat=state.cogitation;
+    const levelSelect=$('#alacritous-level');
+    const oldLevel=levelSelect.value;
+    levelSelect.innerHTML='<option value="">No reservation</option>'+
+      state.slots.map((n,l)=>{
+        const eligible=n>currentCount(l) || feat.level===l;
+        return n>0 || feat.level===l
+          ? `<option value="${l}" ${eligible?'':'disabled'}>Level ${l} · ${n} slots${!eligible?' (full)':''}</option>`
+          : '';
+      }).join('');
+    levelSelect.value=feat.level===null?'':String(feat.level);
+    levelSelect.disabled=feat.used;
+    const spellSelect=$('#alacritous-spell');
+    const chosen=feat.spellId || spellSelect.value || '';
+    const valid=feat.level!==null && (state.slots[feat.level]||0)>0;
+    const available=valid?state.spells.filter(s=>s.level<=feat.level).sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name)):[];
+    spellSelect.innerHTML='<option value="">Choose a known spell…</option>'+
+      available.map(spell=>`<option value="${esc(spell.id)}">${spell.level} · ${esc(spell.name)}</option>`).join('');
+    spellSelect.value=available.some(s=>s.id===chosen)?chosen:'';
+    spellSelect.disabled=!valid||feat.used;
+    const occupied=feat.level===null?false:currentCount(feat.level)<state.slots[feat.level];
+    const canCast=valid&&occupied&&!feat.used&&!!spellSelect.value;
+    $('#alacritous-cast').disabled=!canCast;
+    $('#alacritous-status').textContent=feat.used?'Expended':feat.level===null?'Not reserved':!occupied?'Overbooked':'Ready';
+    $('#alacritous-hint').textContent=feat.used?'Rest to refresh this feat.':
+      feat.level===null?'Select a slot level to reserve.':
+      !occupied?'No unprepared slot remains at this level.':
+      'One slot stays open for a spell of level '+feat.level+' or lower.';
   }
   function renderDCPreview(){
     const level=Number($('#spell-level').value);
@@ -321,7 +357,7 @@
     }else $('#slot-breakdown').textContent='Slot calculation is unavailable offline; manual totals are retained.';
     $('#slot-controls').innerHTML=state.slots.map((n,l)=>`<label class="slot-control">${l===0?'Cantrip':`Level ${l}`}<input type="number" min="0" max="50" step="1" value="${n}" data-slot-level="${l}" aria-label="Daily slots for ${esc(labelLevel(l))}"></label>`).join('');
   }
-  function render(){updateStats();renderLibrary();renderPrep();renderSlotControls();renderPresets();}
+  function render(){updateStats();renderLibrary();renderPrep();renderCogitation();renderSlotControls();renderPresets();window.refreshGrimoireSkills?.();}
   function setView(name){
     if(!['library','prepared','dice','journal'].includes(name))return;
     view=name;
