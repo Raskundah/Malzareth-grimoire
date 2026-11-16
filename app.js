@@ -3,9 +3,13 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 4;
+  const DATA_VERSION = 5;
   const NEW_CYST_NAMES = new Set(['Necrotic Awareness','Necrotic Burst','Necrotic Eruption','Necrotic Tumor','Necrotic Empowerment','Necrotic Termination']);
   const defaults = window.STARTER_SPELLS || [];
+  const slotRules = window.SPELL_SLOT_RULES;
+  const calcSlots = (score,level) => slotRules
+    ? slotRules.calculate(score,level,true)
+    : {entries:[],totals:[...(window.DEFAULT_SLOTS||[5,8,8,7,6,6,5]),0,0,0]};
   // Only mark a save migrated when the newly deployed default catalog is
   // actually present. This prevents a mixed old/new PWA cache from falsely
   // recording a successful migration without adding the spells.
@@ -26,7 +30,8 @@
       const spell = spells.find(s => s.name === name && s.level === Number(level));
       if(spell) prepared.push({id: uid(), spellId: spell.id, used:false});
     }));
-    return {version:completeCystDefaults ? DATA_VERSION : 1,spells,prepared,slots:[...(window.DEFAULT_SLOTS||[5,8,8,7,6,6,5]),0,0,0],intelligence:30,necroBonus:2,presets:[],journal:'',lastSaved:new Date().toISOString()};
+    const slots = calcSlots(30,12).totals;
+    return {version:completeCystDefaults ? DATA_VERSION : 1,spells,prepared,slots,manualSlots:[...slots],autoSlots:true,spellcastingLevel:12,intelligence:30,necroBonus:2,presets:[],journal:'',lastSaved:new Date().toISOString()};
   };
   const normalizeSpell = (s) => {
     const clean = (k,max=4000) => String(s?.[k]??'').slice(0,max);
@@ -55,14 +60,32 @@
     const ids = new Set();
     for(const s of spells){if(ids.has(s.id)) s.id=uid(); ids.add(s.id);}
     const prepared = input.prepared.filter(p=>p && ids.has(p.spellId)).map(p=>({id:uid(),spellId:String(p.spellId),used:!!p.used}));
-    const slots = Array.from({length:10},(_,l)=>{
-      const n=Number(input.slots?.[l]);return Number.isFinite(n)?Math.max(0,Math.min(50,Math.trunc(n))):(window.DEFAULT_SLOTS?.[l]||0);
-    });
-    for(let l=0;l<=MAX_LEVEL;l++){
-      const count = prepared.filter(p=>spells.find(s=>s.id===p.spellId)?.level===l).length;
-      if(count>slots[l]) slots[l]=count;
-    }
     const intelligence = Number.isFinite(Number(input.intelligence)) ? Math.max(1, Math.min(99, Math.trunc(Number(input.intelligence)))) : 30;
+    const spellcastingLevel = Number.isFinite(Number(input.spellcastingLevel))
+      ? Math.max(1,Math.min(20,Math.trunc(Number(input.spellcastingLevel)))) : 12;
+    const calculated = calcSlots(intelligence,spellcastingLevel).totals;
+    const readSlots = (list, fallback) => Array.from({length:10},(_,l)=>{
+      const n=Number(list?.[l]);
+      return list && list[l] !== undefined && Number.isFinite(n)
+        ? Math.max(0,Math.min(50,Math.trunc(n)))
+        : fallback[l];
+    });
+    const existingSlots = readSlots(input.slots,calculated);
+    const savedManual = readSlots(input.manualSlots,existingSlots);
+    // Keep historical manual modifications when upgrading a saved v4 book.
+    const autoSlots = typeof input.autoSlots==='boolean'
+      ? input.autoSlots
+      : !!slotRules && existingSlots.every((n,l)=>n===calculated[l]);
+    const manualSlots = autoSlots ? savedManual : (Array.isArray(input.manualSlots) ? savedManual : existingSlots);
+    const slots = autoSlots ? [...calculated] : [...manualSlots];
+    // Auto changes must not silently delete already prepared spells.
+    // Mark excess preparations in the UI instead of inflating RAW limits.
+    if(!autoSlots){
+      for(let l=0;l<=MAX_LEVEL;l++){
+        const count = prepared.filter(p=>spells.find(s=>s.id===p.spellId)?.level===l).length;
+        if(count>slots[l]) slots[l]=count;
+      }
+    }
     const necroBonus = Number.isFinite(Number(input.necroBonus)) ? Math.max(0, Math.min(20, Math.trunc(Number(input.necroBonus)))) : 2;
     const presets = (Array.isArray(input.presets) ? input.presets : []).slice(0,40).map(p => ({
       id:String(p?.id || uid()).slice(0,160),
@@ -72,7 +95,7 @@
         name:String(e?.name || '').slice(0,100)
       })).filter(e => e.name)
     })).filter(p => p.name);
-    return {version:completeCystDefaults ? DATA_VERSION : (Number(input.version) || 1),spells,prepared,slots,intelligence,necroBonus,presets,journal:String(input.journal??'').slice(0,100000),lastSaved:new Date().toISOString()};
+    return {version:completeCystDefaults ? DATA_VERSION : (Number(input.version) || 1),spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],autoSlots,spellcastingLevel,intelligence,necroBonus,presets,journal:String(input.journal??'').slice(0,100000),lastSaved:new Date().toISOString()};
   };
   const load = () => {
     try {
