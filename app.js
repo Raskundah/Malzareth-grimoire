@@ -349,6 +349,9 @@
     return state.slots.reduce((sum,slots,l)=>sum+Math.max(0,currentCount(l)+cogitationOccupies(l)-slots),0);
   }
   function renderSlotControls(){
+    for(const [key,id] of [['STR','ability-str'],['DEX','ability-dex'],['WIS','ability-wis'],['CHA','ability-cha']]){
+      $('#'+id).value=state.abilities[key];
+    }
     $('#intelligence-score').value=state.intelligence;
     $('#necro-bonus').value=state.necroBonus;
     $('#auto-slot-calc').checked=state.autoSlots;
@@ -487,6 +490,35 @@
   $('#status-filter').addEventListener('change',renderLibrary);
   $('#only-faves').addEventListener('change',renderLibrary);
   $('#reset-casts').addEventListener('click',resetCasts);
+  $('#alacritous-level').addEventListener('change',e=>{
+    if(state.cogitation.used){renderCogitation();return;}
+    const value=e.target.value;
+    const level=value===''?null:Number(value);
+    if(level!==null && (
+       !Number.isInteger(level)||level<0||level>9||
+       state.slots[level]<=currentCount(level)
+    )){
+      toast('Unprepare a spell at that level before reserving the slot.');
+      renderCogitation();return;
+    }
+    state.cogitation={level,used:false,spellId:null};
+    persist();render();
+  });
+  $('#alacritous-spell').addEventListener('change',e=>{
+    state.cogitation.spellId=e.target.value||null;
+    persist();renderCogitation();
+  });
+  $('#alacritous-cast').addEventListener('click',()=>{
+    const feat=state.cogitation;
+    const spell=state.spells.find(s=>s.id===feat.spellId);
+    if(feat.level===null||feat.used||!spell||spell.level>feat.level||
+       currentCount(feat.level)>=state.slots[feat.level]){
+      toast('Choose a valid known spell and retain an open reserved slot.');return;
+    }
+    if(!confirm(`Cast ${spell.name} using the reserved level ${feat.level} slot? This expends Alacritous Cogitation for today.`))return;
+    feat.used=true;persist();render();
+    toast(`${spell.name} cast with Alacritous Cogitation. Ready again after rest.`);
+  });
   $('#clear-prep').addEventListener('click',clearPrepared);
   $('#save-preset').addEventListener('click',savePreset);
   $('#load-preset').addEventListener('click',loadPreset);
@@ -530,6 +562,15 @@
     toast(extra?`Automatic limits applied; ${extra} existing prepared spells exceed the new totals.`:
       state.autoSlots?'RAW slot calculation enabled.':'Manual slot overrides enabled.');
   });
+  for(const [key,id] of [['STR','ability-str'],['DEX','ability-dex'],['WIS','ability-wis'],['CHA','ability-cha']]){
+    $('#'+id).value=state.abilities[key];
+    $('#'+id).addEventListener('change',event=>{
+      const n=Number(event.target.value);
+      if(Number.isFinite(n))state.abilities[key]=Math.max(1,Math.min(99,Math.trunc(n)));
+      event.target.value=state.abilities[key];
+      persist();window.refreshGrimoireSkills?.();
+    });
+  }
   $('#journal-notes').value=state.journal;
   $('#journal-notes').addEventListener('input',e=>{state.journal=e.target.value;persist();});
   $('#slot-controls').addEventListener('change',e=>{
