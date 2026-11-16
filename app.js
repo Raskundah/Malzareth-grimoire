@@ -305,7 +305,7 @@
   }
   function actions(event){
     const nav=event.target.closest('[data-view]');if(nav){setView(nav.dataset.view);return;}
-    const pill=event.target.closest('[data-level]');if(pill && pill.matches('.filter-pill')){levelFilter=pill.dataset.level==='all'?'all':Number(pill.dataset.level);renderLibrary();return;}
+    const pill=event.target.closest('[data-level]');if(pill && pill.matches('.filter-pill')){levelFilter=pill.dataset.level==='all'?'all':Number(pill.dataset.level);renderLibrary();updateStats();return;}
     const btn=event.target.closest('[data-action]');if(!btn)return;
     const {action,id,level}=btn.dataset;
     if(action==='edit')openEditor(id);
