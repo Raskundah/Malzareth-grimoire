@@ -3,14 +3,14 @@
 A small, offline-ready, mobile-first D&D 3.5 spellbook built with **plain HTML, CSS and JavaScript**. There are no libraries, accounts, logins or build tools.
 
 ## Features
-- Reconstructed campaign spell ledger: 44 original confirmed entries, 6 from subsequent post-lich preparation, and 4 from the Mother Cyst spell family.
+- Reconstructed campaign spell ledger: 44 original confirmed entries, 6 from subsequent post-lich preparation, and 10 from the Mother Cyst spell family.
 - Search, level/status filters, favourites, editable spell descriptions and reference fields.
 - Daily preparation for each level, multiple copies of a spell, cast/restored tracking, editable daily slots, and quick clear/reload of the last recorded spell list.
 - Private campaign journal.
 - Saves locally in your browser. Export/import JSON to back up or transfer data between devices.
 - Offline-ready progressive web app (PWA) with a home-screen icon when served from HTTPS or localhost.
 
-**Important:** The later six and four Mother Cyst spells are known from *prepared-spell records*, rather than a confirmed physical spellbook transcription. They are labelled accordingly. The initial preparation list is the **last recorded snapshot**, not a guarantee of the current in-game day or unused spell slots. Update it as you play.
+**Important:** The later six spells are known from *prepared-spell records*. Four Mother Cyst spells were prepared in the campaign; all ten are now supplied by the Mother Cyst feat (Libris Mortis), whose prepared casters can prepare the spell family without consulting a spellbook. These categories are labelled separately. The initial preparation list is the **last recorded snapshot**, not a guarantee of the current in-game day or unused spell slots. Update it as you play.
 
 ## Run it locally
 
@@ -39,7 +39,7 @@ GitHub Pages serves the code publicly, but **your edits and journal stay in that
 
 ## Editing the starter record
 
-Edit `data.js` to change the source lists for newly opened browsers. **Existing browsers preserve their saved progress** in `localStorage`; use “Reset to campaign starting record” after exporting a backup to reload your updated starter record. For routine additions, edit the spellbook *inside the app* instead.
+Edit `data.js` to change the source lists for newly opened browsers. **Existing browsers preserve their saved progress** in `localStorage`. Version 2 automatically adds the six newly included Mother Cyst spells to older local saves without resetting prepared spells, notes or custom edits. Future changes to default lists generally require a manual reset after exporting a backup. For routine additions, edit the spellbook *inside the app* instead.
 
 ## Requirements and limitations
 
