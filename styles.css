@@ -13,3 +13,48 @@
 @media(max-width:1000px){.app-shell{padding:0 20px}.main-grid{grid-template-columns:180px minmax(0,1fr);gap:23px}.sidebar{padding-right:14px}.spell-list{grid-template-columns:1fr}.prep-items{grid-template-columns:1fr}.edition{display:none}}@media(max-width:720px){.app-shell{padding:0 16px}.site-header{padding:15px 0}.brand-lockup{gap:10px}.sigil{width:44px;height:44px;font-size:26px}.site-header h1{font-size:21px}.overline{font-size:9px}.header-side .btn{height:37px}.header-side .btn span{display:none}.hero{margin-top:14px;padding:23px 21px;min-height:190px}.hero h2{font-size:30px;max-width:280px}.hero-desc{font-size:11px;max-width:250px}.hero-glyph{right:-33px;top:13px;opacity:.3;width:170px}.hero .eyebrow{font-size:8px;letter-spacing:1.4px;max-width:270px}.character-stats{max-width:290px;gap:6px}.character-stats span{font-size:8px;padding:5px 7px}.status-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:13px 0 23px}.stat-card{min-height:97px;padding:13px 15px}.stat-card strong{font-size:27px}.main-grid{display:block}.sidebar{display:none}.section-header h2{font-size:31px}.section-header{gap:12px}.section-header .btn{padding:0 11px;min-height:37px}.tool-strip{flex-wrap:wrap}.tool-strip select{width:100%}.filter-row{gap:6px;padding:13px 0 9px}.filter-pill{min-width:35px;padding:7px 10px}.spell-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.spell-card{padding:12px 10px 10px;min-height:153px}.spell-head h3{font-size:16px;line-height:1.25}.spell-level{min-width:28px;height:28px;font-size:15px}.spell-top{gap:7px}.tag{font-size:8px;padding:2px 5px}.spell-description{font-size:10px}.spell-actions{gap:2px;flex-wrap:wrap}.text-button,.add-button{font-size:10px}.prep-item{padding:8px}.prep-controls{flex-wrap:wrap}.prep-controls select{min-width:0}.prep-controls button{flex-shrink:0}.slot-controls{grid-template-columns:repeat(4,1fr)}.mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;justify-content:space-around;z-index:50;background:rgba(24,21,33,.97);border-top:1px solid #655264;box-shadow:0 -5px 20px #0006;padding:8px 10px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(12px)}.mobile-nav button{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:85px;color:#a89bab;border:0;background:transparent;font-size:10px;padding:3px 8px}.mobile-nav button span{font-size:22px;line-height:1.2}.mobile-nav button.active{color:var(--gold)}.footer{padding-bottom:95px;flex-direction:column;align-items:center;gap:3px}.toast{bottom:82px;left:14px;right:14px;max-width:none}.spell-dialog{max-height:92dvh}.spell-dialog form{max-height:92dvh}.dialog-top{padding:17px 17px 12px}.dialog-body{padding:16px 17px}.dialog-actions{padding:11px 12px}.dialog-actions .btn{font-size:11px;padding:0 10px}}
 @media(max-width:390px){.spell-list{grid-template-columns:1fr}.spell-card{min-height:125px}.site-header h1{font-size:19px}.brand-lockup .overline{letter-spacing:1px}.hero h2{font-size:28px}.section-header{align-items:flex-start}.section-header h2{font-size:29px}.form-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
+
+/* v2: streamlined record types, responsive presets and three-dimensional dice */
+.spell-dc{border-color:rgba(228,187,122,.37)!important;color:var(--gold)!important;font-weight:700}
+.spell-dc-preview{border:1px solid rgba(228,187,122,.37);border-radius:10px;padding:10px 12px;background:rgba(228,187,122,.07);color:var(--gold);font-size:13px}
+.casting-settings{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0}
+.casting-settings label,.dice-fields label{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted);font-weight:700}
+.casting-settings input,.dice-fields input,.dice-fields select,.preset-manager input,.preset-manager select{
+  color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:9px;min-height:44px;padding:8px 11px;max-width:100%;
+}
+.casting-settings input{width:140px}
+.preset-manager{margin:18px 0 24px}
+.preset-manager h3{margin-bottom:8px}
+.preset-save,.preset-load{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:13px 0}
+.preset-save input{flex:2 1 200px;min-width:0}
+.preset-load select{flex:2 1 220px;min-width:0}
+.preset-save .btn,.preset-load .btn{min-height:44px}
+.preset-manager .small{margin:10px 0 0}
+.dice-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(270px,.85fr);gap:18px;align-items:start}
+.dice-stage-card{position:relative;border:1px solid rgba(228,187,122,.25);border-radius:18px;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#302640,#16141f 72%);min-height:360px;text-align:center}
+.dice-stage-card:before{content:"✦";position:absolute;top:13px;left:18px;font-size:19px;color:#b98e57;opacity:.75}
+#dice-canvas{width:100%;height:auto;display:block;max-height:460px;object-fit:contain}
+.dice-result{font-family:Georgia,serif;font-size:clamp(22px,4vw,38px);font-weight:700;color:var(--gold);padding:0 10px 20px;text-shadow:0 1px 16px #000}
+.dice-controls{margin:0}
+.dice-controls h3{margin-bottom:14px}
+.dice-fields{display:grid;grid-template-columns:1.1fr .8fr .8fr;gap:10px;margin-bottom:16px}
+.dice-fields input,.dice-fields select{width:100%}
+.dice-roll-button{width:100%;min-height:48px;font-size:17px}
+.dice-breakdown{padding:14px 10px;min-height:55px;color:var(--gold);font-size:13px;overflow-wrap:anywhere}
+.dice-history{padding-left:22px;margin:0 0 12px;color:var(--soft);font-size:13px}
+.dice-history li{margin-bottom:9px}
+.dice-history strong{color:var(--gold)}
+.dice-history span{color:var(--muted)}
+@media(max-width:1000px){.dice-layout{grid-template-columns:1fr}}
+@media(max-width:720px){
+  .mobile-nav{justify-content:space-between;padding-inline:4px}
+  .mobile-nav button{min-width:0!important;flex:1 1 0;padding:3px 2px;font-size:10px}
+  .mobile-nav button span{font-size:20px}
+  .dice-stage-card{min-height:0}
+  #dice-canvas{max-height:320px}
+  .dice-controls{padding:17px 14px}
+  .dice-fields{gap:7px}
+  .dice-fields label{font-size:11px}
+  .dice-fields input,.dice-fields select{padding:7px 6px}
+  .preset-save .btn,.preset-load .btn{flex:1 1 auto}
+}
