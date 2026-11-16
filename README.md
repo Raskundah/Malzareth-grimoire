@@ -7,6 +7,7 @@ A small, offline-ready, mobile-first D&D 3.5 spellbook built with **plain HTML, 
 - Search, level/status filters, favourites, editable spell descriptions and reference fields.
 - Daily preparation for each level, multiple copies of a spell, cast tracking, a one-tap **Rest** action that restores expended spells, and **Unprepare all** with confirmation.
 - **Named preparation presets**: save, load and delete custom spell loadouts, plus a built-in preset from the last recorded campaign preparation. Presets are included in JSON backups.
+- **Automatic D&D 3.5 daily spell slots** for a wizard specialist: set Intelligence and wizard-equivalent spellcasting level (default: Wizard 5 + Master Specialist 7 = level 12); the tool combines base wizard progression, bonus spells from Intelligence, and one specialist slot for each available spell level. Manual override remains available, and existing custom slot totals are preserved when upgrading.
 - **Dynamic save DCs** for each spell's level and school, using adjustable Intelligence and Necromancy bonus (defaults INT 30, bonus +2). These values are potential DCs, applicable only to spells that actually allow a saving throw.
 - **Offline three-dimensional dice roller**: animated d4, d6, d8, d10, d12, d20 and d100 visualizations; rolls support up to 10 dice plus a modifier. Random results are generated independently of the animation using the browser's secure randomness; dice visuals are not a physics simulation.
 - Private campaign journal.
@@ -14,6 +15,37 @@ A small, offline-ready, mobile-first D&D 3.5 spellbook built with **plain HTML, 
 - Offline-ready progressive web app (PWA) with a home-screen icon when served from HTTPS or localhost.
 
 **Important:** The later six spells are known from *prepared-spell records*. Four Mother Cyst spells were prepared in the campaign; all ten are now supplied by the Mother Cyst feat (Libris Mortis), whose prepared casters can prepare the spell family without consulting a spellbook. These categories are labelled separately. The initial preparation list is the **last recorded snapshot**, not a guarantee of the current in-game day or unused spell slots. Update it as you play.
+
+## Spell slots and D&D 3.5 rules
+
+From **Notes → Spellcasting settings**, enter the Intelligence score and
+wizard-equivalent spellcasting level. The default is level 12 (Wizard 5 +
+Master Specialist 7). Daily slots recalculate automatically; an Intelligence
+change also updates saving throw DCs.
+
+The default 4th-level calculation is **3 base wizard slots + 2 Intelligence
+bonus slots + 1 Necromancy specialist slot = 6**. At effective wizard level
+13 and Intelligence 30, this becomes **4 + 2 + 1 = 7**. Level 12 / INT 30
+provides 45 daily slots total: `5 / 8 / 8 / 7 / 6 / 6 / 5` for levels 0–6.
+
+Select **D&D 3.5 slot breakdown** to see the base, Intelligence, and
+specialist components for each spell level. Uncheck **Automatically calculate
+spell slots** to use manual overrides (useful for house rules or other
+temporary bonuses). Re-enabling automatic mode restores the calculated
+limits. The calculation is based on standard wizard progression through level
+20; it does not automatically model other classes, metamagic, domains or
+non-standard advancement.
+
+**Existing prepared spells are never silently deleted** when Intelligence or
+effective wizard level changes. If a decrease leaves too many spells
+prepared, the app displays a warning so you can unprepare the excess.
+One slot at each available spell level remains a specialist slot and must be
+used for a Necromancy spell; the preparation view warns when no such spell is
+prepared at that level.
+
+A previously saved manual slot total that differs from RAW will stay in
+manual mode after upgrading. Slot settings, presets and spells remain in
+local browser storage and JSON backups.
 
 ## Run it locally
 
@@ -60,7 +92,7 @@ If a phone still shows an old spell list:
    clearing website storage. On some platforms the installed app and browser
    use separate local storage.
 
-Version 4 retains the Mother Cyst defaults and migrates existing
+Version 5 retains the Mother Cyst defaults and migrates existing
 local saves, retaining custom spells, preparation, cast state and notes. It also migrates existing record statuses into two categories, and adds an editable DC formula and local presets.
 Existing spellbook data remains local to the browser/app that created it.
 
