@@ -3,9 +3,15 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 2;
+  const DATA_VERSION = 3;
   const NEW_CYST_NAMES = new Set(['Necrotic Awareness','Necrotic Burst','Necrotic Eruption','Necrotic Tumor','Necrotic Empowerment','Necrotic Termination']);
   const defaults = window.STARTER_SPELLS || [];
+  // Only mark a save migrated when the newly deployed default catalog is
+  // actually present. This prevents a mixed old/new PWA cache from falsely
+  // recording a successful migration without adding the spells.
+  const completeCystDefaults = [...NEW_CYST_NAMES].every(name =>
+    defaults.some(s => s.status === 'cyst' && s.name === name)
+  );
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -20,7 +26,7 @@
       const spell = spells.find(s => s.name === name && s.level === Number(level));
       if(spell) prepared.push({id: uid(), spellId: spell.id, used:false});
     }));
-    return {version:DATA_VERSION,spells,prepared,slots:[...(window.DEFAULT_SLOTS||[5,8,8,7,6,6,5]),0,0,0],journal:'',lastSaved:new Date().toISOString()};
+    return {version:completeCystDefaults ? DATA_VERSION : 1,spells,prepared,slots:[...(window.DEFAULT_SLOTS||[5,8,8,7,6,6,5]),0,0,0],journal:'',lastSaved:new Date().toISOString()};
   };
   const normalizeSpell = (s) => {
     const allowedStatus=['confirmed','recorded','cyst','custom'];
@@ -36,10 +42,10 @@
     if(!input || !Array.isArray(input.spells) || !Array.isArray(input.prepared)) throw new Error('Not a valid grimoire backup.');
     if(input.spells.length>2500 || input.prepared.length>1000) throw new Error('Backup is too large.');
     const spells = input.spells.map(normalizeSpell).filter(s=>s.name);
-    // Non-destructive one-time migration: give existing v1 browsers the six
-    // newly catalogued Mother Cyst spells without touching their edits, slots,
-    // prepared spells, favourites, or journal. Don't revive prior v1 deletions.
-    if ((Number(input.version) || 1) < DATA_VERSION) {
+    // Non-destructive migration for saves that missed the earlier update,
+    // including phones that cached new app.js with old data.js.
+    // Once v3 is stored, intentional subsequent deletions stay deleted.
+    if ((Number(input.version) || 1) < DATA_VERSION && completeCystDefaults) {
       for (const starter of defaults) {
         if (starter.status !== 'cyst' || !NEW_CYST_NAMES.has(starter.name)) continue;
         if (!spells.some(s => s.level === starter.level && s.name.toLowerCase() === starter.name.toLowerCase())) {
@@ -57,7 +63,7 @@
       const count = prepared.filter(p=>spells.find(s=>s.id===p.spellId)?.level===l).length;
       if(count>slots[l]) slots[l]=count;
     }
-    return {version:DATA_VERSION,spells,prepared,slots,journal:String(input.journal??'').slice(0,100000),lastSaved:new Date().toISOString()};
+    return {version:completeCystDefaults ? DATA_VERSION : (Number(input.version) || 1),spells,prepared,slots,journal:String(input.journal??'').slice(0,100000),lastSaved:new Date().toISOString()};
   };
   const load = () => {
     try {
@@ -65,7 +71,7 @@
       if (!raw) return stateFactory();
       const previous = JSON.parse(raw);
       const next = normalizeData(previous);
-      if ((Number(previous.version) || 1) < DATA_VERSION) {
+      if ((Number(previous.version) || 1) < next.version) {
         // Persist the migration once so intentional later deletions are kept.
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
         catch(e) { console.warn('Unable to persist Mother Cyst migration', e); }
@@ -277,6 +283,20 @@
   });
   render();setView('library');
   if('serviceWorker' in navigator && (location.protocol==='https:' || ['localhost','127.0.0.1'].includes(location.hostname))){
-    window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('Offline caching unavailable',err)));
+    // Ask for a fresh worker instead of accepting a stale cached sw.js.
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'})
+        .then(reg => reg.update().catch(() => {}))
+        .catch(err => console.warn('Offline caching unavailable',err));
+    });
+    // On future worker updates, reload once to display the new version.
+    if (navigator.serviceWorker.controller) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!sessionStorage.getItem('grimoire-worker-reloaded')) {
+          sessionStorage.setItem('grimoire-worker-reloaded', '1');
+          location.reload();
+        }
+      });
+    }
   }
 })();
