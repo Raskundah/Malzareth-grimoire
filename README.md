@@ -100,7 +100,7 @@ The Audit tab tracks the most important omissions. Until reconciled, the applica
 
 ### Updating health or resources
 
-Use **Character → Overview** to apply damage (subtracting temporary HP first), restore hit points or toggle combat buffs. The **Rest** button in Prepared spells restores spell readiness, Alacritous Cogitation and tracked daily powers, **but it does not automatically heal** Malzareth: undead do not benefit from ordinary positive-energy healing effects.
+Use **Character → Overview** to apply damage (subtracting temporary HP first), restore hit points or toggle combat buffs. The Haste toggle applies +1 to attack rolls, Reflex saves and dodge AC, and movement speed +30 ft (maximum double), in addition to tracking its availability. Dice-tab quick saving throws and Initiative stay aligned with the Character sheet's live stats. The **Rest** button in Prepared spells restores spell readiness, Alacritous Cogitation and tracked daily powers, **but it does not automatically heal** Malzareth: undead do not benefit from ordinary positive-energy healing effects.
 
 Use **Character → Inventory** to update consumables and item charges. For component stocks such as black onyx tracked by aggregate GP value, edit the stock directly rather than subtracting one item.
 
