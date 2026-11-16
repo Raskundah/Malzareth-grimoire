@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 3;
+  const DATA_VERSION = 4;
   const NEW_CYST_NAMES = new Set(['Necrotic Awareness','Necrotic Burst','Necrotic Eruption','Necrotic Tumor','Necrotic Empowerment','Necrotic Termination']);
   const defaults = window.STARTER_SPELLS || [];
   // Only mark a save migrated when the newly deployed default catalog is
@@ -17,7 +17,7 @@
   const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const uid = () => (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `local-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const labelLevel = (l) => Number(l)===0 ? 'Cantrip' : `${l}${({1:'st',2:'nd',3:'rd'}[l] || 'th')} circle`;
-  const statusLabels = {confirmed:'In spellbook',recorded:'Later preparation',cyst:'Mother Cyst',custom:'My addition'};
+  const statusLabels = {spellbook:'Spellbook',cyst:'Mother Cyst'};
   const byName = (name) => state.spells.find(s => s.name === name);
   const stateFactory = () => {
     const spells = structuredClone(defaults);
@@ -26,14 +26,13 @@
       const spell = spells.find(s => s.name === name && s.level === Number(level));
       if(spell) prepared.push({id: uid(), spellId: spell.id, used:false});
     }));
-    return {version:completeCystDefaults ? DATA_VERSION : 1,spells,prepared,slots:[...(window.DEFAULT_SLOTS||[5,8,8,7,6,6,5]),0,0,0],journal:'',lastSaved:new Date().toISOString()};
+    return {version:completeCystDefaults ? DATA_VERSION : 1,spells,prepared,slots:[...(window.DEFAULT_SLOTS||[5,8,8,7,6,6,5]),0,0,0],intelligence:30,necroBonus:2,presets:[],journal:'',lastSaved:new Date().toISOString()};
   };
   const normalizeSpell = (s) => {
-    const allowedStatus=['confirmed','recorded','cyst','custom'];
     const clean = (k,max=4000) => String(s?.[k]??'').slice(0,max);
     return {
       id:clean('id',160)||uid(),name:clean('name',100).trim(),level:Math.max(0,Math.min(9,Math.trunc(Number(s?.level)||0))),
-      school:clean('school',80),status:allowedStatus.includes(s?.status)?s.status:'custom',source:clean('source',120),
+      school:clean('school',80),status:s?.status==='cyst'?'cyst':'spellbook',source:clean('source',120),
       casting:clean('casting',140),components:clean('components',140),range:clean('range',200),duration:clean('duration',200),
       save:clean('save',200),description:clean('description'),notes:clean('notes'),favorite:!!s?.favorite
     };
@@ -45,7 +44,7 @@
     // Non-destructive migration for saves that missed the earlier update,
     // including phones that cached new app.js with old data.js.
     // Once v3 is stored, intentional subsequent deletions stay deleted.
-    if ((Number(input.version) || 1) < DATA_VERSION && completeCystDefaults) {
+    if ((Number(input.version) || 1) < 3 && completeCystDefaults) {
       for (const starter of defaults) {
         if (starter.status !== 'cyst' || !NEW_CYST_NAMES.has(starter.name)) continue;
         if (!spells.some(s => s.level === starter.level && s.name.toLowerCase() === starter.name.toLowerCase())) {
@@ -63,7 +62,17 @@
       const count = prepared.filter(p=>spells.find(s=>s.id===p.spellId)?.level===l).length;
       if(count>slots[l]) slots[l]=count;
     }
-    return {version:completeCystDefaults ? DATA_VERSION : (Number(input.version) || 1),spells,prepared,slots,journal:String(input.journal??'').slice(0,100000),lastSaved:new Date().toISOString()};
+    const intelligence = Number.isFinite(Number(input.intelligence)) ? Math.max(1, Math.min(99, Math.trunc(Number(input.intelligence)))) : 30;
+    const necroBonus = Number.isFinite(Number(input.necroBonus)) ? Math.max(0, Math.min(20, Math.trunc(Number(input.necroBonus)))) : 2;
+    const presets = (Array.isArray(input.presets) ? input.presets : []).slice(0,40).map(p => ({
+      id:String(p?.id || uid()).slice(0,160),
+      name:String(p?.name || '').trim().slice(0,60),
+      entries:(Array.isArray(p?.entries) ? p.entries : []).slice(0,100).map(e => ({
+        level:Math.max(0,Math.min(9,Math.trunc(Number(e?.level)||0))),
+        name:String(e?.name || '').slice(0,100)
+      })).filter(e => e.name)
+    })).filter(p => p.name);
+    return {version:completeCystDefaults ? DATA_VERSION : (Number(input.version) || 1),spells,prepared,slots,intelligence,necroBonus,presets,journal:String(input.journal??'').slice(0,100000),lastSaved:new Date().toISOString()};
   };
   const load = () => {
     try {
@@ -80,6 +89,7 @@
     } catch(e) { console.warn('Unable to load local save', e); return stateFactory(); }
   };
   let state=load();
+  const dcFor = (level,school) => 10 + Number(level) + Math.floor((state.intelligence-10)/2) + (school==='Necromancy'?state.necroBonus:0);
   let levelFilter='all';
   let view='library';
   let toastTimeout;
@@ -94,7 +104,13 @@
     $('#stat-spells').textContent=state.spells.length;
     $('#stat-prep').textContent=`${state.prepared.length} / ${state.slots.reduce((a,b)=>a+b,0)}`;
     $('#stat-cast').textContent=state.prepared.filter(p=>p.used).length;
-    $('#stat-dc').textContent='28';
+    const selectedLevel = levelFilter==='all' ? 6 : Number(levelFilter);
+    $('#stat-dc').textContent=dcFor(selectedLevel,'Necromancy');
+    $('#stat-dc-label').textContent=`Level ${selectedLevel} · Necromancy`;
+    $('#hero-int').textContent=state.intelligence;
+    const baseDC=10+Math.floor((state.intelligence-10)/2);
+    $('#standard-dc-formula').textContent=`${baseDC} + level`;
+    $('#necro-dc-formula').textContent=`${baseDC+state.necroBonus} + level`;
   }
   function makeFilters(){
     $('#level-filters').innerHTML=['all',0,1,2,3,4,5,6,7,8,9].map(l=>{
@@ -111,7 +127,7 @@
     $('#spell-list').innerHTML=spells.length?spells.map(s=>{
       const available=currentCount(s.level)<state.slots[s.level];
       return `<article class="spell-card">
-        <div class="spell-top"><span class="spell-level" title="${esc(labelLevel(s.level))}">${s.level}</span><div class="spell-head"><h3>${esc(s.name)}</h3><div class="spell-tags">${s.school?`<span class="tag ${s.school==='Necromancy'?'necro':''}">${esc(s.school)}</span>`:'<span class="tag">School unverified</span>'}<span class="tag ${esc(s.status)}">${esc(statusLabels[s.status]||'Custom')}</span></div></div></div>
+        <div class="spell-top"><span class="spell-level" title="${esc(labelLevel(s.level))}">${s.level}</span><div class="spell-head"><h3>${esc(s.name)}</h3><div class="spell-tags">${s.school?`<span class="tag ${s.school==='Necromancy'?'necro':''}">${esc(s.school)}</span>`:'<span class="tag">School unverified</span>'}${s.status==='cyst'?'<span class="tag cyst">Mother Cyst</span>':''}<span class="tag spell-dc" title="Saving throw DC, if applicable">DC ${dcFor(s.level,s.school)}</span></div></div></div>
         <p class="spell-description ${s.description?'':'empty'}">${s.description?esc(s.description):'Add effects, components, and tactics in this spell record.'}</p>
         <div class="spell-actions"><button type="button" class="text-button" data-action="edit" data-id="${esc(s.id)}">View / edit</button><button type="button" class="star-button ${s.favorite?'starred':''}" data-action="favorite" data-id="${esc(s.id)}" aria-label="${s.favorite?'Remove from':'Add to'} favourites" title="Favourite">${s.favorite?'★':'☆'}</button><button type="button" class="add-button" data-action="quick-prepare" data-id="${esc(s.id)}" ${available?'':'disabled title="All slots are filled"'}>＋ Prepare</button></div>
       </article>`;
@@ -148,9 +164,9 @@
   function renderSlotControls(){
     $('#slot-controls').innerHTML=state.slots.map((n,l)=>`<label class="slot-control">${l===0?'Cantrip':`Level ${l}`}<input type="number" min="0" max="50" step="1" value="${n}" data-slot-level="${l}" aria-label="Daily slots for ${esc(labelLevel(l))}"></label>`).join('');
   }
-  function render(){updateStats();renderLibrary();renderPrep();renderSlotControls();}
+  function render(){updateStats();renderLibrary();renderPrep();renderSlotControls();renderPresets();}
   function setView(name){
-    if(!['library','prepared','journal'].includes(name))return;
+    if(!['library','prepared','dice','journal'].includes(name))return;
     view=name;
     $$('.view').forEach(el=>el.hidden=(el.id!==`view-${name}`));
     $$('[data-view]').forEach(el=>{el.classList.toggle('active',el.dataset.view===name);if(el.dataset.view===name)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');});
@@ -164,9 +180,10 @@
     $('#edit-id').value=spell?.id||'';
     $('#dialog-title').textContent=spell?'Edit inscription':'New inscription';
     const fields={name:'spell-name',level:'spell-level',school:'spell-school',status:'spell-status',source:'spell-source',casting:'spell-casting',components:'spell-components',range:'spell-range',duration:'spell-duration',save:'spell-save',description:'spell-description',notes:'spell-notes'};
-    for(const [key,sel] of Object.entries(fields)){$(`#${sel}`).value=spell?.[key]??(key==='status'?'custom':'');}
+    for(const [key,sel] of Object.entries(fields)){$(`#${sel}`).value=spell?.[key]??(key==='status'?'spellbook':'');}
     $('#spell-favorite').checked=!!spell?.favorite;
     $('#delete-spell').hidden=!spell;
+    renderDCPreview();
     $('#spell-dialog').showModal();
   }
   function closeEditor(){$('#spell-dialog').close();}
@@ -199,8 +216,7 @@
     persist();closeEditor();render();toast('Spell deleted.');
   }
   function resetCasts(){
-    if(!confirm('Restore all expended prepared spells? This leaves your prepared list intact.'))return;
-    state.prepared.forEach(p=>p.used=false);persist();render();toast('All prepared spells restored.');
+    state.prepared.forEach(p=>p.used=false);persist();render();toast('Rest complete — prepared spells restored.');
   }
   function clearPrepared(){
     if(!confirm('Clear every prepared spell slot? Your spellbook itself will be unchanged.'))return;
