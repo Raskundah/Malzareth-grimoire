@@ -161,6 +161,56 @@
       return `<section class="prep-section"><div class="prep-top"><div class="prep-heading"><div class="prep-symbol">${level===0?'◌':level}</div><div><h3>${esc(labelLevel(level))}</h3><p>${used} cast · ${count-used} ready</p></div></div><div><div class="prep-meter">${count} / ${total} slots</div><div class="meter-track"><div class="meter-fill" style="width:${total?Math.min(100,100*count/total):0}%"></div></div></div></div><div class="prep-content"><div class="prep-items">${content||(!open?'<div class="prep-item is-open"><span class="prep-name">No daily slots set</span></div>':'')}${open}</div><div class="prep-controls"><select aria-label="Choose a spell for ${esc(labelLevel(level))}" id="prep-select-${level}" ${spells.length?'':'disabled'}>${spells.length?spells.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join(''):'<option>No known spells at this level</option>'}</select><button type="button" class="btn btn-outline" data-action="prepare-level" data-level="${level}" ${count>=total||!spells.length?'disabled':''}>＋ Prepare</button></div>${total>0&&!hasNecro?'<div class="prep-warning">✧ Necromancy specialist slot not yet represented at this level.</div>':''}</div></section>`;
     }).join('');
   }
+  function renderDCPreview(){
+    const level=Number($('#spell-level').value);
+    const school=$('#spell-school').value;
+    $('#spell-dc-preview').textContent=`Potential saving throw DC: ${dcFor(level,school)} · Level ${level}${school==='Necromancy'?' · Necromancy bonus applied':''}. Only applies to spells with saving throws.`;
+  }
+  function renderPresets(){
+    const select=$('#preset-select');
+    const previous=select.value;
+    select.innerHTML='<option value="">Choose a preset…</option><option value="__campaign">✧ Last recorded campaign preparation</option>'+
+      state.presets.map(p=>`<option value="${esc(p.id)}">${esc(p.name)} (${p.entries.length} spells)</option>`).join('');
+    if([...select.options].some(o=>o.value===previous)) select.value=previous;
+  }
+  function savePreset(){
+    const input=$('#preset-name'), name=input.value.trim();
+    if(!name){toast('Give this preparation preset a name first.');input.focus();return;}
+    if(!state.prepared.length){toast('Prepare at least one spell before saving a preset.');return;}
+    const entries=state.prepared.map(p=>state.spells.find(s=>s.id===p.spellId)).filter(Boolean).map(s=>({level:s.level,name:s.name}));
+    const existing=state.presets.find(p=>p.name.toLowerCase()===name.toLowerCase());
+    if(existing&&!confirm(`Overwrite existing preset “${existing.name}”?`))return;
+    if(!existing&&state.presets.length>=40){toast('Maximum of 40 presets reached.');return;}
+    if(existing)existing.entries=entries;
+    else state.presets.push({id:uid(),name:name.slice(0,60),entries});
+    persist();renderPresets();
+    $('#preset-select').value=existing?.id||state.presets.at(-1).id;
+    input.value='';toast(`Saved “${name}” preset.`);
+  }
+  function loadPreset(){
+    const id=$('#preset-select').value;
+    if(!id){toast('Choose a preparation preset first.');return;}
+    if(id==='__campaign'){loadRecordedPreparation();return;}
+    const preset=state.presets.find(p=>p.id===id);
+    if(!preset)return;
+    if(!confirm(`Replace today's prepared spells with “${preset.name}”?`))return;
+    const next=[];let skipped=0;
+    for(const entry of preset.entries){
+      const spell=state.spells.find(s=>s.name===entry.name&&s.level===entry.level);
+      if(!spell||next.filter(p=>state.spells.find(s=>s.id===p.spellId)?.level===entry.level).length>=state.slots[entry.level]){skipped++;continue;}
+      next.push({id:uid(),spellId:spell.id,used:false});
+    }
+    state.prepared=next;persist();render();
+    toast(skipped?`Preset loaded; ${skipped} spell(s) skipped (unknown or insufficient slots).`:`Loaded “${preset.name}”.`);
+  }
+  function deletePreset(){
+    const id=$('#preset-select').value;
+    if(!id||id==='__campaign'){toast('Choose a saved custom preset to delete.');return;}
+    const p=state.presets.find(p=>p.id===id);
+    if(!p||!confirm(`Delete preparation preset “${p.name}”?`))return;
+    state.presets=state.presets.filter(p=>p.id!==id);persist();renderPresets();
+    toast('Preset deleted.');
+  }
   function renderSlotControls(){
     $('#slot-controls').innerHTML=state.slots.map((n,l)=>`<label class="slot-control">${l===0?'Cantrip':`Level ${l}`}<input type="number" min="0" max="50" step="1" value="${n}" data-slot-level="${l}" aria-label="Daily slots for ${esc(labelLevel(l))}"></label>`).join('');
   }
@@ -271,6 +321,8 @@
   $('#dialog-close').addEventListener('click',closeEditor);
   $('#cancel-spell').addEventListener('click',closeEditor);
   $('#spell-form').addEventListener('submit',saveEditor);
+  $('#spell-level').addEventListener('change',renderDCPreview);
+  $('#spell-school').addEventListener('change',renderDCPreview);
   $('#delete-spell').addEventListener('click',deleteSpell);
   $('#spell-dialog').addEventListener('click',e=>{if(e.target.id==='spell-dialog')closeEditor();});
   $('#search').addEventListener('input',renderLibrary);
@@ -278,11 +330,22 @@
   $('#only-faves').addEventListener('change',renderLibrary);
   $('#reset-casts').addEventListener('click',resetCasts);
   $('#clear-prep').addEventListener('click',clearPrepared);
-  $('#load-recorded-prep').addEventListener('click',loadRecordedPreparation);
+  $('#save-preset').addEventListener('click',savePreset);
+  $('#load-preset').addEventListener('click',loadPreset);
+  $('#delete-preset').addEventListener('click',deletePreset);
   $('#export-data').addEventListener('click',exportBackup);
   $('#import-data').addEventListener('click',()=>$('#import-file').click());
   $('#import-file').addEventListener('change',e=>importBackup(e.target.files?.[0]));
   $('#restore-defaults').addEventListener('click',restoreDefaults);
+  $('#intelligence-score').value=state.intelligence;
+  $('#necro-bonus').value=state.necroBonus;
+  for(const [id,key,min,max] of [['intelligence-score','intelligence',1,99],['necro-bonus','necroBonus',0,20]]){
+    $('#'+id).addEventListener('change',e=>{
+      const n=Number(e.target.value);
+      state[key]=Number.isFinite(n)?Math.max(min,Math.min(max,Math.trunc(n))):state[key];
+      e.target.value=state[key];persist();render();
+    });
+  }
   $('#journal-notes').value=state.journal;
   $('#journal-notes').addEventListener('input',e=>{state.journal=e.target.value;persist();});
   $('#slot-controls').addEventListener('change',e=>{
