@@ -162,7 +162,7 @@
         </div>
         <div class="sheet-item-actions">
           ${x.charges!==null?`<button type="button" data-sheet-action="use-charge" data-id="${esc(x.id)}" ${x.charges<=0?'disabled':''}>−1 charge</button>`:''}
-          ${x.category==='Consumable'||x.category==='Component'?`<button type="button" data-sheet-action="use-item" data-id="${esc(x.id)}" ${x.qty<=0?'disabled':''}>−1 used</button>`:''}
+          ${x.category==='Consumable'?`<button type="button" data-sheet-action="use-item" data-id="${esc(x.id)}" ${x.qty<=0?'disabled':''}>−1 used</button>`:''}
           <button type="button" data-sheet-action="edit-item" data-id="${esc(x.id)}">Edit</button>
         </div></article>`;
     }).join(''):'<p class="muted">No inventory items match this search.</p>';
