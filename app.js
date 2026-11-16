@@ -267,7 +267,7 @@
     levelSelect.value=feat.level===null?'':String(feat.level);
     levelSelect.disabled=feat.used;
     const spellSelect=$('#alacritous-spell');
-    const chosen=feat.spellId || spellSelect.value || '';
+    const chosen=feat.spellId || '';
     const valid=feat.level!==null && (state.slots[feat.level]||0)>0;
     const available=valid?state.spells.filter(s=>s.level<=feat.level).sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name)):[];
     spellSelect.innerHTML='<option value="">Choose a known spell…</option>'+
