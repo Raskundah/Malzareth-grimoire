@@ -3,9 +3,10 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 6;
+  const DATA_VERSION = 7;
   const NEW_CYST_NAMES = new Set(['Necrotic Awareness','Necrotic Burst','Necrotic Eruption','Necrotic Tumor','Necrotic Empowerment','Necrotic Termination']);
   const defaults = window.STARTER_SPELLS || [];
+  const sheetModel=window.SHEET_MODEL;
   const slotRules = window.SPELL_SLOT_RULES;
   const calcSlots = (score,level) => slotRules
     ? slotRules.calculate(score,level,true)
@@ -32,11 +33,12 @@
     }));
     const slots = calcSlots(30,12).totals;
     return {
-      version:completeCystDefaults ? DATA_VERSION : 1,spells,prepared,slots,
+      version:completeCystDefaults && sheetModel ? DATA_VERSION : 1,spells,prepared,slots,
       manualSlots:[...slots],autoSlots:true,spellcastingLevel:12,
       intelligence:30,necroBonus:2,presets:[],
       cogitation:{level:6,used:false,spellId:null},
       abilities:{STR:10,DEX:17,WIS:12,CHA:20},skillOverrides:{},
+      sheet:sheetModel?.createDefault() || null,
       journal:'',lastSaved:new Date().toISOString()
     };
   };
@@ -135,11 +137,14 @@
       used:requestedCogitation?.used === true && level !== null,
       spellId:typeof requestedCogitation?.spellId === 'string' ? requestedCogitation.spellId.slice(0,160) : null
     };
+    // If a phone briefly loads an old asset bundle, preserve existing
+    // sheet information rather than replacing it with empty defaults.
+    const sheet=sheetModel?.normalize(input.sheet) ?? input.sheet ?? null;
     return {
-      version:completeCystDefaults ? DATA_VERSION : (Number(input.version) || 1),
+      version:completeCystDefaults && sheetModel ? DATA_VERSION : (Number(input.version) || 1),
       spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
       autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
-      cogitation,abilities,skillOverrides,
+      cogitation,abilities,skillOverrides,sheet,
       journal:String(input.journal??'').slice(0,100000),lastSaved:new Date().toISOString()
     };
   };
@@ -172,6 +177,17 @@
     resetSkill(id){
       delete state.skillOverrides[id];
       persist();window.refreshGrimoireSkills?.();
+    },
+    updateSheet(mutator){
+      if(!state.sheet||typeof mutator!=='function')return false;
+      mutator(state.sheet);
+      state.sheet=sheetModel?.normalize(state.sheet) ?? state.sheet;
+      persist();render();return true;
+    },
+    resetSheet(){
+      if(!sheetModel)return false;
+      state.sheet=sheetModel.createDefault();
+      persist();render();return true;
     }
   };
   const dcFor = (level,school) => 10 + Number(level) + Math.floor((state.intelligence-10)/2) + (school==='Necromancy'?state.necroBonus:0);
@@ -369,9 +385,9 @@
     }else $('#slot-breakdown').textContent='Slot calculation is unavailable offline; manual totals are retained.';
     $('#slot-controls').innerHTML=state.slots.map((n,l)=>`<label class="slot-control">${l===0?'Cantrip':`Level ${l}`}<input type="number" min="0" max="50" step="1" value="${n}" data-slot-level="${l}" aria-label="Daily slots for ${esc(labelLevel(l))}"></label>`).join('');
   }
-  function render(){updateStats();renderLibrary();renderPrep();renderCogitation();renderSlotControls();renderPresets();window.refreshGrimoireSkills?.();}
+  function render(){updateStats();renderLibrary();renderPrep();renderCogitation();renderSlotControls();renderPresets();window.refreshGrimoireSkills?.();window.refreshGrimoireSheet?.();}
   function setView(name){
-    if(!['library','prepared','dice','journal'].includes(name))return;
+    if(!['library','prepared','dice','journal','character'].includes(name))return;
     view=name;
     $$('.view').forEach(el=>el.hidden=(el.id!==`view-${name}`));
     $$('[data-view]').forEach(el=>{el.classList.toggle('active',el.dataset.view===name);if(el.dataset.view===name)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');});
@@ -425,7 +441,12 @@
     state.prepared.forEach(p=>p.used=false);
     state.cogitation.used=false;
     state.cogitation.spellId=null;
-    persist();render();toast('Rest complete — prepared spells and Alacritous Cogitation refreshed.');
+    // Limited-use daily racial/class abilities and feat counters also reset.
+    if(state.sheet){
+      state.sheet.features.forEach(x=>{if(x.usesPerDay!==null)x.usedToday=0;});
+      state.sheet.feats.forEach(x=>{if(x.usesPerDay!==null)x.usedToday=0;});
+    }
+    persist();render();toast('Rest complete — spells, Cogitation and daily powers refreshed.');
   }
   function clearPrepared(){
     if(!confirm('Clear every prepared spell slot? Your spellbook itself will be unchanged.'))return;
