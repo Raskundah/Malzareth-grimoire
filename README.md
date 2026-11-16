@@ -10,6 +10,8 @@ A small, offline-ready, mobile-first D&D 3.5 spellbook built with **plain HTML, 
 - **Automatic D&D 3.5 daily spell slots** for a wizard specialist: set Intelligence and wizard-equivalent spellcasting level (default: Wizard 5 + Master Specialist 7 = level 12); the tool combines base wizard progression, bonus spells from Intelligence, and one specialist slot for each available spell level. Manual override remains available, and existing custom slot totals are preserved when upgrading.
 - **Dynamic save DCs** for each spell's level and school, using adjustable Intelligence and Necromancy bonus (defaults INT 30, bonus +2). These values are potential DCs, applicable only to spells that actually allow a saving throw.
 - **Offline three-dimensional dice roller**: animated d4, d6, d8, d10, d12, d20 and d100 visualizations; rolls support up to 10 dice plus a modifier. Random results are generated independently of the animation using the browser's secure randomness; dice visuals are not a physics simulation.
+- **Skills, saving throws and initiative:** roll a labelled d20 check directly from the Dice tab using Malzareth's post-lich skill ledger. Change ranks, situational or item bonuses and relevant ability scores; checks update automatically. Situational quick checks include Spellcraft when learning Necromancy, scroll Use Magic Device, and the Ring of Mortal Guise.
+- **Alacritous Cogitation (Complete Mage p. 37):** choose which level of spell slot to reserve instead of permanently dedicating a sixth-level slot. The reservation blocks normal preparation; choose a known spell of that level or lower, then spend the feat once per day. Rest restores its use; prepared-spell presets also remember the reserved level.
 - Private campaign journal.
 - Saves locally in your browser. Export/import JSON to back up or transfer data between devices.
 - Offline-ready progressive web app (PWA) with a home-screen icon when served from HTTPS or localhost.
@@ -46,6 +48,24 @@ prepared at that level.
 A previously saved manual slot total that differs from RAW will stay in
 manual mode after upgrading. Slot settings, presets and spells remain in
 local browser storage and JSON backups.
+
+## Rollable character skills
+
+Open **Dice → Skills & quick checks** to roll d20 checks for Malzareth's recorded skills. Entries are seeded from the latest post-lich character sheet (28 Tarsakh 1373 DR, level 12) including ranks, base totals, racial and item bonuses. Quick buttons include Initiative (+7), Fortitude (+6), Reflex (+9) and Will (+13); special contexts provide Spellcraft +32 to learn Necromancy, Use Magic Device +13 to activate scrolls, and Disguise +15 when Ring of Mortal Guise applies (all at the original stats and ranks).
+
+Use the edit pencil to change ranks or additional item/situational bonuses. INT-based skill checks update when you change Intelligence in Notes; STR, DEX, WIS and CHA can also be edited in Notes → Skill check ability scores. A situational modifier at the top of the skill list applies to the next skill or quick check, without permanently modifying the ledger.
+
+**Trained-only skills without ranks are marked unavailable** until you allocate ranks. *Speak Language* has no d20 check. Bonuses reflect the documented character sheet, and the app does not calculate or enforce a level-up skill-point budget, cross-class restrictions, armor check penalties, or all circumstance modifiers; use the editable modifiers where needed. Natural 1 and natural 20 do not automatically fail/succeed on skill checks under standard D&D 3.5 rules.
+
+Skill edits and ability changes are stored in the same local grimoire backup.
+
+## Alacritous Cogitation
+
+In **Prepared spells**, select the level of the open slot you want to leave for **Alacritous Cogitation**. The starting reservation is level 6, consistent with the latest campaign preparation; you can move it to any level with an available slot, including newly unlocked higher-level spells. A reserved slot is shown separately in the preparation list and cannot hold another prepared spell.
+
+Select a known spell of that level or lower, then press **Cast with feat**. This consumes that reserved slot and the once-per-day feat use. It is a full-round action under *Complete Mage*, page 37. The Rest button makes the feat ready again while keeping the chosen slot reserved. Presets capture the reserved level. The app preserves existing prepared spells even if a level-up correction leaves too few slots, showing an overbooked warning rather than deleting them.
+
+A specialist wizard must still fill one specialist slot per level with a Necromancy spell; the app warns about levels without any prepared Necromancy spell. Track specialist-versus-general spell slots yourself when making choices.
 
 ## Run it locally
 
