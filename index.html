@@ -13,6 +13,7 @@
   <link rel="apple-touch-icon" href="./icons/grimoire.svg">
   <link rel="stylesheet" href="./styles.css">
   <script defer src="./data.js"></script>
+  <script defer src="./slots.js"></script>
   <script defer src="./app.js"></script>
   <script defer src="./dice.js"></script>
   <title>Malzareth's Grimoire · The Ashen Crown</title>
@@ -88,9 +89,16 @@
           <div class="section-header"><div><p class="eyebrow">THE PRIVATE ARCHIVE</p><h2 id="journal-title">Archivist's <em>Notes</em></h2><p class="muted">A personal record of acquisitions, rituals and research.</p></div></div>
           <div class="journal-card"><label for="journal-notes" class="field-label">Your campaign notes</label><textarea id="journal-notes" rows="10" placeholder="Research to pursue… spells learned from scrolls… who sold me what…"></textarea><p class="muted small">Notes save automatically in this browser.</p></div>
           <div class="settings-card"><h3>Spellcasting settings</h3><p class="muted small">Save DCs update automatically for each spell: 10 + spell level + Intelligence modifier, plus the Necromancy bonus where applicable.</p>
-          <div class="casting-settings"><label>Intelligence score<input id="intelligence-score" type="number" min="1" max="99" value="30"></label><label>Necromancy DC bonus<input id="necro-bonus" type="number" min="0" max="20" value="2"></label></div>
-          <p class="muted small">Set the Necromancy bonus to 2 for Spell Focus + Greater Spell Focus.</p>
-          <p class="muted small">Adjust daily slot totals if Malzareth levels up or gains a temporary effect.</p><div id="slot-controls" class="slot-controls"></div></div>
+          <div class="casting-settings">
+            <label>Intelligence score<input id="intelligence-score" type="number" min="1" max="99" value="30"></label>
+            <label>Wizard-equivalent spellcasting level<input id="wizard-spell-level" type="number" min="1" max="20" value="12"></label>
+            <label>Necromancy DC bonus<input id="necro-bonus" type="number" min="0" max="20" value="2"></label>
+          </div>
+          <p class="muted small">Wizard 5 + Master Specialist 7 = spellcasting level 12. This controls spell slots, not additional bonuses to caster level. Necromancy DC bonus 2 reflects Spell Focus and Greater Spell Focus.</p>
+          <label class="slot-auto-toggle"><input id="auto-slot-calc" type="checkbox" checked> Automatically calculate spell slots (D&amp;D 3.5)</label>
+          <p class="muted small">Daily slots = base wizard progression + Intelligence bonus + one Necromancy specialist slot at each available level.</p>
+          <div id="slot-breakdown" class="slot-breakdown" aria-live="polite"></div>
+          <div id="manual-slot-section" hidden><p class="muted small">Manual override: adjust slots for house rules, temporary effects, or other bonuses.</p><div id="slot-controls" class="slot-controls"></div></div></div>
           <div class="settings-card"><h3>Save or transfer your grimoire</h3><p class="muted small">Your personal edits, preparation and cast history are stored locally on this device. Export a JSON backup to move between phone and PC.</p><div class="button-row"><button id="export-data" class="btn btn-accent" type="button">↓ Export backup</button><button id="import-data" class="btn btn-outline" type="button">↑ Import backup</button><input id="import-file" type="file" accept="application/json,.json" hidden></div><div class="divider"></div><button id="restore-defaults" class="btn btn-danger" type="button">Reset to campaign starting record</button></div>
           <div class="reference-card"><p class="overline">ARCHIVIST'S NOTE</p><p><b>Record quality matters.</b> The original 44 spells are explicitly listed in the level-11 spellbook. Six appear in later post-lich preparations. Ten Mother Cyst spells are granted through the feat and do not need to be copied into the spellbook; the original sources are retained in each record.</p><p>Removed from the active record: <i>Vampiric Touch</i> and <i>Ray of Exhaustion</i>. Spells on wands and staffs do not automatically count as learned.</p></div>
         </section>
