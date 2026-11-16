@@ -94,11 +94,11 @@ GitHub Pages serves the code publicly, but **your edits and journal stay in that
 
 ## Editing the starter record
 
-Edit `data.js` to change the source lists for newly opened browsers. **Existing browsers preserve their saved progress** in `localStorage`. Version 2 automatically adds the six newly included Mother Cyst spells to older local saves without resetting prepared spells, notes or custom edits. Future changes to default lists generally require a manual reset after exporting a backup. For routine additions, edit the spellbook *inside the app* instead.
+Edit `data.js` to change the source lists for newly opened browsers. **Existing browsers preserve their saved progress** in `localStorage`. Version 6 preserves earlier migrations and also adds skill editing and the selectable Cogitation reservation without resetting prepared spells, notes or custom edits. Future changes to default lists generally require a manual reset after exporting a backup. For routine additions, edit the spellbook *inside the app* instead.
 
 ## Mobile updates and cached versions
 
-The v5 service worker uses **network-first** fetching when online, including the dice module. Previously,
+The v7 service worker uses **network-first** fetching when online, including the dice and skill modules. Previously,
 a cache-first worker could keep serving old JavaScript and default spells on an
 installed phone. An updated application now rechecks GitHub Pages when online
 and still falls back to its local cache offline.
@@ -112,7 +112,7 @@ If a phone still shows an old spell list:
    clearing website storage. On some platforms the installed app and browser
    use separate local storage.
 
-Version 5 retains the Mother Cyst defaults and migrates existing
+Version 6 of the saved-data format retains the Mother Cyst defaults and migrates existing
 local saves, retaining custom spells, preparation, cast state and notes. It also migrates existing record statuses into two categories, and adds an editable DC formula and local presets.
 Existing spellbook data remains local to the browser/app that created it.
 
@@ -121,5 +121,5 @@ Existing spellbook data remains local to the browser/app that created it.
 - Entirely client-side, with no online sync, accounts or database.
 - Browser data can be erased by clearing site data or switching browsers/devices; **make regular JSON backups**.
 - This is a campaign ledger, **not an authoritative transcription of rulebook text**. Spell rules/effects can be added to each entry as you check your D&D books.
-- The initial save DCs are set for the campaign's recorded Intelligence 30 and necromancy feats. If the character's statistics change, update the UI's hard-coded save DC reference in `index.html`/`app.js` in a future revision.
+- Save DCs and Intelligence-based skill checks update from the current Intelligence score; skill rank and ability-score changes are editable. Additional buffs, special circumstances, armor penalties or unusual class features may need manual adjustments.
 - Works best on recent Chrome, Edge, Safari, and Firefox; browser support for PWA installation varies.
