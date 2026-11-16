@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 5;
+  const DATA_VERSION = 6;
   const NEW_CYST_NAMES = new Set(['Necrotic Awareness','Necrotic Burst','Necrotic Eruption','Necrotic Tumor','Necrotic Empowerment','Necrotic Termination']);
   const defaults = window.STARTER_SPELLS || [];
   const slotRules = window.SPELL_SLOT_RULES;
@@ -31,7 +31,14 @@
       if(spell) prepared.push({id: uid(), spellId: spell.id, used:false});
     }));
     const slots = calcSlots(30,12).totals;
-    return {version:completeCystDefaults ? DATA_VERSION : 1,spells,prepared,slots,manualSlots:[...slots],autoSlots:true,spellcastingLevel:12,intelligence:30,necroBonus:2,presets:[],journal:'',lastSaved:new Date().toISOString()};
+    return {
+      version:completeCystDefaults ? DATA_VERSION : 1,spells,prepared,slots,
+      manualSlots:[...slots],autoSlots:true,spellcastingLevel:12,
+      intelligence:30,necroBonus:2,presets:[],
+      cogitation:{level:6,used:false,spellId:null},
+      abilities:{STR:10,DEX:17,WIS:12,CHA:20},skillOverrides:{},
+      journal:'',lastSaved:new Date().toISOString()
+    };
   };
   const normalizeSpell = (s) => {
     const clean = (k,max=4000) => String(s?.[k]??'').slice(0,max);
@@ -90,12 +97,51 @@
     const presets = (Array.isArray(input.presets) ? input.presets : []).slice(0,40).map(p => ({
       id:String(p?.id || uid()).slice(0,160),
       name:String(p?.name || '').trim().slice(0,60),
+      cogitationLevel:p?.cogitationLevel === null ? null :
+        (Number.isInteger(Number(p?.cogitationLevel)) && p?.cogitationLevel !== undefined
+          ? Math.max(0,Math.min(9,Number(p.cogitationLevel))) : undefined),
       entries:(Array.isArray(p?.entries) ? p.entries : []).slice(0,100).map(e => ({
         level:Math.max(0,Math.min(9,Math.trunc(Number(e?.level)||0))),
         name:String(e?.name || '').slice(0,100)
       })).filter(e => e.name)
     })).filter(p => p.name);
-    return {version:completeCystDefaults ? DATA_VERSION : (Number(input.version) || 1),spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],autoSlots,spellcastingLevel,intelligence,necroBonus,presets,journal:String(input.journal??'').slice(0,100000),lastSaved:new Date().toISOString()};
+    const clampInt = (value,low,high,fallback) =>
+      value !== undefined && value !== null && value !== '' && Number.isFinite(Number(value))
+        ? Math.max(low,Math.min(high,Math.trunc(Number(value)))) : fallback;
+    const abilities = Object.fromEntries(
+      [['STR',10],['DEX',17],['WIS',12],['CHA',20]]
+        .map(([key,baseline])=>[key,clampInt(input.abilities?.[key],1,99,baseline)])
+    );
+    const skillOverrides = {};
+    if(input.skillOverrides && typeof input.skillOverrides==='object' && !Array.isArray(input.skillOverrides)){
+      for(const [key,record] of Object.entries(input.skillOverrides).slice(0,150)){
+        if(!/^[a-z0-9-]{1,80}$/.test(key))continue;
+        skillOverrides[key]={
+          ranks:clampInt(record?.ranks,0,60,0),
+          extra:clampInt(record?.extra,-100,100,0)
+        };
+      }
+    }
+    const countAt = level => prepared.filter(p=>spells.find(s=>s.id===p.spellId)?.level===level).length;
+    const requestedCogitation = input.cogitation && typeof input.cogitation==='object'
+      ? input.cogitation : null;
+    const initialLevel=6;
+    const initialReserve = slots[initialLevel] > countAt(initialLevel) ? initialLevel : null;
+    const level = requestedCogitation
+      ? (requestedCogitation.level === null || requestedCogitation.level === '' ? null : clampInt(requestedCogitation.level,0,9,null))
+      : initialReserve;
+    const cogitation = {
+      level,
+      used:requestedCogitation?.used === true && level !== null,
+      spellId:typeof requestedCogitation?.spellId === 'string' ? requestedCogitation.spellId.slice(0,160) : null
+    };
+    return {
+      version:completeCystDefaults ? DATA_VERSION : (Number(input.version) || 1),
+      spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
+      autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
+      cogitation,abilities,skillOverrides,
+      journal:String(input.journal??'').slice(0,100000),lastSaved:new Date().toISOString()
+    };
   };
   const load = () => {
     try {
@@ -112,6 +158,22 @@
     } catch(e) { console.warn('Unable to load local save', e); return stateFactory(); }
   };
   let state=load();
+  // Shared, local-only state interface for the Dice tab's skill checks.
+  window.GRIMOIRE = {
+    getState:()=>state,
+    updateSkill(id,ranks,extra){
+      if(!/^[a-z0-9-]{1,80}$/.test(id))return;
+      state.skillOverrides[id]={
+        ranks:Math.max(0,Math.min(60,Math.trunc(Number(ranks)||0))),
+        extra:Math.max(-100,Math.min(100,Math.trunc(Number(extra)||0)))
+      };
+      persist();window.refreshGrimoireSkills?.();
+    },
+    resetSkill(id){
+      delete state.skillOverrides[id];
+      persist();window.refreshGrimoireSkills?.();
+    }
+  };
   const dcFor = (level,school) => 10 + Number(level) + Math.floor((state.intelligence-10)/2) + (school==='Necromancy'?state.necroBonus:0);
   let levelFilter='all';
   let view='library';
