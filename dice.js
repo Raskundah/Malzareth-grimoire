@@ -158,7 +158,18 @@
     rolling=true;rollBtn.disabled=true;byId('dice-result').textContent='Rolling…';
     byId('dice-breakdown').textContent='The dice are in motion…';
     const start=performance.now(),duration=1300;
-    const origin=[...angles],target=[origin[0]+Math.PI*(6+Math.random()*3),origin[1]+Math.PI*(7+Math.random()*3),origin[2]+Math.PI*(3+Math.random()*2)];
+    const origin=[...angles];
+    // Aim the rolled face toward the viewer at the end of the spin.
+    // For multiple dice, the animation depicts the first roll; totals list all.
+    const dieMesh=mesh(sides);
+    const faceIndex=sides===100?Math.floor((dice[0]-1)/10):(dice[0]-1);
+    const face=dieMesh.faces[faceIndex];
+    const va=dieMesh.vertices[face[0]],vb=dieMesh.vertices[face[1]],vc=dieMesh.vertices[face[2]];
+    const faceNormal=normal(cross(sub(vb,va),sub(vc,va)));
+    const aimX=Math.atan2(faceNormal[1],faceNormal[2]);
+    const nAfterX=transform(faceNormal,V(aimX,0,0));
+    const aimY=-Math.atan2(nAfterX[0],nAfterX[2]);
+    const target=[aimX+Math.PI*8,aimY+Math.PI*10,(Math.random()-.5)*1.2+Math.PI*6];
     function frame(now){
       const t=Math.min(1,(now-start)/duration);
       const eased=1-Math.pow(1-t,3);
