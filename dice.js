@@ -145,8 +145,9 @@
   }
   const history=[];
   const countEl=byId('dice-count'),modEl=byId('dice-modifier'),rollBtn=byId('roll-dice');
-  function roll(){
+  function roll(context=''){
     if(rolling)return;
+    const contextLabel=String(context||'').slice(0,100);
     const sides=Number(byId('die-type').value);
     const count=Math.max(1,Math.min(10,Math.trunc(Number(countEl.value)||1)));
     const modifier=Math.max(-100,Math.min(100,Math.trunc(Number(modEl.value)||0)));
@@ -154,6 +155,7 @@
     const dice=Array.from({length:count},()=>randInt(sides));
     const total=dice.reduce((sum,n)=>sum+n,modifier);
     const label=count+'d'+sides+(modifier>0?' + '+modifier:modifier<0?' − '+(-modifier):'');
+    const caption=contextLabel?contextLabel+' · '+label:label;
     const critical=count===1&&sides===20?(dice[0]===20?' · Natural 20!':dice[0]===1?' · Natural 1!':''):'';
     rolling=true;rollBtn.disabled=true;byId('dice-result').textContent='Rolling…';
     byId('dice-breakdown').textContent='The dice are in motion…';
@@ -179,8 +181,8 @@
       else{
         rolling=false;rollBtn.disabled=false;
         byId('dice-result').textContent=String(total)+critical;
-        byId('dice-breakdown').textContent=label+' → ['+dice.join(', ')+']'+(modifier?' '+(modifier>0?'+ ':'− ')+Math.abs(modifier):'')+' = '+total;
-        history.unshift({label,total,dice});
+        byId('dice-breakdown').textContent=caption+' → ['+dice.join(', ')+']'+(modifier?' '+(modifier>0?'+ ':'− ')+Math.abs(modifier):'')+' = '+total;
+        history.unshift({label:caption,total,dice});
         history.splice(10);
         byId('dice-history').innerHTML=history.map(h=>'<li><strong>'+h.total+'</strong> · '+h.label+' <span>('+h.dice.join(', ')+')</span></li>').join('');
       }
@@ -188,14 +190,26 @@
     if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
       rolling=false;rollBtn.disabled=false;
       byId('dice-result').textContent=String(total)+critical;
-      byId('dice-breakdown').textContent=label+' → ['+dice.join(', ')+'] = '+total;
-      history.unshift({label,total,dice});history.splice(10);
+      byId('dice-breakdown').textContent=caption+' → ['+dice.join(', ')+'] = '+total;
+      history.unshift({label:caption,total,dice});history.splice(10);
       byId('dice-history').innerHTML=history.map(h=>'<li><strong>'+h.total+'</strong> · '+h.label+'</li>').join('');
       return;
     }
     requestAnimationFrame(frame);
   }
   byId('die-type').addEventListener('change',draw);
-  rollBtn.addEventListener('click',roll);
+  rollBtn.addEventListener('click',()=>roll());
+  // One-tap skill, initiative and save checks share this same dice engine,
+  // history and animation; they never use a separate random generator.
+  window.grimoireRollCheck = ({label='',modifier=0,sides=20}={})=>{
+    if(rolling)return false;
+    const n=Number(sides),m=Number(modifier);
+    if(![4,6,8,10,12,20,100].includes(n)||!Number.isFinite(m))return false;
+    byId('die-type').value=String(n);
+    countEl.value='1';
+    modEl.value=String(Math.max(-100,Math.min(100,Math.trunc(m))));
+    roll(label);
+    return true;
+  };
   draw();
 })();
