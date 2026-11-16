@@ -18,10 +18,18 @@
     4: ['Greater Invisibility','Orb of Force'],
     6: ['Spectral Dragon','Heartfreeze','Analyse Dweomer']
   };
+  // Libris Mortis (p. 28): Mother Cyst grants access to the entire family.
+  // Prepared casters can prepare these without consulting a spellbook.
   const cyst = {
+    1: ['Necrotic Awareness'],
     2: ['Necrotic Cyst','Necrotic Scrying'],
     3: ['Necrotic Bloat'],
-    4: ['Necrotic Domination']
+    4: ['Necrotic Domination'],
+    5: ['Necrotic Burst'],
+    6: ['Necrotic Eruption'],
+    7: ['Necrotic Tumor'],
+    8: ['Necrotic Empowerment'],
+    9: ['Necrotic Termination']
   };
   // Schools only when established confidently; blank entries remain editable.
   const schools = {
@@ -41,7 +49,10 @@
     'Overland Flight':'Transmutation','Teleport':'Conjuration','Create Undead':'Necromancy',
     'Animate Dread Warrior':'Necromancy','Heartfreeze':'Necromancy','Analyse Dweomer':'Divination',
     'Necrotic Cyst':'Necromancy','Necrotic Scrying':'Necromancy','Necrotic Bloat':'Necromancy',
-    'Necrotic Domination':'Necromancy'
+    'Necrotic Domination':'Necromancy','Necrotic Awareness':'Necromancy',
+    'Necrotic Burst':'Necromancy','Necrotic Eruption':'Necromancy',
+    'Necrotic Tumor':'Necromancy','Necrotic Empowerment':'Necromancy',
+    'Necrotic Termination':'Necromancy'
   };
   const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   const make = (map,status,source) => Object.entries(map).flatMap(([level,items]) => items.map(name=>({
@@ -51,7 +62,7 @@
   window.STARTER_SPELLS = [
     ...make(original,'confirmed','Level 11 spellbook ledger'),
     ...make(recorded,'recorded','Post-lich preparation sheet'),
-    ...make(cyst,'cyst','Mother Cyst feat / post-lich preparation')
+    ...make(cyst,'cyst','Mother Cyst feat (Libris Mortis p. 28; no spellbook required)')
   ];
   window.DEFAULT_SLOTS = [5,8,8,7,6,6,5];
   // Latest documented preparation, not a claim about current unused slots.
