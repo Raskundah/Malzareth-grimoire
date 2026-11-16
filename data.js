@@ -60,8 +60,8 @@
     casting:'', components:'', range:'', duration:'', save:'', description:'', notes:'', favorite:false
   })));
   window.STARTER_SPELLS = [
-    ...make(original,'confirmed','Level 11 spellbook ledger'),
-    ...make(recorded,'recorded','Post-lich preparation sheet'),
+    ...make(original,'spellbook','Level 11 spellbook ledger'),
+    ...make(recorded,'spellbook','Post-lich preparation sheet (transcription not separately verified)'),
     ...make(cyst,'cyst','Mother Cyst feat (Libris Mortis p. 28; no spellbook required)')
   ];
   window.DEFAULT_SLOTS = [5,8,8,7,6,6,5];
