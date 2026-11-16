@@ -41,6 +41,26 @@ GitHub Pages serves the code publicly, but **your edits and journal stay in that
 
 Edit `data.js` to change the source lists for newly opened browsers. **Existing browsers preserve their saved progress** in `localStorage`. Version 2 automatically adds the six newly included Mother Cyst spells to older local saves without resetting prepared spells, notes or custom edits. Future changes to default lists generally require a manual reset after exporting a backup. For routine additions, edit the spellbook *inside the app* instead.
 
+## Mobile updates and cached versions
+
+The v4 service worker uses **network-first** fetching when online. Previously,
+a cache-first worker could keep serving old JavaScript and default spells on an
+installed phone. An updated application now rechecks GitHub Pages when online
+and still falls back to its local cache offline.
+
+If a phone still shows an old spell list:
+1. Ensure the phone has an internet connection.
+2. Open the GitHub Pages URL in its normal browser, refresh twice, and search
+   for **Necrotic Awareness**.
+3. Fully close and reopen any installed home-screen app.
+4. If it remains old, export a JSON backup from that exact app/browser before
+   clearing website storage. On some platforms the installed app and browser
+   use separate local storage.
+
+Version 3 also retries adding the six missing Mother Cyst defaults to existing
+local saves, without resetting custom spells, preparation, cast state, or notes.
+Existing spellbook data remains local to the browser/app that created it.
+
 ## Requirements and limitations
 
 - Entirely client-side, with no online sync, accounts or database.
