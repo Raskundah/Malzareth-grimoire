@@ -10,6 +10,11 @@ A small, offline-ready, mobile-first D&D 3.5 spellbook built with **plain HTML, 
 - **Automatic D&D 3.5 daily spell slots** for a wizard specialist: set Intelligence and wizard-equivalent spellcasting level (default: Wizard 5 + Master Specialist 7 = level 12); the tool combines base wizard progression, bonus spells from Intelligence, and one specialist slot for each available spell level. Manual override remains available, and existing custom slot totals are preserved when upgrading.
 - **Dynamic save DCs** for each spell's level and school, using adjustable Intelligence and Necromancy bonus (defaults INT 30, bonus +2). These values are potential DCs, applicable only to spells that actually allow a saving throw.
 - **Offline three-dimensional dice roller**: animated d4, d6, d8, d10, d12, d20 and d100 visualizations; rolls support up to 10 dice plus a modifier. Random results are generated independently of the animation using the browser's secure randomness; dice visuals are not a physics simulation.
+- **Character Folio** (new): mobile-friendly four-section character sheet (Overview, Inventory, Feats & Traits, Audit), seeded from the most recent post-lich sheet and recent campaign events.
+- **Combat/vitals:** live HP and temporary HP, damage/recovery buttons, action points, AC/touch/flat-footed AC with Greater Mage Armour/Shield/Haste toggles, BAB, attacks, initiative, saves and lich touch/fear DCs derived from HD and Charisma.
+- **Item inventory:** worn, carried, stored and unidentified equipment, quantities, locations, values, weights, magical charges, and quick charge/consumable deduction; Type IV Bag of Holding capacity and known-weight tally. Staff and wand charges can be edited directly.
+- **Feats & powers:** nine recorded feats, lich traits, Lesser Tiefling powers and Master Specialist features. Add/edit/delete entries, track limited daily uses and reset those uses on rest.
+- **Currency and audit:** separate recent liquid funds and earlier Seventh Sovereign treasury (not additive until reconciled), editable coins, experience and XP threshold, notes for open rulings and a checklist for missing character details.
 - **Skills, saving throws and initiative:** roll a labelled d20 check directly from the Dice tab using Malzareth's post-lich skill ledger. Change ranks, situational or item bonuses and relevant ability scores; checks update automatically. Situational quick checks include Spellcraft when learning Necromancy, scroll Use Magic Device, and the Ring of Mortal Guise.
 - **Alacritous Cogitation (Complete Mage p. 37):** choose which level of spell slot to reserve instead of permanently dedicating a sixth-level slot. The reservation blocks normal preparation; choose a known spell of that level or lower, then spend the feat once per day. Rest restores its use; prepared-spell presets also remember the reserved level.
 - Private campaign journal.
@@ -67,6 +72,38 @@ Select a known spell of that level or lower, then press **Cast with feat**. This
 
 A specialist wizard must still fill one specialist slot per level with a Necromancy spell; the app warns about levels without any prepared Necromancy spell. Track specialist-versus-general spell slots yourself when making choices.
 
+## Character Folio (Version 4)
+
+Choose **Character** in the bottom navigation. Its four internal tabs are:
+- **Overview**: name, ancestry, class levels, alignment, XP, ability modifiers, HP, AC and buffs, base attacks, saves, initiative, lich touch DC, speed, DR, conditions, and editable base combat stats.
+- **Inventory**: an editable ledger of each item, equipped or stored location, quantity, remaining charges, optional weight/value and notes. Searchable, with quick decrements for expendable potions and charged wands. Coin totals and fortress treasury are separate fields with an explicit non-additive reconciliation warning.
+- **Feats & Traits**: all nine feats on the latest character sheet, plus undead, lich, racial and Master Specialist abilities; supports notes, additions/deletions, and limited daily-use counters.
+- **Audit**: reviewable, tickable issues from the last character-sheet reconciliation, plus automatically surfaced omissions (unidentified loot, unknown languages and item weights, outstanding XP).
+
+The initial character record is grounded in the latest **Malzareth_Vhane_Updated_Character_Sheet_v3.pdf** and 16 November 2026 campaign developments. Equipment includes Headband of Intellect +4, Ring of Protection +3, Cloak of Resistance +3, Ring of Mortal Guise, Amulet of Natural Armour +2, Staff of Transmutation, recently bought Wand of Orb of Force (CL 7, 50 charges when acquired), and recently bought Type IV Bag of Holding (1,500 lb/250 cubic feet; bag weighs 60 lb). The old Ring of Mind Shielding and unidentified captured gear are recorded as stored/unverified, not equipped.
+
+**Recorded combat starting values:** 95 HP, AC 23 (touch 16, flat-footed 20), initiative +7, BAB +5, Fort +6, Reflex +9, Will +13. The lich touch, paralysis and fear save DCs start at 21. Feats and abilities come from the last approved sheet; there is no additional feat or bonus automatically inferred.
+
+**Wealth caution:** a remaining liquid amount of **11,755 gp, 4 sp, 3 cp** was reported after the recent Suzail shopping, while **35,543 gp** was the previously reported fortress treasury. These have not been proven to be independent balances. They are shown in separate fields and **should not be added together** until reconciled. Black onyx worth 550 gp and the Staff of Transmutation 50 charges are older itemised values and may be stale; the new Wand of Orb of Force was recorded at 50 charges upon purchase.
+
+The new character data is stored in the **same local save and JSON export** as spells, skill edits, and presets. Older version-6 local records receive a default Character Folio without overwriting existing spell preparation, favourites, skill ranks or journal. Changing one item’s equipped flag does **not** automatically update AC, spell slots, saving throws or weapon attack modifiers; adjust those base combat fields and relevant ability scores to reflect gear changes.
+
+### Remaining gaps to verify
+
+The Audit tab tracks the most important omissions. Until reconciled, the application does **not** claim these are settled:
+- Lich +4 level adjustment and the campaign's LA buyoff/XP policy; XP 71,975/78,000 is the last printed value, not necessarily today's.
+- Whether action points (seven previously noted), liquid money, fortress treasury, black onyx and equipment charges reflect the latest transactions.
+- Proper identification/ownership/location of captured scrolls, potions, ceremonial staff, breastplate and documents.
+- Full written spellbook transcription; languages and appearance/deity information; remaining weapon profiles, spell resistance (if any), armour-check penalties, and carry weight for items without recorded weights.
+- Buff durations and item/feat prerequisite interactions; the specialist Necromancy slot is advisory rather than strictly allocated to an individual tagged slot.
+- Campaign-approved skill ranks include four more points than the simple historical skill-point reconstruction; the application does not alter those ranks.
+
+### Updating health or resources
+
+Use **Character → Overview** to apply damage (subtracting temporary HP first), restore hit points or toggle combat buffs. The **Rest** button in Prepared spells restores spell readiness, Alacritous Cogitation and tracked daily powers, **but it does not automatically heal** Malzareth: undead do not benefit from ordinary positive-energy healing effects.
+
+Use **Character → Inventory** to update consumables and item charges. For component stocks such as black onyx tracked by aggregate GP value, edit the stock directly rather than subtracting one item.
+
 ## Run it locally
 
 Option A — easiest desktop preview: open `index.html` in a browser. Most features work, but the offline worker/PWA install needs a local web server or HTTPS.
@@ -98,7 +135,7 @@ Edit `data.js` to change the source lists for newly opened browsers. **Existing 
 
 ## Mobile updates and cached versions
 
-The v7 service worker uses **network-first** fetching when online, including the dice and skill modules. Previously,
+The v8 service worker uses **network-first** fetching when online, including the dice, skill and character folio modules. Previously,
 a cache-first worker could keep serving old JavaScript and default spells on an
 installed phone. An updated application now rechecks GitHub Pages when online
 and still falls back to its local cache offline.
@@ -112,7 +149,7 @@ If a phone still shows an old spell list:
    clearing website storage. On some platforms the installed app and browser
    use separate local storage.
 
-Version 6 of the saved-data format retains the Mother Cyst defaults and migrates existing
+Version 7 of the saved-data format retains the Mother Cyst defaults and migrates existing
 local saves, retaining custom spells, preparation, cast state and notes. It also migrates existing record statuses into two categories, and adds an editable DC formula and local presets.
 Existing spellbook data remains local to the browser/app that created it.
 
