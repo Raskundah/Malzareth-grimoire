@@ -32,13 +32,14 @@
       c.armorMisc+c.shieldMisc+mage+shield;
     const saves={
       fort:c.baseSaves.fort+c.saveResistance+c.saveMisc.fort,
-      ref:c.baseSaves.ref+dex+c.saveResistance+c.saveMisc.ref,
+      ref:c.baseSaves.ref+dex+c.saveResistance+c.saveMisc.ref+haste,
       will:c.baseSaves.will+wis+c.saveResistance+c.saveMisc.will
     };
     const hd=whole(sheet().identity.characterLevel,12,1,99);
     return {ac,touch,flat,saves,
-      initiative:dex+c.initiativeMisc,melee:c.bab+str+c.attackMisc,
-      ranged:c.bab+dex+c.attackMisc,grapple:c.bab+str,
+      initiative:dex+c.initiativeMisc,melee:c.bab+str+c.attackMisc+haste,
+      ranged:c.bab+dex+c.attackMisc+haste,grapple:c.bab+str,
+      speedFt:haste?Math.min(2*c.speedFt,c.speedFt+30):c.speedFt,
       lichDC:10+Math.floor(hd/2)+cha,haste,mage,shield};
   }
   function stat(label,value,note=''){
@@ -74,7 +75,7 @@
   }
   function renderCombat(){
     const sh=sheet(),c=sh.combat,x=calcCombat(),hp=c.currentHP,temp=c.tempHP;
-    $('sheet-vitals').innerHTML=`<div class="sheet-summary compact">${stat('Current HP',hp,'Max '+c.maxHP)}${stat('Temporary HP',temp)}${stat('Action points',c.actionPoints,'Last reported; verify uses')}${stat('Speed',c.speedFt+' ft.')}</div>
+    $('sheet-vitals').innerHTML=`<div class="sheet-summary compact">${stat('Current HP',hp,'Max '+c.maxHP)}${stat('Temporary HP',temp)}${stat('Action points',c.actionPoints,'Last reported; verify uses')}${stat('Speed',x.speedFt+' ft.',x.haste?'Haste active':'Base '+c.speedFt+' ft.')}</div>
       <div class="meter-track sheet-hp-meter"><div class="meter-fill" style="width:${Math.max(0,Math.min(100,c.maxHP?100*hp/c.maxHP:0))}%"></div></div>
       ${hp<=0?'<p class="sheet-warning">At 0 HP, an undead creature is destroyed under standard rules.</p>':''}`;
     $('sheet-temp-hp').value=temp;
@@ -84,6 +85,7 @@
     $('sheet-attacks').innerHTML=`<div class="sheet-summary compact">${stat('Initiative',signed(x.initiative))}${stat('BAB',signed(c.bab))}${stat('Melee touch',signed(x.melee))}${stat('Ranged touch',signed(x.ranged))}${stat('Grapple',signed(x.grapple))}${stat('Lich ability DC',x.lichDC)}</div>
       <div class="sheet-summary compact">${stat('Fortitude',signed(x.saves.fort))}${stat('Reflex',signed(x.saves.ref))}${stat('Will',signed(x.saves.will))}</div>
       <p class="muted small">Negative energy touch: 1d8+5; Will DC ${x.lichDC} halves. Paralysing touch: Fort DC ${x.lichDC}. Fear aura: Will DC ${x.lichDC} (targets below 5 HD).</p>
+      ${x.haste?'<p class="muted small">Haste active: +1 attack rolls, +1 Reflex, +1 dodge AC, +30 ft speed (max double); one extra attack with a weapon on full attack, not an extra spell.</p>':''}
       <p class="muted small">${esc(c.attackNotes)}</p>`;
     $('sheet-special-defences').innerHTML=`<p class="muted small">${esc(c.defencesNotes)}</p>
       <p class="muted small">Undead immunities include poison, sleep, paralysis, stunning, disease, death effects, critical hits, nonlethal damage, fatigue and exhaustion. No Constitution score.</p>
