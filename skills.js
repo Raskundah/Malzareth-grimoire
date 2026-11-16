@@ -111,9 +111,13 @@
     const groups=['Arcane','Knowledge','Perception','Movement','Social','Practical','Special cases'];
     $('skill-list').innerHTML=groups.map(group=>{
       const subset=[...base,...variants].filter(spec=>spec.group===group && (!query||spec.name.toLowerCase().includes(query)||spec.ability?.toLowerCase().includes(query)));
-      if(!subset.length)return '';
-      return `<section class="skill-group"><h4>${esc(group)} <span>${subset.length}</span></h4><div class="skill-group-rows">${subset.map(row).join('')}</div></section>`;
-    }).join('')+(query&&![...base,...variants,...quick].some(spec=>spec.name.toLowerCase().includes(query))?'<p class="muted">No matching skill checks.</p>':'');
+      // Speak Language is a skill, but D&D 3.5 does not use a die check for it.
+      const language=group==='Practical' && (!query||'speak language'.includes(query))
+        ? '<div class="skill-row"><div class="skill-row-info"><strong>Speak Language</strong><small>No check: languages are learned with skill points</small></div><span class="skill-noroll">No roll</span></div>'
+        : '';
+      if(!subset.length&&!language)return '';
+      return `<section class="skill-group"><h4>${esc(group)} <span>${subset.length+(language?1:0)}</span></h4><div class="skill-group-rows">${subset.map(row).join('')}${language}</div></section>`;
+    }).join('')+(query&&![...base,...variants,...quick].some(spec=>spec.name.toLowerCase().includes(query))&&!'speak language'.includes(query)?'<p class="muted">No matching skill checks.</p>':'');
   }
   function rollSkill(id){
     const skill=byId.get(id);
