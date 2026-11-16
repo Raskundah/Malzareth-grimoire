@@ -55,7 +55,10 @@
   }
   function renderIdentity(){
     const s=sheet(),id=s.identity,done=Math.max(0,id.xp),next=Math.max(done+1,id.xpNext);
-    const progress=Math.max(0,Math.min(100,(done/next)*100));
+    // Conventional 3.5 XP floor for the current class level; campaign LA
+    // buyoff ruling remains unresolved, so this is only a visual guide.
+    const previous=Math.max(0,Math.trunc((id.characterLevel-1)*id.characterLevel*500));
+    const progress=Math.max(0,Math.min(100,100*(done-previous)/Math.max(1,next-previous)));
     $('sheet-identity').innerHTML=`<div><p class="overline">${esc(id.title)} · ${esc(id.era)}</p><h3>${esc(id.name)}</h3>
       <p class="muted">${esc(id.race)} · ${esc(id.characterClass)} · ${esc(id.alignment)}</p>
       <p class="muted small">${esc(id.origin)} · ${esc(id.size)} · ${esc(id.campaign)}</p></div>
