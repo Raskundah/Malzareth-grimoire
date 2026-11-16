@@ -112,3 +112,5 @@
 @media(max-width:1000px){.skill-group-rows{grid-template-columns:1fr}}
 @media(min-width:1001px) and (max-width:1380px){.skill-group-rows{grid-template-columns:1fr}}
 @media(max-width:600px){.alacritous-controls{grid-template-columns:1fr}.skill-tools{gap:10px}.skill-situational{flex:1 1 110px}.skill-group-rows{grid-template-columns:1fr}.skill-quick{grid-template-columns:1fr}.skill-checks-card{padding:16px 12px}.skill-row{padding:10px 8px}.skill-row-info strong{font-size:13px}.skill-roll{min-width:60px}}
+
+.skill-noroll{display:inline-block;color:var(--muted);font-size:11px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;white-space:nowrap}
