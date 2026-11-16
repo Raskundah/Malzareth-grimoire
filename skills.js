@@ -86,6 +86,20 @@
     const over=localOverride||s.skillOverrides?.[skill.id]||{};
     const ranks=Number.isFinite(Number(over.ranks))?Number(over.ranks):skill.ranks;
     const extra=Number.isFinite(Number(over.extra))?Number(over.extra):0;
+    // Combat quick checks come from the live Character Folio rather than
+    // remaining stuck on the original printed saving throws.
+    const c=s.sheet?.combat;
+    if(c && skill.group==='Quick checks'){
+      const dex=mod(abilityScore('DEX',s)),wis=mod(abilityScore('WIS',s));
+      const haste=c.buffs?.haste?1:0;
+      const numbers={
+        'initiative':dex+c.initiativeMisc,
+        'fortitude-save':c.baseSaves.fort+c.saveResistance+c.saveMisc.fort,
+        'reflex-save':c.baseSaves.ref+dex+c.saveResistance+c.saveMisc.ref+haste,
+        'will-save':c.baseSaves.will+wis+c.saveResistance+c.saveMisc.will
+      };
+      return {bonus:(numbers[skill.id]??skill.total)+extra,ranks:0,extra,trainedOnly:false,canRoll:true};
+    }
     const delta=skill.ability
       ? mod(abilityScore(skill.ability,s))-mod(BASE_ABILITIES[skill.ability])
       : 0;
