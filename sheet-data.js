@@ -27,7 +27,7 @@ const baseline={
  combat:{
    maxHP:95,currentHP:95,tempHP:0,damageNotes:'',speedFt:30,
    bab:5,baseSaves:{fort:3,ref:3,will:9},saveMisc:{fort:0,ref:0,will:0},
-   naturalArmor:5,enhanceNatural:2,deflection:3,armorMisc:0,shieldMisc:0,
+   naturalArmor:5,enhanceNatural:2,deflection:3,armorMisc:0,shieldMisc:0,saveResistance:3,
    initiativeMisc:4,attackMisc:0,actionPoints:7,
    buffs:{greaterMageArmor:false,shield:false,haste:false},
    conditions:'',attackNotes:'Lich touch: negative energy 1d8+5; DC calculated using HD + Charisma.',
@@ -87,6 +87,7 @@ const baseline={
    feature('esoterica-moderate','Moderate school esoterica','Master Specialist','When casting Necromancy, temporary immunity to ability damage/drain, energy drain and negative levels for rounds equal to spell level.'),
    feature('expanded-spellbook','Expanded spellbook','Master Specialist','At class levels 2 and 5, add an extra spell of the specialty school.')
  ],
+ resolvedAudit:[],
  audit:[
    'Latest experience needs checking after recent events: 71,975 / 78,000 is from the last PDF.',
    'Lich +4 level adjustment and the campaign XP/LA-buyoff arrangement require an explicit ruling.',
@@ -124,7 +125,7 @@ function normalize(input){
  for(const k of ['name','title','campaign','era','race','characterClass','alignment','origin','size','languages','description','deity','playerNotes','xpNote'])
    original.identity[k]=str(id[k],original.identity[k],k==='playerNotes'?2000:450);
  for(const k of ['characterLevel','xp','xpNext'])original.identity[k]=n(id[k],original.identity[k],0,999999999);
- for(const k of ['maxHP','currentHP','tempHP','speedFt','bab','naturalArmor','enhanceNatural','deflection','armorMisc','shieldMisc','initiativeMisc','attackMisc','actionPoints'])
+ for(const k of ['maxHP','currentHP','tempHP','speedFt','bab','naturalArmor','enhanceNatural','deflection','armorMisc','shieldMisc','saveResistance','initiativeMisc','attackMisc','actionPoints'])
    original.combat[k]=n(c[k],original.combat[k],k==='currentHP'?-999:-200,100000);
  for(const k of ['damageNotes','conditions','attackNotes','defencesNotes','actionNote'])original.combat[k]=str(c[k],original.combat[k],2000);
  for(const k of ['fort','ref','will']){
@@ -138,6 +139,7 @@ function normalize(input){
  original.feats=updateList(baseline.feats,input.feats,null,150,'feats');
  original.features=updateList(baseline.features,input.features,null,150,'features');
  original.audit=Array.isArray(input.audit)?input.audit.slice(0,30).map(x=>str(x,'',550)).filter(Boolean):clone(baseline.audit);
+ original.resolvedAudit=Array.isArray(input.resolvedAudit)?input.resolvedAudit.slice(0,50).map(x=>str(x,'',550)):[];
  return original;
 }
 window.SHEET_MODEL={createDefault:()=>clone(baseline),normalize};
