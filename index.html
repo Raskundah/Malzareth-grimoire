@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#151320">
+  <meta name="description" content="The Ashen Crown — an offline spellbook and daily preparation ledger for Malzareth Vhane.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Malzareth">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="./data.js"></script>
+  <script defer src="./app.js"></script>
+  <title>Malzareth's Grimoire · The Ashen Crown</title>
+</head>
+<body>
+  <div class="ambience" aria-hidden="true"></div>
+  <div id="app" class="app-shell">
+    <header class="site-header">
+      <div class="brand-lockup"><div class="sigil" aria-hidden="true">✶</div><div><p class="overline">THE ASHEN CROWN</p><h1>Malzareth's <em>Grimoire</em></h1></div></div>
+      <div class="header-side"><span class="edition">1373 DR · PERSONAL LEDGER</span><button class="btn btn-small btn-outline" id="header-add" type="button">＋ <span>Add a spell</span></button></div>
+    </header>
+
+    <section class="hero" aria-label="Character profile">
+      <div><p class="eyebrow">THE SEVENTH KEEPER <span class="hero-line"></span> LESSER TIEFLING LICH</p>
+        <h2>Knowledge is <em>immortality.</em></h2><p class="hero-desc">A living record of incantations, secrets and spells awaiting their hour.</p>
+        <div class="character-stats"><span>WIZARD 5 / MASTER SPECIALIST 7</span><span>INT <b>30</b></span><span>CL <b>12</b> · NECRO <b>13</b></span></div>
+      </div>
+      <div class="hero-glyph" aria-hidden="true"><svg viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="110" cy="110" r="87" stroke="currentColor" opacity=".22"/><circle cx="110" cy="110" r="68" stroke="currentColor" opacity=".48" stroke-dasharray="2 9"/><path d="M110 20 L199 110 L110 199 L20 110 Z" stroke="currentColor" opacity=".38"/><path d="M110 46 L164 164 L56 164 Z" stroke="currentColor"/><path d="M110 173 L56 56 L164 56 Z" stroke="currentColor"/><circle cx="110" cy="110" r="18" stroke="currentColor"/><circle cx="110" cy="110" r="5" fill="currentColor"/></svg></div>
+    </section>
+
+    <section class="status-grid" aria-label="Spellbook summary"><article class="stat-card"><p>KNOWN & RECORDED</p><strong id="stat-spells">54</strong><span>across seven circles</span></article><article class="stat-card"><p>PREPARATION</p><strong id="stat-prep">0 / 45</strong><span>slots assigned</span></article><article class="stat-card"><p>CAST TODAY</p><strong id="stat-cast">0</strong><span>expended spell slots</span></article><article class="stat-card"><p>NECROMANCY DC</p><strong id="stat-dc">28</strong><span>6th-level spell save</span></article></section>
+
+    <div class="main-grid">
+      <aside class="sidebar">
+        <nav class="nav-list" aria-label="Primary navigation">
+          <button class="nav-item active" data-view="library" type="button"><span class="nav-symbol">▤</span> Spellbook <span class="nav-arrow">›</span></button>
+          <button class="nav-item" data-view="prepared" type="button"><span class="nav-symbol">✧</span> Prepared spells <span class="nav-arrow">›</span></button>
+          <button class="nav-item" data-view="journal" type="button"><span class="nav-symbol">◈</span> Archivist's notes <span class="nav-arrow">›</span></button>
+        </nav>
+        <div class="sidebar-bottom"><p class="overline">SPELLCRAFT</p><div class="dc-row"><span>Standard spell DC</span><b>20 + spell level</b></div><div class="dc-row"><span>Necromancy DC</span><b>22 + spell level</b></div><div class="sidebar-tip">✦ <span>Changes are saved to this browser, not uploaded anywhere. Export a backup before changing phones.</span></div></div>
+      </aside>
+
+      <main id="main-content" tabindex="-1">
+        <section id="view-library" class="view" aria-labelledby="library-title">
+          <div class="section-header"><div><p class="eyebrow">THE ARCHIVE</p><h2 id="library-title">Spell <em>Codex</em></h2><p class="muted">Search every incantation in Malzareth's collection.</p></div><button class="btn btn-accent" type="button" id="add-spell">＋ New spell</button></div>
+          <div class="tool-strip"><label class="search-wrap"><span aria-hidden="true">⌕</span><input type="search" id="search" placeholder="Search spells, descriptions, notes…" aria-label="Search spells" autocomplete="off"></label><select id="status-filter" aria-label="Filter by record status"><option value="all">All record statuses</option><option value="confirmed">Confirmed spellbook</option><option value="recorded">Later preparation</option><option value="cyst">Mother Cyst</option><option value="custom">My additions</option></select></div>
+          <div id="level-filters" class="filter-row" role="group" aria-label="Filter by spell level"></div>
+          <div class="listing-meta"><span id="result-count">0 spells</span><label class="checkbox-label"><input id="only-faves" type="checkbox"> Favourites only</label></div>
+          <div id="spell-list" class="spell-list"></div>
+        </section>
+
+        <section id="view-prepared" class="view" hidden aria-labelledby="prepared-title">
+          <div class="section-header"><div><p class="eyebrow">DAILY RITUALS</p><h2 id="prepared-title">Prepared <em>Spells</em></h2><p class="muted">Assign slots, mark spells expended, and restore them after rest.</p></div><button class="btn btn-outline" id="reset-casts" type="button">↺ Restore casts</button></div>
+          <div class="notice"><span>✧</span><span>Initial entries reproduce the <b>last recorded preparation</b>, not necessarily today's remaining spells. Open 6th-level slots include one intended for <b>Alacritous Cogitation</b>.</span></div>
+          <div class="prep-toolbar"><button class="btn btn-outline" id="load-recorded-prep" type="button">✧ Load last recorded preparation</button><button class="btn btn-danger" id="clear-prep" type="button">Clear all slots</button></div><div id="preparation-list" class="preparation-list"></div>
+        </section>
+
+        <section id="view-journal" class="view" hidden aria-labelledby="journal-title">
+          <div class="section-header"><div><p class="eyebrow">THE PRIVATE ARCHIVE</p><h2 id="journal-title">Archivist's <em>Notes</em></h2><p class="muted">A personal record of acquisitions, rituals and research.</p></div></div>
+          <div class="journal-card"><label for="journal-notes" class="field-label">Your campaign notes</label><textarea id="journal-notes" rows="10" placeholder="Research to pursue… spells learned from scrolls… who sold me what…"></textarea><p class="muted small">Notes save automatically in this browser.</p></div>
+          <div class="settings-card"><h3>Spellcasting settings</h3><p class="muted small">Adjust daily slot totals if Malzareth levels up or gains a temporary effect.</p><div id="slot-controls" class="slot-controls"></div></div>
+          <div class="settings-card"><h3>Save or transfer your grimoire</h3><p class="muted small">Your personal edits, preparation and cast history are stored locally on this device. Export a JSON backup to move between phone and PC.</p><div class="button-row"><button id="export-data" class="btn btn-accent" type="button">↓ Export backup</button><button id="import-data" class="btn btn-outline" type="button">↑ Import backup</button><input id="import-file" type="file" accept="application/json,.json" hidden></div><div class="divider"></div><button id="restore-defaults" class="btn btn-danger" type="button">Reset to campaign starting record</button></div>
+          <div class="reference-card"><p class="overline">ARCHIVIST'S NOTE</p><p><b>Record quality matters.</b> The original 44 spells are explicitly listed in the level-11 spellbook. Six appear in later post-lich preparations and four more are from the Mother Cyst family. The latter ten have not been individually verified as physically transcribed into his spellbook.</p><p>Removed from the active record: <i>Vampiric Touch</i> and <i>Ray of Exhaustion</i>. Spells on wands and staffs do not automatically count as learned.</p></div>
+        </section>
+      </main>
+    </div>
+    <footer class="footer"><span>THE ASHEN CROWN · PRIVATE CAMPAIGN TOOL</span><span>No account · No tracking · Offline-ready</span></footer>
+  </div>
+
+  <nav class="mobile-nav" aria-label="Mobile navigation"><button data-view="library" class="active" type="button"><span>▤</span>Spellbook</button><button data-view="prepared" type="button"><span>✧</span>Prepared</button><button data-view="journal" type="button"><span>◈</span>Notes &amp; data</button></nav>
+
+  <dialog id="spell-dialog" class="spell-dialog" aria-labelledby="dialog-title"><form id="spell-form" method="dialog" novalidate>
+    <div class="dialog-top"><div><p class="eyebrow">SPELL RECORD</p><h2 id="dialog-title">Inscription</h2></div><button class="icon-button" id="dialog-close" type="button" aria-label="Close">✕</button></div>
+    <div class="dialog-body"><input id="edit-id" type="hidden"><div class="form-grid"><label class="form-field full">Spell name<input id="spell-name" maxlength="100" required placeholder="Name of the spell"></label><label class="form-field">Spell level<select id="spell-level"><option value="0">0 · Cantrip</option><option value="1">1st circle</option><option value="2">2nd circle</option><option value="3">3rd circle</option><option value="4">4th circle</option><option value="5">5th circle</option><option value="6">6th circle</option><option value="7">7th circle</option><option value="8">8th circle</option><option value="9">9th circle</option></select></label><label class="form-field">School<select id="spell-school"><option value="">Unverified / unspecified</option><option>Abjuration</option><option>Conjuration</option><option>Divination</option><option>Enchantment</option><option>Evocation</option><option>Illusion</option><option>Necromancy</option><option>Transmutation</option><option>Universal</option></select></label><label class="form-field">Record status<select id="spell-status"><option value="confirmed">Confirmed in spellbook</option><option value="recorded">Recorded in preparation</option><option value="cyst">Mother Cyst / transcribe status unknown</option><option value="custom">My addition</option></select></label><label class="form-field">Source / book<input id="spell-source" maxlength="120" placeholder="Spell Compendium, scroll, etc."></label><label class="form-field">Casting time<input id="spell-casting" maxlength="140" placeholder="1 standard action"></label><label class="form-field">Components<input id="spell-components" maxlength="140" placeholder="V, S, M…"></label><label class="form-field">Range / area<input id="spell-range" maxlength="200"></label><label class="form-field">Duration<input id="spell-duration" maxlength="200"></label><label class="form-field full">Saving throw / SR<input id="spell-save" maxlength="200"></label><label class="form-field full">Spell effect / quick reference<textarea id="spell-description" rows="4" maxlength="4000" placeholder="Your own notes on the rules, effects and uses…"></textarea></label><label class="form-field full">Personal notes<textarea id="spell-notes" rows="3" maxlength="4000" placeholder="How it was learned, preferred tactics, special reminders…"></textarea></label><label class="checkbox-label full"><input type="checkbox" id="spell-favorite"> Mark as favourite</label></div></div>
+    <div class="dialog-actions"><button id="delete-spell" class="btn btn-danger" type="button">Delete</button><span class="dialog-spacer"></span><button id="cancel-spell" class="btn btn-outline" type="button">Cancel</button><button id="save-spell" class="btn btn-accent" type="submit">Save spell</button></div>
+  </form></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
