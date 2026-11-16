@@ -58,3 +58,20 @@
   .dice-fields input,.dice-fields select{padding:7px 6px}
   .preset-save .btn,.preset-load .btn{flex:1 1 auto}
 }
+
+/* Automatic D&D 3.5 spell slot calculator */
+.slot-auto-toggle{display:flex;align-items:center;gap:10px;border:1px solid rgba(228,187,122,.3);background:rgba(228,187,122,.06);border-radius:11px;padding:12px 14px;color:var(--gold);font-size:13px;font-weight:700;margin:12px 0}
+.slot-auto-toggle input{width:18px;height:18px;accent-color:var(--gold);flex:0 0 auto}
+.slot-breakdown{margin:13px 0 16px;max-width:100%}
+.slot-breakdown details{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.slot-breakdown summary{cursor:pointer;padding:11px 13px;background:var(--surface-2);font-size:12px;color:var(--gold);font-weight:700}
+.slot-breakdown .small{margin:7px 1px 0}
+.slot-table-wrap{overflow-x:auto;max-width:100%}
+.slot-table{width:100%;border-collapse:collapse;font-size:12px;text-align:center}
+.slot-table th,.slot-table td{padding:7px 10px;border-top:1px solid var(--line)}
+.slot-table th:first-child,.slot-table td:first-child{text-align:left}
+.slot-table th{font-weight:700;color:var(--muted)}
+.slot-table strong{color:var(--gold)}
+.slot-table .highlight-level{background:rgba(228,187,122,.08)}
+#manual-slot-section:not([hidden]){margin-top:12px}
+@media(max-width:600px){.slot-table th,.slot-table td{padding:6px 7px;font-size:11px}.casting-settings{gap:10px}.casting-settings label{flex:1 1 42%}.casting-settings input{width:100%;min-width:0}}
