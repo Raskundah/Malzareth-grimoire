@@ -3,6 +3,8 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
+  const DATA_VERSION = 2;
+  const NEW_CYST_NAMES = new Set(['Necrotic Awareness','Necrotic Burst','Necrotic Eruption','Necrotic Tumor','Necrotic Empowerment','Necrotic Termination']);
   const defaults = window.STARTER_SPELLS || [];
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
@@ -18,7 +20,7 @@
       const spell = spells.find(s => s.name === name && s.level === Number(level));
       if(spell) prepared.push({id: uid(), spellId: spell.id, used:false});
     }));
-    return {version:1,spells,prepared,slots:[...(window.DEFAULT_SLOTS||[5,8,8,7,6,6,5]),0,0,0],journal:'',lastSaved:new Date().toISOString()};
+    return {version:DATA_VERSION,spells,prepared,slots:[...(window.DEFAULT_SLOTS||[5,8,8,7,6,6,5]),0,0,0],journal:'',lastSaved:new Date().toISOString()};
   };
   const normalizeSpell = (s) => {
     const allowedStatus=['confirmed','recorded','cyst','custom'];
@@ -34,6 +36,17 @@
     if(!input || !Array.isArray(input.spells) || !Array.isArray(input.prepared)) throw new Error('Not a valid grimoire backup.');
     if(input.spells.length>2500 || input.prepared.length>1000) throw new Error('Backup is too large.');
     const spells = input.spells.map(normalizeSpell).filter(s=>s.name);
+    // Non-destructive one-time migration: give existing v1 browsers the six
+    // newly catalogued Mother Cyst spells without touching their edits, slots,
+    // prepared spells, favourites, or journal. Don't revive prior v1 deletions.
+    if ((Number(input.version) || 1) < DATA_VERSION) {
+      for (const starter of defaults) {
+        if (starter.status !== 'cyst' || !NEW_CYST_NAMES.has(starter.name)) continue;
+        if (!spells.some(s => s.level === starter.level && s.name.toLowerCase() === starter.name.toLowerCase())) {
+          spells.push(structuredClone(starter));
+        }
+      }
+    }
     const ids = new Set();
     for(const s of spells){if(ids.has(s.id)) s.id=uid(); ids.add(s.id);}
     const prepared = input.prepared.filter(p=>p && ids.has(p.spellId)).map(p=>({id:uid(),spellId:String(p.spellId),used:!!p.used}));
@@ -44,9 +57,22 @@
       const count = prepared.filter(p=>spells.find(s=>s.id===p.spellId)?.level===l).length;
       if(count>slots[l]) slots[l]=count;
     }
-    return {version:1,spells,prepared,slots,journal:String(input.journal??'').slice(0,100000),lastSaved:new Date().toISOString()};
+    return {version:DATA_VERSION,spells,prepared,slots,journal:String(input.journal??'').slice(0,100000),lastSaved:new Date().toISOString()};
   };
-  const load = () => {try{const raw=localStorage.getItem(STORAGE_KEY);return raw?normalizeData(JSON.parse(raw)):stateFactory();}catch(e){console.warn('Unable to load local save',e);return stateFactory();}};
+  const load = () => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return stateFactory();
+      const previous = JSON.parse(raw);
+      const next = normalizeData(previous);
+      if ((Number(previous.version) || 1) < DATA_VERSION) {
+        // Persist the migration once so intentional later deletions are kept.
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
+        catch(e) { console.warn('Unable to persist Mother Cyst migration', e); }
+      }
+      return next;
+    } catch(e) { console.warn('Unable to load local save', e); return stateFactory(); }
+  };
   let state=load();
   let levelFilter='all';
   let view='library';
