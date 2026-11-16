@@ -303,8 +303,8 @@
     const existing=state.presets.find(p=>p.name.toLowerCase()===name.toLowerCase());
     if(existing&&!confirm(`Overwrite existing preset “${existing.name}”?`))return;
     if(!existing&&state.presets.length>=40){toast('Maximum of 40 presets reached.');return;}
-    if(existing)existing.entries=entries;
-    else state.presets.push({id:uid(),name:name.slice(0,60),entries});
+    if(existing){existing.entries=entries;existing.cogitationLevel=state.cogitation.level;}
+    else state.presets.push({id:uid(),name:name.slice(0,60),entries,cogitationLevel:state.cogitation.level});
     persist();renderPresets();
     $('#preset-select').value=existing?.id||state.presets.at(-1).id;
     input.value='';toast(`Saved “${name}” preset.`);
@@ -317,9 +317,18 @@
     if(!preset)return;
     if(!confirm(`Replace today's prepared spells with “${preset.name}”?`))return;
     const next=[];let skipped=0;
+    const priorCogitation=state.cogitation;
+    if(preset.cogitationLevel!==undefined){
+      const level=preset.cogitationLevel;
+      state.cogitation={
+        level:level!==null && state.slots[level]>0?level:null,
+        used:false,spellId:null
+      };
+      if(level!==null && state.cogitation.level===null)skipped++;
+    }else state.cogitation={...priorCogitation,used:false,spellId:null};
     for(const entry of preset.entries){
       const spell=state.spells.find(s=>s.name===entry.name&&s.level===entry.level);
-      if(!spell||next.filter(p=>state.spells.find(s=>s.id===p.spellId)?.level===entry.level).length>=state.slots[entry.level]){skipped++;continue;}
+      if(!spell||next.filter(p=>state.spells.find(s=>s.id===p.spellId)?.level===entry.level).length>=prepLimit(entry.level)){skipped++;continue;}
       next.push({id:uid(),spellId:spell.id,used:false});
     }
     state.prepared=next;persist();render();
@@ -337,7 +346,7 @@
     if(state.autoSlots) state.slots=[...calcSlots(state.intelligence,state.spellcastingLevel).totals];
   }
   function overPreparedTotal(){
-    return state.slots.reduce((sum,slots,l)=>sum+Math.max(0,currentCount(l)-slots),0);
+    return state.slots.reduce((sum,slots,l)=>sum+Math.max(0,currentCount(l)+cogitationOccupies(l)-slots),0);
   }
   function renderSlotControls(){
     $('#intelligence-score').value=state.intelligence;
@@ -393,7 +402,7 @@
     });
     if(previous){
       const currentPrepared=state.prepared.filter(p=>p.spellId===previous.id).length;
-      if(currentPrepared && previous.level!==data.level && currentCount(data.level)+currentPrepared>state.slots[data.level]){
+      if(currentPrepared && previous.level!==data.level && currentCount(data.level)+currentPrepared>prepLimit(data.level)){
         toast('Clear some prepared spells or increase available slots before changing this spell level.');return;
       }
       state.spells[state.spells.indexOf(previous)]=data;
@@ -406,22 +415,28 @@
     if(!confirm(`Delete “${s.name}” from the spellbook and remove its prepared slots?`))return;
     state.spells=state.spells.filter(s=>s.id!==id);
     state.prepared=state.prepared.filter(p=>p.spellId!==id);
+    if(state.cogitation.spellId===id)state.cogitation.spellId=null;
     persist();closeEditor();render();toast('Spell deleted.');
   }
   function resetCasts(){
-    state.prepared.forEach(p=>p.used=false);persist();render();toast('Rest complete — prepared spells restored.');
+    state.prepared.forEach(p=>p.used=false);
+    state.cogitation.used=false;
+    state.cogitation.spellId=null;
+    persist();render();toast('Rest complete — prepared spells and Alacritous Cogitation refreshed.');
   }
   function clearPrepared(){
     if(!confirm('Clear every prepared spell slot? Your spellbook itself will be unchanged.'))return;
-    state.prepared=[];persist();render();toast('Preparation cleared.');
+    state.prepared=[];persist();render();toast('Prepared spells cleared; any reserved Alacritous Cogitation slot remains reserved.');
   }
   function loadRecordedPreparation(){
     if(!confirm('Replace current preparation with the last recorded campaign snapshot? Cast tracking will reset.'))return;
     const next=[];
+    // Campaign snapshot reserved one 6th-level open slot for this feat.
+    state.cogitation={level:state.slots[6]>0?6:null,used:false,spellId:null};
     for(const [level,names] of Object.entries(window.STARTER_PREPARATION||{})){
       for(const name of names){
         const spell=state.spells.find(s=>s.name===name && s.level===Number(level));
-        if(spell && next.filter(p=>state.spells.find(s=>s.id===p.spellId)?.level===Number(level)).length<state.slots[Number(level)]) next.push({id:uid(),spellId:spell.id,used:false});
+        if(spell && next.filter(p=>state.spells.find(s=>s.id===p.spellId)?.level===Number(level)).length<prepLimit(Number(level))) next.push({id:uid(),spellId:spell.id,used:false});
       }
     }
     state.prepared=next;persist();render();toast('Last recorded preparation loaded.');
@@ -507,7 +522,7 @@
       ? [...calcSlots(state.intelligence,state.spellcastingLevel).totals]
       : [...state.manualSlots];
     if(!state.autoSlots){
-      for(let l=0;l<=MAX_LEVEL;l++)state.slots[l]=Math.max(state.slots[l],currentCount(l));
+      for(let l=0;l<=MAX_LEVEL;l++)state.slots[l]=Math.max(state.slots[l],currentCount(l)+cogitationOccupies(l));
       state.manualSlots=[...state.slots];
     }
     persist();render();
@@ -521,7 +536,7 @@
     if(!e.target.matches('[data-slot-level]'))return;
     const level=Number(e.target.dataset.slotLevel);
     const next=Math.max(0,Math.min(50,Math.trunc(Number(e.target.value)||0)));
-    if(next<currentCount(level)){toast(`Remove prepared spells before reducing below ${currentCount(level)} slots.`);renderSlotControls();return;}
+    if(next<currentCount(level)+cogitationOccupies(level)){toast(`Remove prepared spells or the feat reservation before reducing below ${currentCount(level)+cogitationOccupies(level)} slots.`);renderSlotControls();return;}
     state.slots[level]=next;state.manualSlots=[...state.slots];persist();render();
   });
   document.addEventListener('keydown',event=>{
