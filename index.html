@@ -16,6 +16,7 @@
   <script defer src="./slots.js"></script>
   <script defer src="./app.js"></script>
   <script defer src="./dice.js"></script>
+  <script defer src="./skills.js"></script>
   <title>Malzareth's Grimoire · The Ashen Crown</title>
 </head>
 <body>
@@ -58,7 +59,16 @@
 
         <section id="view-prepared" class="view" hidden aria-labelledby="prepared-title">
           <div class="section-header"><div><p class="eyebrow">DAILY RITUALS</p><h2 id="prepared-title">Prepared <em>Spells</em></h2><p class="muted">Assign slots, mark spells expended, and restore them after rest.</p></div><button class="btn btn-outline" id="reset-casts" type="button">☾ Rest · restore spells</button></div>
-          <div class="notice"><span>✧</span><span>Initial entries reproduce the <b>last recorded preparation</b>, not necessarily today's remaining spells. Open 6th-level slots include one intended for <b>Alacritous Cogitation</b>.</span></div>
+          <div class="notice"><span>✧</span><span>Initial entries reproduce the <b>last recorded preparation</b>, not necessarily today's remaining spells. You can reserve one open slot for <b>Alacritous Cogitation</b>, at a spell level of your choice.</span></div>
+          <section class="settings-card alacritous-card" aria-labelledby="alacritous-heading">
+            <div class="feat-title"><div><p class="eyebrow">ONCE PER DAY · COMPLETE MAGE</p><h3 id="alacritous-heading">✧ Alacritous Cogitation</h3></div><span class="feat-status" id="alacritous-status">Ready</span></div>
+            <p class="muted small">Reserve one <strong>unprepared arcane slot</strong>. Once per day, use it to cast a known spell of the slot's level or lower as a full-round action. The reserved slot cannot also hold a prepared spell.</p>
+            <div class="alacritous-controls">
+              <label>Reserve a slot<select id="alacritous-level" aria-label="Level of reserved Alacritous Cogitation slot"><option value="">No reservation</option></select></label>
+              <label>Spell to cast<select id="alacritous-spell" aria-label="Choose a known spell to cast with Alacritous Cogitation"><option value="">Choose a spell…</option></select></label>
+            </div>
+            <div class="button-row"><button class="btn btn-accent" id="alacritous-cast" type="button">✧ Cast with feat</button><span class="muted small" id="alacritous-hint">Reserve an open slot to use the feat.</span></div>
+          </section>
           <div class="prep-toolbar"><button class="btn btn-danger" id="clear-prep" type="button">× Unprepare all</button></div>
           <div class="settings-card preset-manager">
             <h3>Preparation presets</h3>
@@ -83,6 +93,13 @@
               <p class="muted small">The 3D animation is a visual effect. Results use your device's secure random-number generator.</p>
             </div>
           </div>
+          <section class="settings-card skill-checks-card" aria-labelledby="skill-checks-title">
+            <div class="skill-heading"><div><p class="eyebrow">MALZARETH'S CHARACTER SHEET</p><h3 id="skill-checks-title">Skills &amp; quick checks</h3><p class="muted small">One-tap d20 checks based on the latest post-lich skill ledger. Intelligence changes automatically update INT-based checks.</p></div></div>
+            <div class="skill-tools"><label class="search-wrap"><span aria-hidden="true">⌕</span><input type="search" id="skill-search" placeholder="Search skills, Knowledge, saves…" aria-label="Search skills"></label><label class="skill-situational">Situational bonus <input id="skill-situational" type="number" value="0" min="-100" max="100" aria-label="Extra situational modifier for skill checks"></label></div>
+            <div class="skill-quick" id="skill-quick-rolls" aria-label="Initiative and saving throw shortcuts"></div>
+            <div id="skill-list" class="skill-check-list"></div>
+            <p class="muted small">Tap a skill to roll it. Use the pencil to adjust ranks or miscellaneous bonuses after levelling, acquiring items or receiving buffs. Trained-only skills without ranks are marked unavailable.</p>
+          </section>
         </section>
 
         <section id="view-journal" class="view" hidden aria-labelledby="journal-title">
@@ -95,6 +112,9 @@
             <label>Necromancy DC bonus<input id="necro-bonus" type="number" min="0" max="20" value="2"></label>
           </div>
           <p class="muted small">Wizard 5 + Master Specialist 7 = spellcasting level 12. This controls spell slots, not additional bonuses to caster level. Necromancy DC bonus 2 reflects Spell Focus and Greater Spell Focus.</p>
+          <div class="skill-abilities"><h4>Skill check ability scores</h4><p class="muted small">Used for the Dice tab; Intelligence is set above. Current values are from Malzareth's post-lich sheet.</p>
+            <div class="casting-settings"><label>Strength<input id="ability-str" type="number" min="1" max="99" value="10"></label><label>Dexterity<input id="ability-dex" type="number" min="1" max="99" value="17"></label><label>Wisdom<input id="ability-wis" type="number" min="1" max="99" value="12"></label><label>Charisma<input id="ability-cha" type="number" min="1" max="99" value="20"></label></div>
+          </div>
           <label class="slot-auto-toggle"><input id="auto-slot-calc" type="checkbox" checked> Automatically calculate spell slots (D&amp;D 3.5)</label>
           <p class="muted small">Daily slots = base wizard progression + Intelligence bonus + one Necromancy specialist slot at each available level.</p>
           <div id="slot-breakdown" class="slot-breakdown" aria-live="polite"></div>
@@ -114,6 +134,21 @@
     <div class="dialog-body"><input id="edit-id" type="hidden"><div class="form-grid"><label class="form-field full">Spell name<input id="spell-name" maxlength="100" required placeholder="Name of the spell"></label><label class="form-field">Spell level<select id="spell-level"><option value="0">0 · Cantrip</option><option value="1">1st circle</option><option value="2">2nd circle</option><option value="3">3rd circle</option><option value="4">4th circle</option><option value="5">5th circle</option><option value="6">6th circle</option><option value="7">7th circle</option><option value="8">8th circle</option><option value="9">9th circle</option></select></label><label class="form-field">School<select id="spell-school"><option value="">Unverified / unspecified</option><option>Abjuration</option><option>Conjuration</option><option>Divination</option><option>Enchantment</option><option>Evocation</option><option>Illusion</option><option>Necromancy</option><option>Transmutation</option><option>Universal</option></select></label><label class="form-field">Category<select id="spell-status"><option value="spellbook">Spellbook</option><option value="cyst">Mother Cyst</option></select></label><div class="spell-dc-preview full" id="spell-dc-preview" aria-live="polite">Save DC —</div><label class="form-field">Source / book<input id="spell-source" maxlength="120" placeholder="Spell Compendium, scroll, etc."></label><label class="form-field">Casting time<input id="spell-casting" maxlength="140" placeholder="1 standard action"></label><label class="form-field">Components<input id="spell-components" maxlength="140" placeholder="V, S, M…"></label><label class="form-field">Range / area<input id="spell-range" maxlength="200"></label><label class="form-field">Duration<input id="spell-duration" maxlength="200"></label><label class="form-field full">Saving throw / SR<input id="spell-save" maxlength="200"></label><label class="form-field full">Spell effect / quick reference<textarea id="spell-description" rows="4" maxlength="4000" placeholder="Your own notes on the rules, effects and uses…"></textarea></label><label class="form-field full">Personal notes<textarea id="spell-notes" rows="3" maxlength="4000" placeholder="How it was learned, preferred tactics, special reminders…"></textarea></label><label class="checkbox-label full"><input type="checkbox" id="spell-favorite"> Mark as favourite</label></div></div>
     <div class="dialog-actions"><button id="delete-spell" class="btn btn-danger" type="button">Delete</button><span class="dialog-spacer"></span><button id="cancel-spell" class="btn btn-outline" type="button">Cancel</button><button id="save-spell" class="btn btn-accent" type="submit">Save spell</button></div>
   </form></dialog>
+  <dialog id="skill-dialog" class="spell-dialog" aria-labelledby="skill-dialog-title">
+    <form id="skill-form" method="dialog">
+      <div class="dialog-top"><div><p class="eyebrow">SKILL ADVANCEMENT</p><h2 id="skill-dialog-title">Edit skill</h2></div><button type="button" class="icon-button" id="skill-dialog-close" aria-label="Close">✕</button></div>
+      <div class="dialog-body">
+        <input type="hidden" id="skill-edit-id">
+        <p class="muted small" id="skill-editor-description"></p>
+        <div class="form-grid">
+          <label class="form-field">Skill ranks<input type="number" id="skill-edit-ranks" min="0" max="60" step="1"></label>
+          <label class="form-field">Extra / item modifier<input type="number" id="skill-edit-extra" min="-100" max="100" step="1"></label>
+        </div>
+        <p class="muted small" id="skill-editor-total"></p>
+      </div>
+      <div class="dialog-actions"><button type="button" class="btn btn-outline" id="skill-edit-reset">Reset skill</button><span class="dialog-spacer"></span><button type="button" class="btn btn-outline" id="skill-edit-cancel">Cancel</button><button class="btn btn-accent" type="submit">Save changes</button></div>
+    </form>
+  </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
