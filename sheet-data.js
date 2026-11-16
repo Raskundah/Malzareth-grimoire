@@ -95,7 +95,10 @@ const baseline={
    'Action-point uses since the last sheet are not fully itemised; 7 is a historical value.',
    'Black onyx balance and staff/wand charges should be updated after each expenditure.',
    'Unidentified captured gear, potions, scrolls and documents need appraisal or identification.',
-   'Complete spellbook transcription, prohibited-school exceptions, language list, carrying load and other situational modifiers are not fully audited.'
+   'Complete spellbook transcription, prohibited-school exceptions, language list, carrying load and other situational modifiers are not fully audited.',
+   'Equipping or removing a magic item does not automatically change attack, AC or save modifiers. Update combat adjustments when equipment changes.',
+   'Specific weapon attack profiles, spell resistance (if any), armour-check penalties, exact encumbrance thresholds and temporary buff durations are not fully recorded.',
+   'Four skill points over the simple historical allocation remain approved by the campaign; keep the rank ledger and note the house rule.'
  ]
 };
 const clone = value=>JSON.parse(JSON.stringify(value));
