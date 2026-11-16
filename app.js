@@ -242,6 +242,8 @@
     return state.slots.reduce((sum,slots,l)=>sum+Math.max(0,currentCount(l)-slots),0);
   }
   function renderSlotControls(){
+    $('#intelligence-score').value=state.intelligence;
+    $('#necro-bonus').value=state.necroBonus;
     $('#auto-slot-calc').checked=state.autoSlots;
     $('#wizard-spell-level').value=state.spellcastingLevel;
     $('#manual-slot-section').hidden=state.autoSlots;
