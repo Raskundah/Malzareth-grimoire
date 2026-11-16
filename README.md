@@ -3,9 +3,12 @@
 A small, offline-ready, mobile-first D&D 3.5 spellbook built with **plain HTML, CSS and JavaScript**. There are no libraries, accounts, logins or build tools.
 
 ## Features
-- Reconstructed campaign spell ledger: 44 original confirmed entries, 6 from subsequent post-lich preparation, and 10 from the Mother Cyst spell family.
+- Reconstructed campaign spell ledger: 44 original entries, 6 from later post-lich preparation, and all 10 Mother Cyst spells. Two simple categories: Spellbook and Mother Cyst. Original provenance is preserved in each spell's Source field.
 - Search, level/status filters, favourites, editable spell descriptions and reference fields.
-- Daily preparation for each level, multiple copies of a spell, cast/restored tracking, editable daily slots, and quick clear/reload of the last recorded spell list.
+- Daily preparation for each level, multiple copies of a spell, cast tracking, a one-tap **Rest** action that restores expended spells, and **Unprepare all** with confirmation.
+- **Named preparation presets**: save, load and delete custom spell loadouts, plus a built-in preset from the last recorded campaign preparation. Presets are included in JSON backups.
+- **Dynamic save DCs** for each spell's level and school, using adjustable Intelligence and Necromancy bonus (defaults INT 30, bonus +2). These values are potential DCs, applicable only to spells that actually allow a saving throw.
+- **Offline three-dimensional dice roller**: animated d4, d6, d8, d10, d12, d20 and d100 visualizations; rolls support up to 10 dice plus a modifier. Random results are generated independently of the animation using the browser's secure randomness; dice visuals are not a physics simulation.
 - Private campaign journal.
 - Saves locally in your browser. Export/import JSON to back up or transfer data between devices.
 - Offline-ready progressive web app (PWA) with a home-screen icon when served from HTTPS or localhost.
@@ -43,7 +46,7 @@ Edit `data.js` to change the source lists for newly opened browsers. **Existing 
 
 ## Mobile updates and cached versions
 
-The v4 service worker uses **network-first** fetching when online. Previously,
+The v5 service worker uses **network-first** fetching when online, including the dice module. Previously,
 a cache-first worker could keep serving old JavaScript and default spells on an
 installed phone. An updated application now rechecks GitHub Pages when online
 and still falls back to its local cache offline.
@@ -57,8 +60,8 @@ If a phone still shows an old spell list:
    clearing website storage. On some platforms the installed app and browser
    use separate local storage.
 
-Version 3 also retries adding the six missing Mother Cyst defaults to existing
-local saves, without resetting custom spells, preparation, cast state, or notes.
+Version 4 retains the Mother Cyst defaults and migrates existing
+local saves, retaining custom spells, preparation, cast state and notes. It also migrates existing record statuses into two categories, and adds an editable DC formula and local presets.
 Existing spellbook data remains local to the browser/app that created it.
 
 ## Requirements and limitations
