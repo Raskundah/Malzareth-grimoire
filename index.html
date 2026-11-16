@@ -13,10 +13,12 @@
   <link rel="apple-touch-icon" href="./icons/grimoire.svg">
   <link rel="stylesheet" href="./styles.css">
   <script defer src="./data.js"></script>
+  <script defer src="./sheet-data.js"></script>
   <script defer src="./slots.js"></script>
   <script defer src="./app.js"></script>
   <script defer src="./dice.js"></script>
   <script defer src="./skills.js"></script>
+  <script defer src="./sheet.js"></script>
   <title>Malzareth's Grimoire · The Ashen Crown</title>
 </head>
 <body>
@@ -42,6 +44,7 @@
         <nav class="nav-list" aria-label="Primary navigation">
           <button class="nav-item active" data-view="library" type="button"><span class="nav-symbol">▤</span> Spellbook <span class="nav-arrow">›</span></button>
           <button class="nav-item" data-view="prepared" type="button"><span class="nav-symbol">✧</span> Prepared spells <span class="nav-arrow">›</span></button>
+          <button class="nav-item" data-view="character" type="button"><span class="nav-symbol">♜</span> Character sheet <span class="nav-arrow">›</span></button>
           <button class="nav-item" data-view="dice" type="button"><span class="nav-symbol">⚄</span> Dice roller <span class="nav-arrow">›</span></button>
           <button class="nav-item" data-view="journal" type="button"><span class="nav-symbol">◈</span> Archivist's notes <span class="nav-arrow">›</span></button>
         </nav>
@@ -78,6 +81,86 @@
             <p class="muted small">Includes the campaign's last recorded preparation as a built-in preset. Your custom presets stay in local storage and JSON backups.</p>
           </div>
           <div id="preparation-list" class="preparation-list"></div>
+        </section>
+
+        <section id="view-character" class="view" hidden aria-labelledby="sheet-title">
+          <div class="section-header"><div><p class="eyebrow">THE SEVENTH KEEPER</p><h2 id="sheet-title">Character <em>Folio</em></h2><p class="muted">Malzareth's abilities, combat, possessions, feats, and campaign records.</p></div></div>
+          <div class="sheet-tabs" role="group" aria-label="Character folio sections">
+            <button type="button" class="active" data-sheet-tab="overview">Overview</button>
+            <button type="button" data-sheet-tab="inventory">Inventory</button>
+            <button type="button" data-sheet-tab="feats">Feats &amp; traits</button>
+            <button type="button" data-sheet-tab="audit">Audit</button>
+          </div>
+          <div class="sheet-panel" id="sheet-overview">
+            <div class="sheet-identity" id="sheet-identity"></div>
+            <div class="sheet-summary" id="sheet-summary"></div>
+            <div class="sheet-two-col">
+              <section class="settings-card"><h3>Vitality &amp; encounters</h3>
+                <div id="sheet-vitals"></div>
+                <div class="sheet-hp-controls"><label>Damage or recovery amount<input id="sheet-hp-delta" type="number" min="1" max="9999" value="5"></label>
+                  <div class="button-row"><button class="btn btn-danger" type="button" data-sheet-action="damage">− Damage</button><button class="btn btn-outline" type="button" data-sheet-action="heal">+ Restore HP</button></div>
+                </div>
+                <div class="sheet-two-inputs"><label>Temporary HP<input id="sheet-temp-hp" type="number" min="0" max="9999"></label><label>Action points<input id="sheet-action-points" type="number" min="0" max="9999"></label></div>
+                <p class="muted small">Temporary HP absorb damage before normal HP. Resting restores prepared spells and daily features, but does not automatically heal an undead creature.</p>
+              </section>
+              <section class="settings-card"><h3>Defences &amp; spell buffs</h3>
+                <div id="sheet-defences"></div>
+                <div class="sheet-buffs"><label><input type="checkbox" data-sheet-buff="greaterMageArmor"> Greater Mage Armour (+6 armour)</label>
+                  <label><input type="checkbox" data-sheet-buff="shield"> Shield (+4 shield)</label>
+                  <label><input type="checkbox" data-sheet-buff="haste"> Haste (+1 dodge)</label></div>
+                <p class="muted small">Gear bonuses already present in the recorded AC are not added twice. Dexterity changes update AC and attacks.</p>
+              </section>
+            </div>
+            <div class="sheet-two-col">
+              <section class="settings-card"><h3>Attacks &amp; saving throws</h3><div id="sheet-attacks"></div></section>
+              <section class="settings-card"><h3>Special defences &amp; status</h3><div id="sheet-special-defences"></div>
+                <label class="sheet-inline-field">Conditions / ongoing effects<textarea id="sheet-conditions" rows="3" placeholder="Dominations, active spells, durations, conditions…"></textarea></label></section>
+            </div>
+            <details class="sheet-editor settings-card"><summary>✎ Edit identity, XP and combat base values</summary>
+              <form id="sheet-profile-form"><div id="sheet-profile-fields" class="sheet-form-grid"></div><div class="button-row"><button type="submit" class="btn btn-accent">Save character details</button></div></form>
+            </details>
+          </div>
+
+          <div class="sheet-panel" id="sheet-inventory" hidden>
+            <section class="settings-card"><h3>Currency &amp; holdings</h3><p class="muted small">Recent liquid funds and an earlier treasury figure are tracked separately. Do not add them together before reconciliation.</p>
+              <form id="sheet-currency-form">
+                <div class="sheet-currency-fields">
+                  <label>Platinum<input id="sheet-pp" type="number" min="0" step="1"></label>
+                  <label>Gold<input id="sheet-gp" type="number" min="0" step="1"></label>
+                  <label>Silver<input id="sheet-sp" type="number" min="0" step="1"></label>
+                  <label>Copper<input id="sheet-cp" type="number" min="0" step="1"></label>
+                  <label>Fortress treasury (historic)<input id="sheet-treasury" type="number" min="0" step="1"></label>
+                </div>
+                <label class="sheet-inline-field">Ledger notes<textarea id="sheet-money-notes" rows="2"></textarea></label>
+                <button class="btn btn-accent" type="submit">Save currency ledger</button>
+              </form>
+            </section>
+            <section class="settings-card">
+              <div class="sheet-row-head"><div><h3>Carried &amp; stored equipment</h3><p class="muted small" id="sheet-inventory-count"></p></div><button class="btn btn-accent" data-sheet-action="add-item" type="button">＋ Item</button></div>
+              <div id="sheet-capacity"></div>
+              <label class="search-wrap"><span aria-hidden="true">⌕</span><input id="sheet-inventory-search" type="search" placeholder="Find potions, gear, components…" aria-label="Search inventory"></label>
+              <div id="sheet-items"></div>
+            </section>
+          </div>
+
+          <div class="sheet-panel" id="sheet-feats" hidden>
+            <section class="settings-card">
+              <div class="sheet-row-head"><div><h3>Feats</h3><p class="muted small">Nine established feats preloaded from the post-lich character sheet.</p></div><button class="btn btn-accent" type="button" data-sheet-action="add-feat">＋ Feat</button></div>
+              <div id="sheet-feat-list"></div>
+            </section>
+            <section class="settings-card">
+              <div class="sheet-row-head"><div><h3>Class features, racial traits &amp; lich powers</h3><p class="muted small">Daily powers can be marked expended and reset when resting.</p></div><button class="btn btn-accent" type="button" data-sheet-action="add-feature">＋ Feature</button></div>
+              <div id="sheet-feature-list"></div>
+            </section>
+          </div>
+
+          <div class="sheet-panel" id="sheet-audit" hidden>
+            <section class="settings-card"><h3>Character sheet completeness</h3>
+              <p class="muted small">This checklist highlights outstanding campaign details instead of inventing values. Tick items as you verify them with your character records or GM.</p>
+              <div id="sheet-audit-list"></div>
+            </section>
+            <section class="settings-card"><h3>Recorded vs pending</h3><div id="sheet-audit-summary"></div></section>
+          </div>
         </section>
 
         <section id="view-dice" class="view" hidden aria-labelledby="dice-title">
@@ -127,7 +210,7 @@
     <footer class="footer"><span>THE ASHEN CROWN · PRIVATE CAMPAIGN TOOL</span><span>Version 3 · Skills &amp; Cogitation · Offline-ready</span></footer>
   </div>
 
-  <nav class="mobile-nav" aria-label="Mobile navigation"><button data-view="library" class="active" type="button"><span>▤</span>Spellbook</button><button data-view="prepared" type="button"><span>✧</span>Prepared</button><button data-view="dice" type="button"><span>⚄</span>Dice</button><button data-view="journal" type="button"><span>◈</span>Notes</button></nav>
+  <nav class="mobile-nav" aria-label="Mobile navigation"><button data-view="library" class="active" type="button"><span>▤</span>Spellbook</button><button data-view="prepared" type="button"><span>✧</span>Prepared</button><button data-view="character" type="button"><span>♜</span>Character</button><button data-view="dice" type="button"><span>⚄</span>Dice</button><button data-view="journal" type="button"><span>◈</span>Notes</button></nav>
 
   <dialog id="spell-dialog" class="spell-dialog" aria-labelledby="dialog-title"><form id="spell-form" method="dialog" novalidate>
     <div class="dialog-top"><div><p class="eyebrow">SPELL RECORD</p><h2 id="dialog-title">Inscription</h2></div><button class="icon-button" id="dialog-close" type="button" aria-label="Close">✕</button></div>
@@ -147,6 +230,16 @@
         <p class="muted small" id="skill-editor-total"></p>
       </div>
       <div class="dialog-actions"><button type="button" class="btn btn-outline" id="skill-edit-reset">Reset skill</button><span class="dialog-spacer"></span><button type="button" class="btn btn-outline" id="skill-edit-cancel">Cancel</button><button class="btn btn-accent" type="submit">Save changes</button></div>
+    </form>
+  </dialog>
+  <dialog id="sheet-dialog" class="spell-dialog" aria-labelledby="sheet-dialog-title">
+    <form id="sheet-form">
+      <div class="dialog-top"><div><p class="eyebrow">CHARACTER FOLIO</p><h2 id="sheet-dialog-title">Edit entry</h2></div><button type="button" id="sheet-dialog-close" class="icon-button" aria-label="Close">✕</button></div>
+      <div class="dialog-body">
+        <input type="hidden" id="sheet-edit-kind"><input type="hidden" id="sheet-edit-id">
+        <div id="sheet-edit-fields" class="sheet-form-grid"></div>
+      </div>
+      <div class="dialog-actions"><button id="sheet-entry-delete" type="button" class="btn btn-danger">Delete</button><span class="dialog-spacer"></span><button type="button" id="sheet-entry-cancel" class="btn btn-outline">Cancel</button><button type="submit" class="btn btn-accent">Save entry</button></div>
     </form>
   </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
