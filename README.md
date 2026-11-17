@@ -9,6 +9,8 @@ A small, offline-ready, mobile-first D&D 3.5 spellbook built with **plain HTML, 
 - **Named preparation presets**: save, load and delete custom spell loadouts, plus a built-in preset from the last recorded campaign preparation. Presets are included in JSON backups.
 - **Automatic D&D 3.5 daily spell slots** for a wizard specialist: set Intelligence and wizard-equivalent spellcasting level (default: Wizard 5 + Master Specialist 7 = level 12); the tool combines base wizard progression, bonus spells from Intelligence, and one specialist slot for each available spell level. Manual override remains available, and existing custom slot totals are preserved when upgrading.
 - **Dynamic save DCs** for each spell's level and school, using adjustable Intelligence and Necromancy bonus (defaults INT 30, bonus +2). These values are potential DCs, applicable only to spells that actually allow a saving throw.
+- **Melee/ranged touch attacks and common effect rolls**: dynamically apply attack bonuses, Haste and Spectral Hand, with labelled damage/penalty/temporary HP effects and custom stored roll presets.
+- **Spell descriptions**: original concise D&D 3.5 descriptions for all 60 starter spells; personal edits take priority. Spell cards include a one-tap Roll effect shortcut when applicable.
 - **Offline three-dimensional dice roller**: animated d4, d6, d8, d10, d12, d20 and d100 visualizations; rolls support up to 10 dice plus a modifier. Random results are generated independently of the animation using the browser's secure randomness; dice visuals are not a physics simulation.
 - **Character Folio** (new): mobile-friendly four-section character sheet (Overview, Inventory, Feats & Traits, Audit), seeded from the most recent post-lich sheet and recent campaign events.
 - **Combat/vitals:** live HP and temporary HP, damage/recovery buttons, action points, AC/touch/flat-footed AC with Greater Mage Armour/Shield/Haste toggles, BAB, attacks, initiative, saves and lich touch/fear DCs derived from HD and Charisma.
@@ -104,6 +106,21 @@ Use **Character → Overview** to apply damage (subtracting temporary HP first),
 
 Use **Character → Inventory** to update consumables and item charges. For component stocks such as black onyx tracked by aggregate GP value, edit the stock directly rather than subtracting one item.
 
+## Touch attacks, spell effects and descriptions (Version 5)
+
+Open **Dice → Combat quick rolls** for immediate:
+- **Melee touch** (currently +5) and **ranged touch** (currently +8) d20 checks, both calculated from BAB and STR/DEX respectively, plus the Character Folio's situational attack modifiers and Haste. Spectral Hand adds +2 to its melee touch attack when that option is enabled.
+- **Common labelled effect rolls**. Examples at level 12: Lich damaging touch 1d8+5; Orb of Force 10d6 force; Wand of Orb of Force CL 7: 7d6 force; Staff Disintegrate CL 13: 26d6 on failed save or 5d6 on successful save; Enervation 1d4 negative levels; Ray of Enfeeblement 1d6+5 Strength penalty; Necrotic Bloat 10d6 (half vile); Undead Torch +2d6 per undead melee hit; False Life 1d10+10 temporary HP; Spectral Hand invests 1d4 HP.
+- **Custom saved formulas** (for your own equipment, potions, or additional spells): one term, 1–40 dice, d3/d4/d6/d8/d10/d12/d20/d100 plus a signed modifier such as `2d6+3`. These are included in the existing JSON backup.
+
+Touch attack rolls and damage or other effect rolls are **separate actions**. Rolling damage does not establish a hit, select targets, spend spell slots, deduct charges or apply HP damage; use the relevant Prepared and Inventory controls for those changes. Dice history labels each kind of outcome so non-HP effects such as Strength penalties are not mistaken for damage. Natural 1/20 apply their normal attack-roll rules, but are not automatic successes or failures on damage or skill checks.
+
+The 3D animation is illustrative and uses cryptographic randomness; for `d3`, the display uses a d6 visual while calculating the correct 1–3 result.
+
+**Spellbook** now includes short, original rule summaries for **all 60 starter spells**. The reference notes are drawn from D&D 3.5 rules, and intentionally avoid reproducing full copyrighted spell text. They are a play aid, not definitive rules text. Your own descriptions take precedence. Older browser saves with blank descriptions display reference notes without modifying the underlying empty field, and existing custom descriptions remain untouched. A spell with a supported dice effect also has a **Roll effect** shortcut on its card, which takes you to Dice.
+
+Some rules are edition- and source-specific: this Grimoire uses the Spell Compendium **Undead Torch** (+2d6) rather than the older Magic of Faerûn version (+2d4), and *Animate Dread Warrior* comes from a 3.0 source (Unapproachable East), requiring DM approval under 3.5. Other non-core spells should be checked against the campaign's chosen sourcebook edition.
+
 ## Run it locally
 
 Option A — easiest desktop preview: open `index.html` in a browser. Most features work, but the offline worker/PWA install needs a local web server or HTTPS.
@@ -135,7 +152,7 @@ Edit `data.js` to change the source lists for newly opened browsers. **Existing 
 
 ## Mobile updates and cached versions
 
-The v8 service worker uses **network-first** fetching when online, including the dice, skill and character folio modules. Previously,
+The v9 service worker uses **network-first** fetching when online, including the dice, skill, character, combat and spell-reference modules. Previously,
 a cache-first worker could keep serving old JavaScript and default spells on an
 installed phone. An updated application now rechecks GitHub Pages when online
 and still falls back to its local cache offline.
@@ -149,7 +166,7 @@ If a phone still shows an old spell list:
    clearing website storage. On some platforms the installed app and browser
    use separate local storage.
 
-Version 7 of the saved-data format retains the Mother Cyst defaults and migrates existing
+Version 8 of the saved-data format retains the Mother Cyst defaults and migrates existing
 local saves, retaining custom spells, preparation, cast state and notes. It also migrates existing record statuses into two categories, and adds an editable DC formula and local presets.
 Existing spellbook data remains local to the browser/app that created it.
 
