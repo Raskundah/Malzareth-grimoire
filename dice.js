@@ -87,7 +87,7 @@
     if(!cache.has(n))cache.set(n,geometry(n));
     return cache.get(n);
   }
-  let angles=V(-.35,.72,.1),rolling=false;
+  let angles=V(-.35,.72,.1),rolling=false,visualSides=null;
   const project = v => {
     const factor=510/(4.65-v[2]);
     return [320+v[0]*factor,225-v[1]*factor];
@@ -108,7 +108,7 @@
     ctx.fillStyle=glow;ctx.fillRect(0,0,640,490);
     ctx.beginPath();ctx.ellipse(320,380,130,24,0,0,Math.PI*2);
     ctx.fillStyle='rgba(0,0,0,.32)';ctx.fill();
-    const choice=Number(byId('die-type').value)||20;
+    const choice=visualSides??(Number(byId('die-type').value)||20);
     const geo=mesh(choice);
     const verts=geo.vertices.map(v=>transform(v,angles));
     const faces=geo.faces.map((indices,i)=>{
@@ -155,6 +155,7 @@
     if(!settings){countEl.value=count;modEl.value=modifier;}
     // A d3 uses the same d6 mesh while retaining correct 1..3 results.
     const renderSides=sides===3?6:sides;
+    visualSides=renderSides;
     const dice=Array.from({length:count},()=>randInt(sides));
     const total=dice.reduce((sum,n)=>sum+n,modifier);
     const label=count+'d'+sides+(modifier>0?' + '+modifier:modifier<0?' − '+(-modifier):'');
@@ -200,7 +201,7 @@
     }
     requestAnimationFrame(frame);
   }
-  byId('die-type').addEventListener('change',draw);
+  byId('die-type').addEventListener('change',()=>{visualSides=null;draw();});
   rollBtn.addEventListener('click',()=>roll());
   // One-tap skill, initiative and save checks share this same dice engine,
   // history and animation; they never use a separate random generator.
