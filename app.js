@@ -56,6 +56,15 @@
     if(!input || !Array.isArray(input.spells) || !Array.isArray(input.prepared)) throw new Error('Not a valid grimoire backup.');
     if(input.spells.length>2500 || input.prepared.length>1000) throw new Error('Backup is too large.');
     const spells = input.spells.map(normalizeSpell).filter(s=>s.name);
+    // Fill previously unverified schools from corrected starter records.
+    // Preserve every nonempty school and never rewrite custom user spells.
+    if ((Number(input.version) || 1) < 8) {
+      for (const spell of spells) {
+        if (spell.school) continue;
+        const starter=defaults.find(s=>s.id===spell.id && s.name===spell.name && s.level===spell.level);
+        if(starter?.school)spell.school=starter.school;
+      }
+    }
     // Non-destructive migration for saves that missed the earlier update,
     // including phones that cached new app.js with old data.js.
     // Once v3 is stored, intentional subsequent deletions stay deleted.
