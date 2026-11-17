@@ -144,14 +144,17 @@
     return values[0]%sides+1;
   }
   const history=[];
+  const escapeHtml = str=>String(str).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const countEl=byId('dice-count'),modEl=byId('dice-modifier'),rollBtn=byId('roll-dice');
-  function roll(context=''){
+  function roll(context='',settings=null){
     if(rolling)return;
     const contextLabel=String(context||'').slice(0,100);
-    const sides=Number(byId('die-type').value);
-    const count=Math.max(1,Math.min(10,Math.trunc(Number(countEl.value)||1)));
-    const modifier=Math.max(-100,Math.min(100,Math.trunc(Number(modEl.value)||0)));
-    countEl.value=count;modEl.value=modifier;
+    const sides=settings?.sides??Number(byId('die-type').value);
+    const count=Math.max(1,Math.min(40,Math.trunc(settings?.count??(Number(countEl.value)||1))));
+    const modifier=Math.max(-1000,Math.min(1000,Math.trunc(settings?.modifier??(Number(modEl.value)||0))));
+    if(!settings){countEl.value=count;modEl.value=modifier;}
+    // A d3 uses the same d6 mesh while retaining correct 1..3 results.
+    const renderSides=sides===3?6:sides;
     const dice=Array.from({length:count},()=>randInt(sides));
     const total=dice.reduce((sum,n)=>sum+n,modifier);
     const label=count+'d'+sides+(modifier>0?' + '+modifier:modifier<0?' − '+(-modifier):'');
@@ -163,7 +166,7 @@
     const origin=[...angles];
     // Aim the rolled face toward the viewer at the end of the spin.
     // For multiple dice, the animation depicts the first roll; totals list all.
-    const dieMesh=mesh(sides);
+    const dieMesh=mesh(renderSides);
     const faceIndex=sides===100?Math.floor((dice[0]-1)/10):(dice[0]-1);
     const face=dieMesh.faces[faceIndex];
     const va=dieMesh.vertices[face[0]],vb=dieMesh.vertices[face[1]],vc=dieMesh.vertices[face[2]];
@@ -184,7 +187,7 @@
         byId('dice-breakdown').textContent=caption+' → ['+dice.join(', ')+']'+(modifier?' '+(modifier>0?'+ ':'− ')+Math.abs(modifier):'')+' = '+total;
         history.unshift({label:caption,total,dice});
         history.splice(10);
-        byId('dice-history').innerHTML=history.map(h=>'<li><strong>'+h.total+'</strong> · '+h.label+' <span>('+h.dice.join(', ')+')</span></li>').join('');
+        byId('dice-history').innerHTML=history.map(h=>'<li><strong>'+h.total+'</strong> · '+escapeHtml(h.label)+' <span>('+h.dice.join(', ')+')</span></li>').join('');
       }
     }
     if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
@@ -192,7 +195,7 @@
       byId('dice-result').textContent=String(total)+critical;
       byId('dice-breakdown').textContent=caption+' → ['+dice.join(', ')+'] = '+total;
       history.unshift({label:caption,total,dice});history.splice(10);
-      byId('dice-history').innerHTML=history.map(h=>'<li><strong>'+h.total+'</strong> · '+h.label+'</li>').join('');
+      byId('dice-history').innerHTML=history.map(h=>'<li><strong>'+h.total+'</strong> · '+escapeHtml(h.label)+'</li>').join('');
       return;
     }
     requestAnimationFrame(frame);
@@ -209,6 +212,19 @@
     countEl.value='1';
     modEl.value=String(Math.max(-100,Math.min(100,Math.trunc(m))));
     roll(label);
+    return true;
+  };
+  // All effect rolls use exactly the same secure randomness and animation.
+  // No formula string is evaluated as code.
+  window.grimoireRollFormula = ({label='',formula=''}={})=>{
+    if(rolling)return false;
+    const match=String(formula).replace(/\s+/g,'').toLowerCase()
+      .match(/^([1-9]\d?)d(3|4|6|8|10|12|20|100)([+-]\d{1,4})?$/);
+    if(!match)return false;
+    const count=Number(match[1]),sides=Number(match[2]),modifier=Number(match[3]||0);
+    if(count>40||Math.abs(modifier)>1000)return false;
+    // Keep the manual roller's settings untouched.
+    roll(String(label).slice(0,100),{count,sides,modifier});
     return true;
   };
   draw();
