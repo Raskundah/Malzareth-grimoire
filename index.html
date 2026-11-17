@@ -13,12 +13,14 @@
   <link rel="apple-touch-icon" href="./icons/grimoire.svg">
   <link rel="stylesheet" href="./styles.css">
   <script defer src="./data.js"></script>
+  <script defer src="./spell-reference.js"></script>
   <script defer src="./sheet-data.js"></script>
   <script defer src="./slots.js"></script>
   <script defer src="./app.js"></script>
   <script defer src="./dice.js"></script>
   <script defer src="./skills.js"></script>
   <script defer src="./sheet.js"></script>
+  <script defer src="./combat.js"></script>
   <title>Malzareth's Grimoire · The Ashen Crown</title>
 </head>
 <body>
@@ -56,6 +58,7 @@
           <div class="section-header"><div><p class="eyebrow">THE ARCHIVE</p><h2 id="library-title">Spell <em>Codex</em></h2><p class="muted">Search every incantation in Malzareth's collection.</p></div><button class="btn btn-accent" type="button" id="add-spell">＋ New spell</button></div>
           <div class="tool-strip"><label class="search-wrap"><span aria-hidden="true">⌕</span><input type="search" id="search" placeholder="Search spells, descriptions, notes…" aria-label="Search spells" autocomplete="off"></label><select id="status-filter" aria-label="Filter spells by type"><option value="all">All spells</option><option value="spellbook">Spellbook</option><option value="cyst">Mother Cyst</option></select></div>
           <div id="level-filters" class="filter-row" role="group" aria-label="Filter by spell level"></div>
+          <p class="muted small">Short D&amp;D 3.5 rules summaries are included for reference; your own edits take priority. Tap View / edit for the full note.</p>
           <div class="listing-meta"><span id="result-count">0 spells</span><label class="checkbox-label"><input id="only-faves" type="checkbox"> Favourites only</label></div>
           <div id="spell-list" class="spell-list"></div>
         </section>
@@ -176,6 +179,27 @@
               <p class="muted small">The 3D animation is a visual effect. Results use your device's secure random-number generator.</p>
             </div>
           </div>
+          <section class="settings-card combat-rolls-card" aria-labelledby="combat-rolls-title">
+            <div class="skill-heading"><p class="eyebrow">LIVE ATTACK BONUSES &amp; EFFECTS</p><h3 id="combat-rolls-title">Combat quick rolls</h3>
+              <p class="muted small">Melee and ranged touch attacks use the Character Folio's current BAB, ability bonuses, Haste and attack adjustments. Damage and other effects roll separately.</p></div>
+            <div class="combat-attack-tools">
+              <label class="skill-situational">Attack adjustment <input id="combat-attack-mod" type="number" value="0" min="-100" max="100" aria-label="Situational attack adjustment"></label>
+              <label class="combat-spectral-toggle"><input type="checkbox" id="combat-spectral-hand"> Use Spectral Hand (+2 to melee touch)</label>
+            </div>
+            <div class="combat-attack-buttons" id="combat-attack-buttons"></div>
+            <h4 class="combat-subtitle">Common effects from spells &amp; items</h4>
+            <p class="muted small">These effects use the current caster level where applicable. An attack that misses deals no on-hit effect; rolls here do not automatically expend charges or prepared spells.</p>
+            <div id="combat-effect-buttons" class="combat-effect-grid"></div>
+            <details class="combat-custom-card"><summary>＋ Custom damage / effect rolls</summary>
+              <form id="combat-custom-form" class="combat-custom-form">
+                <label>Name<input id="combat-custom-name" maxlength="65" placeholder="e.g. Flaming weapon bonus"></label>
+                <label>Formula<input id="combat-custom-formula" maxlength="18" placeholder="e.g. 2d6+3"></label>
+                <button class="btn btn-accent" type="submit">Save quick roll</button>
+              </form>
+              <p class="muted small">Supported formulas: 1–40 dice, d3/d4/d6/d8/d10/d12/d20/d100, with an optional + or − modifier. Custom rolls are saved in JSON backups.</p>
+              <div id="combat-custom-list"></div>
+            </details>
+          </section>
           <section class="settings-card skill-checks-card" aria-labelledby="skill-checks-title">
             <div class="skill-heading"><div><p class="eyebrow">MALZARETH'S CHARACTER SHEET</p><h3 id="skill-checks-title">Skills &amp; quick checks</h3><p class="muted small">One-tap d20 checks based on the latest post-lich skill ledger. Intelligence changes automatically update INT-based checks.</p></div></div>
             <div class="skill-tools"><label class="search-wrap"><span aria-hidden="true">⌕</span><input type="search" id="skill-search" placeholder="Search skills, Knowledge, saves…" aria-label="Search skills"></label><label class="skill-situational">Situational bonus <input id="skill-situational" type="number" value="0" min="-100" max="100" aria-label="Extra situational modifier for skill checks"></label></div>
@@ -207,7 +231,7 @@
         </section>
       </main>
     </div>
-    <footer class="footer"><span>THE ASHEN CROWN · PRIVATE CAMPAIGN TOOL</span><span>Version 4 · Character Folio · Offline-ready</span></footer>
+    <footer class="footer"><span>THE ASHEN CROWN · PRIVATE CAMPAIGN TOOL</span><span>Version 5 · Combat Rolls &amp; Spell Reference · Offline-ready</span></footer>
   </div>
 
   <nav class="mobile-nav" aria-label="Mobile navigation"><button data-view="library" class="active" type="button"><span>▤</span>Spellbook</button><button data-view="prepared" type="button"><span>✧</span>Prepared</button><button data-view="character" type="button"><span>♜</span>Character</button><button data-view="dice" type="button"><span>⚄</span>Dice</button><button data-view="journal" type="button"><span>◈</span>Notes</button></nav>
