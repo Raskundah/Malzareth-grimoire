@@ -3,10 +3,11 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 7;
+  const DATA_VERSION = 8;
   const NEW_CYST_NAMES = new Set(['Necrotic Awareness','Necrotic Burst','Necrotic Eruption','Necrotic Tumor','Necrotic Empowerment','Necrotic Termination']);
   const defaults = window.STARTER_SPELLS || [];
   const sheetModel=window.SHEET_MODEL;
+  const spellReference=window.SPELL_REFERENCES;
   const slotRules = window.SPELL_SLOT_RULES;
   const calcSlots = (score,level) => slotRules
     ? slotRules.calculate(score,level,true)
@@ -38,7 +39,7 @@
       intelligence:30,necroBonus:2,presets:[],
       cogitation:{level:6,used:false,spellId:null},
       abilities:{STR:10,DEX:17,WIS:12,CHA:20},skillOverrides:{},
-      sheet:sheetModel?.createDefault() || null,
+      sheet:sheetModel?.createDefault() || null,damagePresets:[],
       journal:'',lastSaved:new Date().toISOString()
     };
   };
@@ -140,11 +141,18 @@
     // If a phone briefly loads an old asset bundle, preserve existing
     // sheet information rather than replacing it with empty defaults.
     const sheet=sheetModel?.normalize(input.sheet) ?? input.sheet ?? null;
+    const damagePresets=(Array.isArray(input.damagePresets)?input.damagePresets:[]).slice(0,40)
+      .filter(x=>x&&typeof x==='object')
+      .map(x=>({
+        id:String(x.id||uid()).slice(0,140),
+        name:String(x.name||'').trim().slice(0,65),
+        formula:String(x.formula||'').replace(/\s+/g,'').slice(0,18)
+      })).filter(x=>x.name&&/^([1-9]\d?)d(3|4|6|8|10|12|20|100)([+-]\d{1,4})?$/.test(x.formula));
     return {
       version:completeCystDefaults && sheetModel ? DATA_VERSION : (Number(input.version) || 1),
       spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
       autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
-      cogitation,abilities,skillOverrides,sheet,
+      cogitation,abilities,skillOverrides,sheet,damagePresets,
       journal:String(input.journal??'').slice(0,100000),lastSaved:new Date().toISOString()
     };
   };
@@ -188,6 +196,23 @@
       if(!sheetModel)return false;
       state.sheet=sheetModel.createDefault();
       persist();render();return true;
+    },
+    saveDamagePreset(name,formula){
+      name=String(name||'').trim().slice(0,65);
+      formula=String(formula||'').replace(/\s+/g,'').toLowerCase();
+      if(!name||!/^([1-9]\d?)d(3|4|6|8|10|12|20|100)([+-]\d{1,4})?$/.test(formula)
+        ||Number(formula.split('d')[0])>40
+        ||Math.abs(Number((formula.match(/[+-]\d+$/)||[])[0]||0))>1000)return false;
+      const previous=state.damagePresets.find(x=>x.name.toLowerCase()===name.toLowerCase());
+      if(!previous&&state.damagePresets.length>=40)return false;
+      if(previous)previous.formula=formula;
+      else state.damagePresets.push({id:uid(),name,formula});
+      persist();window.refreshCombatRolls?.();
+      return true;
+    },
+    deleteDamagePreset(id){
+      state.damagePresets=state.damagePresets.filter(x=>x.id!==id);
+      persist();window.refreshCombatRolls?.();
     }
   };
   const dcFor = (level,school) => 10 + Number(level) + Math.floor((state.intelligence-10)/2) + (school==='Necromancy'?state.necroBonus:0);
@@ -225,14 +250,18 @@
     const q=$('#search').value.trim().toLocaleLowerCase();
     const status=$('#status-filter').value;
     const favorites=$('#only-faves').checked;
-    const spells=state.spells.filter(s=>(levelFilter==='all'||s.level===Number(levelFilter)) && (status==='all'||s.status===status) && (!favorites||s.favorite) && (!q||[s.name,s.school,s.source,s.description,s.notes,s.components].join(' ').toLocaleLowerCase().includes(q))).sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name));
+    const spells=state.spells.filter(s=>(levelFilter==='all'||s.level===Number(levelFilter)) && (status==='all'||s.status===status) && (!favorites||s.favorite) && (!q||[s.name,s.school,s.source,s.description,spellReference?.get(s)?.description||'',s.notes,s.components].join(' ').toLocaleLowerCase().includes(q))).sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name));
     $('#result-count').textContent=`${spells.length} ${spells.length===1?'spell':'spells'} shown`;
     $('#spell-list').innerHTML=spells.length?spells.map(s=>{
       const available=currentCount(s.level)<prepLimit(s.level);
+      const brief=s.description||spellReference?.get(s)?.description||'';
+      const rolled=spellReference?.rollFor(s,{
+        casterLevel:state.spellcastingLevel,necroLevel:state.spellcastingLevel+1
+      });
       return `<article class="spell-card">
         <div class="spell-top"><span class="spell-level" title="${esc(labelLevel(s.level))}">${s.level}</span><div class="spell-head"><h3>${esc(s.name)}</h3><div class="spell-tags">${s.school?`<span class="tag ${s.school==='Necromancy'?'necro':''}">${esc(s.school)}</span>`:'<span class="tag">School unverified</span>'}${s.status==='cyst'?'<span class="tag cyst">Mother Cyst</span>':''}<span class="tag spell-dc" title="Saving throw DC, if applicable">DC ${dcFor(s.level,s.school)}</span></div></div></div>
-        <p class="spell-description ${s.description?'':'empty'}">${s.description?esc(s.description):'Add effects, components, and tactics in this spell record.'}</p>
-        <div class="spell-actions"><button type="button" class="text-button" data-action="edit" data-id="${esc(s.id)}">View / edit</button><button type="button" class="star-button ${s.favorite?'starred':''}" data-action="favorite" data-id="${esc(s.id)}" aria-label="${s.favorite?'Remove from':'Add to'} favourites" title="Favourite">${s.favorite?'★':'☆'}</button><button type="button" class="add-button" data-action="quick-prepare" data-id="${esc(s.id)}" ${available?'':'disabled title="All slots are filled"'}>＋ Prepare</button></div>
+        <p class="spell-description ${brief?'':'empty'}">${brief?esc(brief):'Description not yet recorded. Add an effect summary in this spell record.'}</p>
+        <div class="spell-actions"><button type="button" class="text-button" data-action="edit" data-id="${esc(s.id)}">View / edit</button>${rolled?`<button type="button" class="text-button" data-action="roll-effect" data-id="${esc(s.id)}" title="${esc(rolled.type)}">⚄ Roll effect</button>`:''}<button type="button" class="star-button ${s.favorite?'starred':''}" data-action="favorite" data-id="${esc(s.id)}" aria-label="${s.favorite?'Remove from':'Add to'} favourites" title="Favourite">${s.favorite?'★':'☆'}</button><button type="button" class="add-button" data-action="quick-prepare" data-id="${esc(s.id)}" ${available?'':'disabled title="All slots are filled"'}>＋ Prepare</button></div>
       </article>`;
     }).join(''):'<div class="empty-state"><strong>No spells found</strong><p>Try a different search or filter, or create a new inscription.</p></div>';
     makeFilters();
@@ -385,7 +414,7 @@
     }else $('#slot-breakdown').textContent='Slot calculation is unavailable offline; manual totals are retained.';
     $('#slot-controls').innerHTML=state.slots.map((n,l)=>`<label class="slot-control">${l===0?'Cantrip':`Level ${l}`}<input type="number" min="0" max="50" step="1" value="${n}" data-slot-level="${l}" aria-label="Daily slots for ${esc(labelLevel(l))}"></label>`).join('');
   }
-  function render(){updateStats();renderLibrary();renderPrep();renderCogitation();renderSlotControls();renderPresets();window.refreshGrimoireSkills?.();window.refreshGrimoireSheet?.();}
+  function render(){updateStats();renderLibrary();renderPrep();renderCogitation();renderSlotControls();renderPresets();window.refreshGrimoireSkills?.();window.refreshGrimoireSheet?.();window.refreshCombatRolls?.();}
   function setView(name){
     if(!['library','prepared','dice','journal','character'].includes(name))return;
     view=name;
@@ -401,7 +430,11 @@
     $('#edit-id').value=spell?.id||'';
     $('#dialog-title').textContent=spell?'Edit inscription':'New inscription';
     const fields={name:'spell-name',level:'spell-level',school:'spell-school',status:'spell-status',source:'spell-source',casting:'spell-casting',components:'spell-components',range:'spell-range',duration:'spell-duration',save:'spell-save',description:'spell-description',notes:'spell-notes'};
-    for(const [key,sel] of Object.entries(fields)){$(`#${sel}`).value=spell?.[key]??(key==='status'?'spellbook':'');}
+    for(const [key,sel] of Object.entries(fields)){
+      const base=spell?.[key]??(key==='status'?'spellbook':'');
+      $(`#${sel}`).value=(key==='description'&&!base&&spell)
+        ? (spellReference?.get(spell)?.description||'') : base;
+    }
     $('#spell-favorite').checked=!!spell?.favorite;
     $('#delete-spell').hidden=!spell;
     renderDCPreview();
@@ -493,6 +526,16 @@
     if(action==='edit')openEditor(id);
     else if(action==='favorite'){const s=state.spells.find(s=>s.id===id);if(s){s.favorite=!s.favorite;persist();renderLibrary();}}
     else if(action==='quick-prepare')prepare(id);
+    else if(action==='roll-effect'){
+      const spell=state.spells.find(s=>s.id===id);
+      const effect=spellReference?.rollFor(spell,{
+        casterLevel:state.spellcastingLevel,necroLevel:state.spellcastingLevel+1
+      });
+      if(!effect)return;
+      setView('dice');
+      if(!window.grimoireRollFormula?.({label:effect.label,formula:effect.formula}))
+        toast('Dice are busy or this formula is not supported.');
+    }
     else if(action==='prepare-level'){const sel=$(`#prep-select-${level}`);if(sel?.value)prepare(sel.value);}
     else if(action==='toggle-cast'){const p=state.prepared.find(p=>p.id===id);if(p){p.used=!p.used;persist();render();}}
     else if(action==='remove-prep'){state.prepared=state.prepared.filter(p=>p.id!==id);persist();render();}
