@@ -17,27 +17,27 @@ const feature=(id,name,category,effect,usesPerDay=null)=>({
 const baseline={
  identity:{
    name:'Malzareth Vhane',title:'The Seventh Keeper',
-   campaign:'The Ashen Crown',era:'28 Tarsakh 1373 DR',
-   race:'Lesser Tiefling Lich',characterClass:'Wizard 5 / Master Specialist 7',
+   campaign:'The Ashen Crown',era:'25 Mirtul 1373 DR · 19:00',
+   race:'Lesser Tiefling Lich',characterClass:'Wizard 5 / Master Specialist 8',
    alignment:'Neutral Evil',origin:'Thay',size:'Medium',
-   characterLevel:12,xp:71975,xpNext:78000,
+   characterLevel:13,xp:78674,xpNext:91000,
    languages:'',description:'',deity:'',playerNotes:'',
-   xpNote:'XP 71,975 / 78,000 last confirmed on the post-lich sheet. Level adjustment and XP/buyoff ruling require reconciliation.'
+   xpNote:'XP 78,674 / 91,000. LA +0, ECL 13; 10 skill points awaiting allocation.'
  },
  combat:{
-   maxHP:95,currentHP:95,tempHP:0,damageNotes:'',speedFt:30,
-   bab:5,baseSaves:{fort:3,ref:3,will:9},saveMisc:{fort:0,ref:0,will:0},
+   maxHP:104,currentHP:104,tempHP:17,damageNotes:'',speedFt:30,
+   bab:6,baseSaves:{fort:3,ref:3,will:10},saveMisc:{fort:0,ref:0,will:0},
    naturalArmor:5,enhanceNatural:2,deflection:3,armorMisc:0,shieldMisc:0,saveResistance:3,
    initiativeMisc:4,attackMisc:0,actionPoints:7,
    buffs:{greaterMageArmor:false,shield:false,haste:false},
-   conditions:'',attackNotes:'Lich touch: negative energy 1d8+5; DC calculated using HD + Charisma.',
+   conditions:'19:00 checkpoint; 17 temporary HP last recorded; rest and exact active buffs not reconciled.',attackNotes:'Lich touch: negative energy 1d8+5; DC calculated using HD + Charisma.',
    defencesNotes:'DR 15/bludgeoning and magic; cold & electricity immunity; fire resistance 5; turn resistance +4.',
    actionNote:'Action points: 7 last recorded, current expenditures not reconciled.'
  },
  currency:{
-   gp:11755,sp:4,cp:3,pp:0,
+   gp:11367,sp:9,cp:8,pp:0,
    fortressTreasuryGp:35543,
-   notes:'11,755 gp 4 sp 3 cp is the latest reported combined liquid remainder after Suzail purchases. 35,543 gp treasury was reported earlier in the same session: do NOT add it to available cash without a fresh reconciliation.'
+   notes:'25 Mirtul 19:00: liquid 11,367 gp 9 sp 8 cp; pending sales 3,510 gp; projected 14,877 gp 9 sp 8 cp. Gems 7,200 gp, ordinary valuables 1,695 gp, unallocated magic 13,720 gp. Known subtotal 33,982.98 gp includes liquid; not extra cash. Separate fortress treasury historical and not reconciled; do not add it.'
  },
  inventory:[
    item('headband-intellect-4','Headband of Intellect +4','Magic item','Worn',1,{equipped:true,notes:'Included in INT 30; do not add the bonus again.'}),
@@ -45,8 +45,8 @@ const baseline={
    item('cloak-resistance-3','Cloak of Resistance +3','Magic item','Worn',1,{equipped:true,notes:'+3 resistance bonus already included in saves.'}),
    item('ring-mortal-guise','Ring of Mortal Guise','Magic item','Worn',1,{equipped:true,notes:'Custom ring; Disguise Self at will; +10 Disguise while active.'}),
    item('amulet-natural-armour-2','Amulet of Natural Armour +2','Magic item','Worn',1,{equipped:true,notes:'+2 enhancement to natural armour already included in AC.'}),
-   item('staff-transmutation','Staff of Transmutation','Staff / wand','Carried',1,{charges:50,maxCharges:50,notes:'Last recorded 50/50 charges, CL 13. Expeditious Retreat, Alter Self, Blink (1); Polymorph, Baleful Polymorph (2); Disintegrate (3). Charges not re-audited.',certainty:'last-sheet'}),
-   item('wand-orb-force','Wand of Orb of Force (CL 7)','Staff / wand','Carried',1,{charges:50,maxCharges:50,notes:'Purchased in Suzail; 7d6 force, 50 charges at acquisition. Verify any subsequent uses.',certainty:'recent-session'}),
+   item('staff-transmutation','Staff of Transmutation','Staff / wand','Carried',1,{charges:44,maxCharges:50,notes:'Last recovered 44/50 charges, CL 13. Expeditious Retreat, Alter Self, Blink (1); Polymorph, Baleful Polymorph (2); Disintegrate (3). Charges not re-audited.',certainty:'last-sheet'}),
+   item('wand-orb-force','Wand of Orb of Force (CL 7)','Staff / wand','Carried',1,{charges:47,maxCharges:50,notes:'Purchased in Suzail; 7d6 force; last recovered 47/50 charges. Verify subsequent uses.',certainty:'recent-session'}),
    item('bag-holding-iv','Bag of Holding, Type IV','Container','Carried',1,{weightLb:60,notes:'Purchased in Suzail. Capacity 1,500 lb and 250 cubic feet. The bag itself weighs 60 lb. Contents are tracked separately.',certainty:'recent-session'}),
    item('spellbooks','Personal spellbooks','Book / document','Carried',1,{notes:'Full transcription still being reconciled against Grimoire spell archive.'}),
    item('robes','Ornate robes','Clothing','Worn',1,{equipped:true}),
@@ -60,6 +60,19 @@ const baseline={
    item('scroll-cases','Sealed scroll cases','Book / document','Stored / unconfirmed',2,{certainty:'unverified'}),
    item('onyx-signet','Black-onyx signet ring','Loot / unappraised','Stored / unconfirmed',1,{certainty:'unverified'}),
    item('small-iron-key','Small iron key','Important','Stored / unconfirmed',1,{certainty:'unverified'}),
+   item('loot-ring-prot-1','Ring of Protection +1','Magic item','Unallocated treasure',1,{valueGp:2000,notes:'25 Mirtul loot; not equipped.'}),
+   item('loot-gentle-repose','Wand of Gentle Repose (CL 3)','Staff / wand','Unallocated treasure',1,{charges:18,maxCharges:50,notes:'25 Mirtul loot; 18 charges remaining.'}),
+   item('loot-bracers-armor-2','Bracers of Armor +2','Magic item','Unallocated treasure',1,{valueGp:4000,notes:'25 Mirtul loot; not equipped.'}),
+   item('loot-gem-hoard','Gem hoard (aggregate)','Loot / unappraised','Party reserve',1,{valueGp:7200,notes:'Includes 10 black onyx, 3 diamonds and 3 bloodstones; do not count separately.'}),
+   item('loot-ordinary-valuables','Ordinary valuables (aggregate)','Loot / unappraised','Party reserve',1,{valueGp:1695,notes:'25 Mirtul checkpoint.'}),
+   item('loot-chain-shirts','Chain shirts (reserve)','Armour','Party reserve',2,{notes:'3 recovered; 1 issued, 2 reserve.'}),
+   item('loot-longswords','Longswords (reserve)','Weapon','Party reserve',3,{notes:'4 recovered; 1 issued, 3 reserve. Can supply Sword of Darkness material if authorised.'}),
+   item('loot-shields','Shields (reserve)','Armour','Party reserve',3,{notes:'4 recovered; 1 issued, 3 reserve.'}),
+   item('loot-crossbows','Light crossbows','Weapon','Party reserve',2),
+   item('loot-breastplate-new','Breastplate (25 Mirtul)','Armour','Party reserve',1,{notes:'Check against prior unappraised breastplate; not counted in aggregate totals again.'}),
+   item('loot-heavy-mace','Heavy mace','Weapon','Party reserve',1),
+   item('loot-spears','Spears','Weapon','Party reserve',3),
+   item('loot-bolts','Crossbow bolts','Ammunition','Party reserve',40),
    item('documents','Recovered documents / ledgers','Book / document','Stored / unconfirmed',1,{notes:'Exact contents require inventory audit.',certainty:'unverified'})
  ],
  feats:[
@@ -74,7 +87,7 @@ const baseline={
    feat('mother-cyst','Mother Cyst','Libris Mortis','Enables the full Necrotic Cyst spell family.','Necromancy')
  ],
  features:[
-   feature('undead','Undead traits','Type','No Constitution; 12d12 HD. Immune to poison, sleep, paralysis, stunning, disease, death effects, nonlethal damage, critical hits, fatigue, exhaustion, energy drain, and other standard undead immunities.'),
+   feature('undead','Undead traits','Type','No Constitution; 13d12 HD. Immune to poison, sleep, paralysis, stunning, disease, death effects, nonlethal damage, critical hits, fatigue, exhaustion, energy drain, and other standard undead immunities.'),
    feature('lich-defenses','Lich resistances','Lich','Cold and electricity immunity; DR 15/bludgeoning and magic; darkvision 60 ft; +4 turn resistance.'),
    feature('lich-touch','Lich damaging touch','Lich','Melee touch attack; 1d8+5 negative energy to living creatures, Will half. Save DC scales with 1/2 HD + CHA.'),
    feature('lich-paralysis','Paralysing touch','Lich','Living creatures hit by lich touch must make Fortitude save (DC scales with 1/2 HD + CHA) or be permanently paralysed.'),
@@ -82,16 +95,16 @@ const baseline={
    feature('lich-phylactery','Lich phylactery','Lich','If phylactery survives, lich can reform in 1d10 days; location must remain protected.'),
    feature('darkness','Darkness','Heritage','Lesser tiefling: Darkness 1/day.',1),
    feature('fire-resistance','Fire resistance','Heritage','Lesser tiefling: Fire resistance 5.'),
-   feature('esoterica-minor','Minor school esoterica','Master Specialist','When casting Necromancy, allied undead within 60 ft gain +7 turn resistance and +7 saving throws for 7 rounds.'),
-   feature('caster-level','Necromancy caster-level bonus','Master Specialist','+1 caster level on Necromancy (typically CL 13 at current progression; increases further at Master Specialist 9).'),
+   feature('esoterica-minor','Minor school esoterica','Master Specialist','When casting Necromancy, allied undead within 60 ft gain +8 turn resistance and +8 saving throws for 8 rounds.'),
+   feature('caster-level','Necromancy caster-level bonus','Master Specialist','+1 caster level on Necromancy (typically CL 14 at current progression; increases further at Master Specialist 9).'),
    feature('esoterica-moderate','Moderate school esoterica','Master Specialist','When casting Necromancy, temporary immunity to ability damage/drain, energy drain and negative levels for rounds equal to spell level.'),
-   feature('expanded-spellbook','Expanded spellbook','Master Specialist','At class levels 2 and 5, add an extra spell of the specialty school.')
+   feature('expanded-spellbook','Expanded spellbook','Master Specialist','At class levels 2, 5 and 8, add an extra spell of the specialty school. Level 8 choice: Waves of Exhaustion.')
  ],
  resolvedAudit:[],
  audit:[
-   'Latest experience needs checking after recent events: 71,975 / 78,000 is from the last PDF.',
-   'Lich +4 level adjustment and the campaign XP/LA-buyoff arrangement require an explicit ruling.',
-   'Recent shopping, treasury transfers and the 11,755 gp cash remainder need one reconciled ledger: do not sum treasury and liquid figures.',
+   'Allocate 10 skill points gained at level 13; do not invent selections.',
+   'LA buyoff complete (+0). XP 78,674 / 91,000 at level 13.',
+   'Confirm pending 3,510 gp sale receipts, exact gem/valuable breakdown and unallocated magic inventory; do not double count.',
    'Action-point uses since the last sheet are not fully itemised; 7 is a historical value.',
    'Black onyx balance and staff/wand charges should be updated after each expenditure.',
    'Unidentified captured gear, potions, scrolls and documents need appraisal or identification.',
