@@ -3,7 +3,8 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 8;
+  const DATA_VERSION = 9;
+  const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const NEW_CYST_NAMES = new Set(['Necrotic Awareness','Necrotic Burst','Necrotic Eruption','Necrotic Tumor','Necrotic Empowerment','Necrotic Termination']);
   const defaults = window.STARTER_SPELLS || [];
   const sheetModel=window.SHEET_MODEL;
@@ -18,6 +19,7 @@
   const completeCystDefaults = [...NEW_CYST_NAMES].every(name =>
     defaults.some(s => s.status === 'cyst' && s.name === name)
   );
+  const completeLevel13Defaults = LEVEL13_NAMES.every(name=>defaults.some(s=>s.name===name&&s.level===7)) && sheetModel?.createDefault()?.identity.characterLevel===13;
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -32,15 +34,15 @@
       const spell = spells.find(s => s.name === name && s.level === Number(level));
       if(spell) prepared.push({id: uid(), spellId: spell.id, used:false});
     }));
-    const slots = calcSlots(30,12).totals;
+    const slots = calcSlots(30,13).totals;
     return {
-      version:completeCystDefaults && sheetModel ? DATA_VERSION : 1,spells,prepared,slots,
-      manualSlots:[...slots],autoSlots:true,spellcastingLevel:12,
+      version:completeCystDefaults && completeLevel13Defaults ? DATA_VERSION : 1,spells,prepared,slots,
+      manualSlots:[...slots],autoSlots:true,spellcastingLevel:13,
       intelligence:30,necroBonus:2,presets:[],
       cogitation:{level:6,used:false,spellId:null},
       abilities:{STR:10,DEX:17,WIS:12,CHA:20},skillOverrides:{},
       sheet:sheetModel?.createDefault() || null,damagePresets:[],
-      journal:'',lastSaved:new Date().toISOString()
+      journal:window.LEVEL13_JOURNAL||'',lastSaved:new Date().toISOString()
     };
   };
   const normalizeSpell = (s) => {
@@ -76,12 +78,21 @@
         }
       }
     }
+    // One-time campaign advancement; preserve preparation, presets and user edits.
+    const advance = (Number(input.version)||1)<9 && completeLevel13Defaults;
+    if(advance){
+      for(const name of LEVEL13_NAMES){
+        const starter=defaults.find(s=>s.level===7&&s.name===name);
+        if(!spells.some(s=>s.level===7&&s.name.toLowerCase()===name.toLowerCase()))spells.push(structuredClone(starter));
+      }
+    }
     const ids = new Set();
     for(const s of spells){if(ids.has(s.id)) s.id=uid(); ids.add(s.id);}
     const prepared = input.prepared.filter(p=>p && ids.has(p.spellId)).map(p=>({id:uid(),spellId:String(p.spellId),used:!!p.used}));
     const intelligence = Number.isFinite(Number(input.intelligence)) ? Math.max(1, Math.min(99, Math.trunc(Number(input.intelligence)))) : 30;
-    const spellcastingLevel = Number.isFinite(Number(input.spellcastingLevel))
-      ? Math.max(1,Math.min(20,Math.trunc(Number(input.spellcastingLevel)))) : 12;
+    let spellcastingLevel = Number.isFinite(Number(input.spellcastingLevel))
+      ? Math.max(1,Math.min(20,Math.trunc(Number(input.spellcastingLevel)))) : 13;
+    if(advance && spellcastingLevel===12)spellcastingLevel=13;
     const calculated = calcSlots(intelligence,spellcastingLevel).totals;
     const readSlots = (list, fallback) => Array.from({length:10},(_,l)=>{
       const n=Number(list?.[l]);
@@ -150,6 +161,36 @@
     // If a phone briefly loads an old asset bundle, preserve existing
     // sheet information rather than replacing it with empty defaults.
     const sheet=sheetModel?.normalize(input.sheet) ?? input.sheet ?? null;
+    if(advance && sheet){
+      const baseline=sheetModel.createDefault();
+      if(sheet.identity.characterLevel<=12){
+        Object.assign(sheet.identity,{characterLevel:13,characterClass:baseline.identity.characterClass,era:baseline.identity.era,xp:Math.max(sheet.identity.xp,78674),xpNext:91000,xpNote:baseline.identity.xpNote});
+        if(sheet.combat.maxHP===95){sheet.combat.maxHP=104;sheet.combat.currentHP=Math.min(104,sheet.combat.currentHP+9);}
+        if(sheet.combat.bab===5)sheet.combat.bab=6;
+        if(sheet.combat.baseSaves.will===9)sheet.combat.baseSaves.will=10;
+      }
+      // Update known stale cash, but preserve separately edited balances.
+      const cur=sheet.currency;
+      if((cur.gp===11755&&cur.sp===4&&cur.cp===3)||(cur.gp===9824&&cur.sp===3&&cur.cp===8)){
+        Object.assign(cur,{gp:11367,sp:9,cp:8,notes:baseline.currency.notes});
+      }else if(!cur.notes.includes('25 Mirtul 19:00')){
+        cur.notes=(cur.notes+'\n'+baseline.currency.notes).slice(0,2000);
+      }
+      for(const item of baseline.inventory.filter(x=>x.id.startsWith('loot-'))){
+        if(!sheet.inventory.some(x=>x.id===item.id||x.name.toLowerCase()===item.name.toLowerCase()))sheet.inventory.push(item);
+      }
+      for(const id of ['staff-transmutation','wand-orb-force']){
+        const old=sheet.inventory.find(x=>x.id===id),updated=baseline.inventory.find(x=>x.id===id);
+        if(old&&updated&&old.charges===50){old.charges=updated.charges;old.notes=updated.notes;}
+      }
+      for(const id of ['undead','esoterica-minor','caster-level','expanded-spellbook']){
+        const old=sheet.features.find(x=>x.id===id),updated=baseline.features.find(x=>x.id===id);
+        if(old&&updated)old.effect=updated.effect;else if(updated)sheet.features.push(updated);
+      }
+      const stale=['Latest experience needs checking','Lich +4 level adjustment','Recent shopping, treasury transfers'];
+      sheet.audit=sheet.audit.filter(note=>!stale.some(p=>note.startsWith(p)));
+      for(const note of baseline.audit.slice(0,3))if(!sheet.audit.includes(note))sheet.audit.push(note);
+    }
     const damagePresets=(Array.isArray(input.damagePresets)?input.damagePresets:[]).slice(0,40)
       .filter(x=>x&&typeof x==='object')
       .map(x=>({
@@ -158,11 +199,11 @@
         formula:String(x.formula||'').replace(/\s+/g,'').slice(0,18)
       })).filter(x=>x.name&&/^([1-9]\d?)d(3|4|6|8|10|12|20|100)([+-]\d{1,4})?$/.test(x.formula));
     return {
-      version:completeCystDefaults && sheetModel ? DATA_VERSION : (Number(input.version) || 1),
+      version:completeCystDefaults && completeLevel13Defaults ? DATA_VERSION : (Number(input.version) || 1),
       spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
       autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
       cogitation,abilities,skillOverrides,sheet,damagePresets,
-      journal:String(input.journal??'').slice(0,100000),lastSaved:new Date().toISOString()
+      journal:(advance&&!String(input.journal??'').includes('78,674 / 91,000') ? [String(input.journal??''),window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n') : String(input.journal??'')).slice(0,100000),lastSaved:new Date().toISOString()
     };
   };
   const load = () => {
@@ -173,7 +214,7 @@
       const next = normalizeData(previous);
       if ((Number(previous.version) || 1) < next.version) {
         // Persist the migration once so intentional later deletions are kept.
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
+        try { localStorage.setItem(STORAGE_KEY+'-pre-v9-backup', raw); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
         catch(e) { console.warn('Unable to persist Mother Cyst migration', e); }
       }
       return next;
@@ -245,6 +286,9 @@
     $('#stat-dc').textContent=dcFor(selectedLevel,'Necromancy');
     $('#stat-dc-label').textContent=`Level ${selectedLevel} · Necromancy`;
     $('#hero-int').textContent=state.intelligence;
+    if($('#hero-class'))$('#hero-class').textContent=state.sheet?.identity.characterClass||'Wizard 5 / Master Specialist 8';
+    if($('#hero-cl'))$('#hero-cl').textContent=state.spellcastingLevel;
+    if($('#hero-necro'))$('#hero-necro').textContent=state.spellcastingLevel+1;
     const baseDC=10+Math.floor((state.intelligence-10)/2);
     $('#standard-dc-formula').textContent=`${baseDC} + level`;
     $('#necro-dc-formula').textContent=`${baseDC+state.necroBonus} + level`;
