@@ -35,9 +35,9 @@ const baseline={
    actionNote:'Action points: 7 last recorded, current expenditures not reconciled.'
  },
  currency:{
-   gp:11367,sp:9,cp:8,pp:0,
+   gp:262892,sp:4,cp:8,pp:0,
    fortressTreasuryGp:35543,
-   notes:'25 Mirtul 19:00: liquid 11,367 gp 9 sp 8 cp; pending sales 3,510 gp; projected 14,877 gp 9 sp 8 cp. Gems 7,200 gp, ordinary valuables 1,695 gp, unallocated magic 13,720 gp. Known subtotal 33,982.98 gp includes liquid; not extra cash. Separate fortress treasury historical and not reconciled; do not add it.'
+   notes:'23 Eleasis pre-Orathion: 271,517 gp 4 sp 8 cp cash after previous equipment purchases, less 8,625 gp scrolls = 262,892 gp 4 sp 8 cp. Escrow 245,000 gp not yet earned; titan equipment/loot pending. FortressTreasuryGp field is an old historical figure, not additional current cash.'
  },
  inventory:[
    item('headband-intellect-4','Headband of Intellect +4','Magic item','Worn',1,{equipped:true,notes:'Included in INT 30; do not add the bonus again.'}),
@@ -48,6 +48,8 @@ const baseline={
    item('staff-transmutation','Staff of Transmutation','Staff / wand','Carried',1,{charges:44,maxCharges:50,notes:'Last recovered 44/50 charges, CL 13. Expeditious Retreat, Alter Self, Blink (1); Polymorph, Baleful Polymorph (2); Disintegrate (3). Charges not re-audited.',certainty:'last-sheet'}),
    item('wand-orb-force','Wand of Orb of Force (CL 7)','Staff / wand','Carried',1,{charges:47,maxCharges:50,notes:'Purchased in Suzail; 7d6 force; last recovered 47/50 charges. Verify subsequent uses.',certainty:'recent-session'}),
    item('bag-holding-iv','Bag of Holding, Type IV','Container','Carried',1,{weightLb:60,notes:'Purchased in Suzail. Capacity 1,500 lb and 250 cubic feet. The bag itself weighs 60 lb. Contents are tracked separately.',certainty:'recent-session'}),
+   item('blessed-book','Boccob\'s Blessed Book','Book / document','Carried / spellbook',1,{notes:'Already owned before the titan spell purchase; eight new spells occupy 37 pages. No further material transcription cost, 24 hours per spell.'}),
+   item('heroics-fighter-fragment','Heroics — 15th-level fighter equipment fragment','Component','Component pouch',1,{notes:'Consumable piece of armament used in combat by a fighter of at least 15th level, secured during pre-fight procurement; one casting only. No book-listed GP cost.'}),
    item('spellbooks','Personal spellbooks','Book / document','Carried',1,{notes:'Full transcription still being reconciled against Grimoire spell archive.'}),
    item('robes','Ornate robes','Clothing','Worn',1,{equipped:true}),
    item('onyx','Black onyx components','Component','Carried',1,{valueGp:550,notes:'550 gp worth is the last itemised component stock; quantity/current amount not verified.',certainty:'last-sheet'}),
@@ -108,6 +110,7 @@ const baseline={
    'Action-point uses since the last sheet are not fully itemised; 7 is a historical value.',
    'Black onyx balance and staff/wand charges should be updated after each expenditure.',
    'Unidentified captured gear, potions, scrolls and documents need appraisal or identification.',
+   'All eight pre-Orathion scrolls transcribed in Blessed Book; their scrolls were consumed. Do not add to currently prepared spells without preparing them.',
    'Complete spellbook transcription, prohibited-school exceptions, language list, carrying load and other situational modifiers are not fully audited.',
    'Equipping or removing a magic item does not automatically change attack, AC or save modifiers. Update combat adjustments when equipment changes.',
    'Specific weapon attack profiles, spell resistance (if any), armour-check penalties, exact encumbrance thresholds and temporary buff durations are not fully recorded.',
