@@ -3,7 +3,8 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 9;
+  const DATA_VERSION = 10;
+  const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const NEW_CYST_NAMES = new Set(['Necrotic Awareness','Necrotic Burst','Necrotic Eruption','Necrotic Tumor','Necrotic Empowerment','Necrotic Termination']);
   const defaults = window.STARTER_SPELLS || [];
@@ -20,6 +21,7 @@
     defaults.some(s => s.status === 'cyst' && s.name === name)
   );
   const completeLevel13Defaults = LEVEL13_NAMES.every(name=>defaults.some(s=>s.name===name&&s.level===7)) && sheetModel?.createDefault()?.identity.characterLevel===13;
+  const completePrefightDefaults = PREFIGHT_NAMES.every(name=>defaults.some(s=>s.name===name && s.status==='spellbook'));
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -36,13 +38,13 @@
     }));
     const slots = calcSlots(30,13).totals;
     return {
-      version:completeCystDefaults && completeLevel13Defaults ? DATA_VERSION : 1,spells,prepared,slots,
+      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults ? DATA_VERSION : 1,spells,prepared,slots,
       manualSlots:[...slots],autoSlots:true,spellcastingLevel:13,
       intelligence:30,necroBonus:2,presets:[],
       cogitation:{level:6,used:false,spellId:null},
       abilities:{STR:10,DEX:17,WIS:12,CHA:20},skillOverrides:{},
       sheet:sheetModel?.createDefault() || null,damagePresets:[],
-      journal:window.LEVEL13_JOURNAL||'',lastSaved:new Date().toISOString()
+      journal:[window.LEVEL13_JOURNAL,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n'),lastSaved:new Date().toISOString()
     };
   };
   const normalizeSpell = (s) => {
@@ -84,6 +86,14 @@
       for(const name of LEVEL13_NAMES){
         const starter=defaults.find(s=>s.level===7&&s.name===name);
         if(!spells.some(s=>s.level===7&&s.name.toLowerCase()===name.toLowerCase()))spells.push(structuredClone(starter));
+      }
+    }
+    // Add purchased pre-titan scroll transcriptions once; respect all user edits and prep counts.
+    const acquire = (Number(input.version)||1)<10 && completePrefightDefaults;
+    if(acquire){
+      for(const name of PREFIGHT_NAMES){
+        const starter=defaults.find(s=>s.name===name && s.status==='spellbook');
+        if(starter&&!spells.some(s=>s.name.toLowerCase()===name.toLowerCase() && s.level===starter.level))spells.push(structuredClone(starter));
       }
     }
     const ids = new Set();
@@ -191,6 +201,20 @@
       sheet.audit=sheet.audit.filter(note=>!stale.some(p=>note.startsWith(p)));
       for(const note of baseline.audit.slice(0,3))if(!sheet.audit.includes(note))sheet.audit.push(note);
     }
+    if(acquire && sheet){
+      const baseline=sheetModel.createDefault();
+      const cur=sheet.currency;
+      // Only replace a precisely recognised source balance. Never deduct twice from custom cash.
+      if((cur.gp===271517 && cur.sp===4 && cur.cp===8) || (cur.gp===11367 && cur.sp===9 && cur.cp===8)){
+        Object.assign(cur,{gp:262892,sp:4,cp:8,notes:baseline.currency.notes});
+      }else if(!String(cur.notes||'').includes('8,625 gp scrolls')){
+        cur.notes=[cur.notes,baseline.currency.notes+' Balance not automatically overwritten because local value was edited.'].filter(Boolean).join('\n').slice(0,2000);
+      }
+      for(const item of baseline.inventory.filter(x=>['blessed-book','heroics-fighter-fragment'].includes(x.id))){
+        if(!sheet.inventory.some(x=>x.id===item.id || x.name.toLowerCase()===item.name.toLowerCase()))sheet.inventory.push(item);
+      }
+      for(const note of baseline.audit.filter(note=>note.startsWith('All eight pre-Orathion'))){if(!sheet.audit.includes(note))sheet.audit.push(note);}
+    }
     const damagePresets=(Array.isArray(input.damagePresets)?input.damagePresets:[]).slice(0,40)
       .filter(x=>x&&typeof x==='object')
       .map(x=>({
@@ -199,11 +223,11 @@
         formula:String(x.formula||'').replace(/\s+/g,'').slice(0,18)
       })).filter(x=>x.name&&/^([1-9]\d?)d(3|4|6|8|10|12|20|100)([+-]\d{1,4})?$/.test(x.formula));
     return {
-      version:completeCystDefaults && completeLevel13Defaults ? DATA_VERSION : (Number(input.version) || 1),
+      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults ? DATA_VERSION : (Number(input.version) || 1),
       spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
       autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
       cogitation,abilities,skillOverrides,sheet,damagePresets,
-      journal:(advance&&!String(input.journal??'').includes('78,674 / 91,000') ? [String(input.journal??''),window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n') : String(input.journal??'')).slice(0,100000),lastSaved:new Date().toISOString()
+      journal:(()=>{let j=String(input.journal??''); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
     };
   };
   const load = () => {
@@ -214,8 +238,8 @@
       const next = normalizeData(previous);
       if ((Number(previous.version) || 1) < next.version) {
         // Persist the migration once so intentional later deletions are kept.
-        try { localStorage.setItem(STORAGE_KEY+'-pre-v9-backup', raw); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
-        catch(e) { console.warn('Unable to persist Mother Cyst migration', e); }
+        try { localStorage.setItem(STORAGE_KEY+'-pre-v10-backup', raw); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
+        catch(e) { console.warn('Unable to persist grimoire migration', e); }
       }
       return next;
     } catch(e) { console.warn('Unable to load local save', e); return stateFactory(); }
