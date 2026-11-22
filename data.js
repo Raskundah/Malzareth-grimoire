@@ -21,6 +21,7 @@
   // Libris Mortis (p. 28): Mother Cyst grants access to the entire family.
   // Prepared casters can prepare these without consulting a spellbook.
   const level13 = {7: ['Waves of Exhaustion','Greater Teleport','Sword of Darkness']};
+  const titanAcquisitions = {2: ['Mirror Image','Heroics'],5: ['Wall of Stone','Greater Blink','Dimension Jumper'],6: ['Disintegrate','Planar Binding','Freezing Fog']};
   const cyst = {
     1: ['Necrotic Awareness'],
     2: ['Necrotic Cyst','Necrotic Scrying'],
@@ -54,6 +55,9 @@
     'Necrotic Burst':'Necromancy','Necrotic Eruption':'Necromancy',
     'Necrotic Tumor':'Necromancy','Necrotic Empowerment':'Necromancy',
     'Necrotic Termination':'Necromancy',
+    'Mirror Image':'Illusion','Heroics':'Transmutation','Wall of Stone':'Conjuration',
+    'Greater Blink':'Transmutation','Dimension Jumper':'Conjuration','Disintegrate':'Transmutation',
+    'Planar Binding':'Conjuration','Freezing Fog':'Conjuration',
     'Waves of Exhaustion':'Necromancy','Greater Teleport':'Conjuration','Sword of Darkness':'Necromancy'
   };
   const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -65,8 +69,10 @@
     ...make(original,'spellbook','Level 11 spellbook ledger'),
     ...make(recorded,'spellbook','Post-lich preparation sheet (transcription not separately verified)'),
     ...make(level13,'spellbook','Level 13 advancement: ordinary selections and Master Specialist 8 expansion'),
+    ...make(titanAcquisitions,'spellbook','Purchased scroll / Boccob\'s Blessed Book · 23 Eleasis 1373 DR pre-Orathion'),
     ...make(cyst,'cyst','Mother Cyst feat (Libris Mortis p. 28; no spellbook required)')
   ];
+  window.PREFIGHT_ACQUISITION_JOURNAL = "23 Eleasis 1373 DR · BEFORE ORATHION — Eight scrolls bought at standard minimum caster level and transcribed over eight separate 24-hour periods before the existing 16:30 battle checkpoint. 2nd: Mirror Image, Heroics (150 gp each); 5th: Wall of Stone, Greater Blink, Dimension Jumper (1,125 gp each); 6th: Disintegrate, Planar Binding, Freezing Fog (1,650 gp each). Total 8,625 gp deducted from previous 271,517 gp 4 sp 8 cp liquid treasury; revised liquid treasury 262,892 gp 4 sp 8 cp. All eight entered in Malzareth's previously owned Boccob's Blessed Book (37 pages, no additional magic ink cost). Scrolls consumed. Spellcraft DCs 17/20/21, passed with established modifier. Fighter 15+ arms fragment required for each Heroics casting; one acquired with procurement for immediate use, no fixed extra gp price. This adds spells KNOWN, not magically prepared spells or unspent slots. Do not rewind active encounter or reset daily consumables. The 245,000 gp contract escrow remains contingent on victory; Orathion's hoard and equipment unvalued. Earlier protective Greater Spell Immunity scrolls have already been consumed in preparation.";
   window.LEVEL13_JOURNAL = "25 Mirtul 1373 DR, 19:00 — Dordrien Crypts. Wizard 5 / Master Specialist 8, LA +0, ECL 13, XP 78,674 / 91,000 (+675 since 77,999). Rolled 9 on d12; maximum HP 104. Last HP before advancement 95 +17 temporary; rest/preparation not yet reconciled. New spells: Greater Teleport and Sword of Darkness (ordinary), Waves of Exhaustion (Expanded Spellbook); Necrotic Tumor via Mother Cyst. 10 skill points pending. Liquid treasury 11,367 gp 9 sp 8 cp; pending sales 3,510 gp; projected 14,877 gp 9 sp 8 cp. Gems 7,200 gp (including 10 black onyx, 3 diamonds, 3 bloodstones), ordinary valuables 1,695 gp, unallocated magic 13,720 gp; subtotal 33,982.98 gp includes liquid, not extra cash. Force: 24 operational (6 living, 18 undead), 3 dread warriors, 7 zombies; 3 prisoners and 1 rescued patient. Exploration secured; rest/advancement decisions pending. Earlier: Brokk released; Edric, Maerith, Garran and Vesryn restored (6,000 gp total); lich LA fully bought off.";
   window.DEFAULT_SLOTS = [5,8,8,7,7,6,5,3];
   // Latest documented preparation, not a claim about current unused slots.
