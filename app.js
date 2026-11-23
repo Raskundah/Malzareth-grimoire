@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 13;
+  const DATA_VERSION = 14;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const LEVEL18_CATALOG = ['Earth bind','Fly','Ray reflection','Assay spell resistance','Dimension anchor','Ray Deflection',
@@ -31,10 +31,13 @@
     && sheetModel?.createDefault()?.combat?.saveResistance===5;
   // Only migrate after the entire added spell-catalog script has loaded;
   // protects installed phones with a transient mixed PWA cache.
-  const completeLevel78Research = window.RESEARCH_ARCHIVE78?.revision===1
-    && Number(window.RESEARCH_ARCHIVE78.added)>=130
+  const completeLevel78Research = window.RESEARCH_ARCHIVE78?.revision===2
+    && window.RESEARCH_ARCHIVE78.verified===true
+    && Number(window.RESEARCH_ARCHIVE78.added)>=120
     && defaults.some(s=>s.id==='research-7-banishment')
-    && defaults.some(s=>s.id==='research-8-greater-celerity');
+    && defaults.some(s=>s.id==='research-7-ice-castle')
+    && defaults.some(s=>s.id==='research-8-greater-celerity')
+    && !defaults.some(s=>window.RESEARCH_ARCHIVE78.invalidIds.includes(s.id));
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -131,6 +134,23 @@
           spells.push(structuredClone(starter));
       }
     }
+    // Version 14: repair only incorrect entries created by our previous bulk
+    // transcription, never user-created records or entries from other sources.
+    // Import ONLY newly verified spells so intentional deletions remain deleted.
+    const audit78=(Number(input.version)||1)<14 && completeLevel78Research;
+    if(audit78){
+      const invalid=new Set(window.RESEARCH_ARCHIVE78.invalidIds);
+      for(let i=spells.length-1;i>=0;i--){
+        const entry=spells[i];
+        if(invalid.has(entry.id) && entry.id.startsWith('research-'))spells.splice(i,1);
+      }
+      const normalizeName=name=>String(name).toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9]/g,'');
+      for(const id of window.RESEARCH_ARCHIVE78.newIds){
+        const starter=defaults.find(s=>s.id===id);
+        if(starter && !spells.some(s=>s.level===starter.level && normalizeName(s.name)===normalizeName(starter.name)))
+          spells.push(structuredClone(starter));
+      }
+    }
     const ids = new Set();
     for(const s of spells){if(ids.has(s.id)) s.id=uid(); ids.add(s.id);}
     const prepared = input.prepared.filter(p=>p && ids.has(p.spellId)).map(p=>({id:uid(),spellId:String(p.spellId),used:!!p.used}));
@@ -174,6 +194,16 @@
         name:String(e?.name || '').slice(0,100)
       })).filter(e => e.name)
     })).filter(p => p.name);
+    if(audit78){
+      const invalidNames=new Set([
+        '7/symbolofstunning','8/symbolofinsanity',
+        '7/greatersignofsealing','7/illusorypit','7/brilliantblade',
+        '7/fiendform','7/imbuefamiliarwithspellability',
+        '8/greaterdispellingscreen','8/stormwalk'
+      ]);
+      const key=e=>e.level+'/'+e.name.toLowerCase().replace(/[^a-z0-9]/g,'');
+      for(const preset of presets) preset.entries=preset.entries.filter(e=>!invalidNames.has(key(e)));
+    }
     const clampInt = (value,low,high,fallback) =>
       value !== undefined && value !== null && value !== '' && Number.isFinite(Number(value))
         ? Math.max(low,Math.min(high,Math.trunc(Number(value)))) : fallback;
@@ -352,7 +382,7 @@
       const next = normalizeData(previous);
       if ((Number(previous.version) || 1) < next.version) {
         // Persist the migration once so intentional later deletions are kept.
-        try { localStorage.setItem(STORAGE_KEY+'-pre-v13-backup', raw); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
+        try { localStorage.setItem(STORAGE_KEY+'-pre-v'+next.version+'-backup', raw); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
         catch(e) { console.warn('Unable to persist grimoire migration', e); }
       }
       return next;
