@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 16;
+  const DATA_VERSION = 17;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const LEVEL18_CATALOG = ['Earth bind','Fly','Ray reflection','Assay spell resistance','Dimension anchor','Ray Deflection',
@@ -43,7 +43,7 @@
     && window.SPELL_DETAIL_AUDIT.originalSupplements>=90
     && defaults.some(s=>s.name==='Mind Blank' && !!s.range && !!s.target && !!s.sr)
     && defaults.some(s=>s.name==='Fimbulwinter' && !!s.description)
-    && window.SPELL_FACT_AUDIT?.revision===1
+    && window.SPELL_FACT_AUDIT?.revision===2
     && Number(window.SPELL_FACT_AUDIT.matched)>=200
     && defaults.some(s=>s.name==='Ice Castle' && !!s.casting && !!s.target && !!s.duration);
   const catalogueReady = completeCystDefaults && completeLevel13Defaults && completePrefightDefaults
@@ -168,7 +168,7 @@
     }
     // Populate blank verified fields. Replace only unchanged old boilerplate;
     // never overwrite the player's edited descriptions or named custom spells.
-    const enhanceDetails=(Number(input.version)||1)<16 && completeSpellDetails;
+    const enhanceDetails=(Number(input.version)||1)<17 && completeSpellDetails;
     if(enhanceDetails){
       const original=window.SPELL_DETAIL_AUDIT.previousDescriptionById;
       for(const entry of spells){
@@ -180,6 +180,22 @@
         const oldText=original[entry.id]??'';
         if(starter.description && (!entry.description || (entry.description===oldText && oldText!==starter.description)))
           entry.description=starter.description;
+      }
+    }
+    // Sourcebook fact cleanup (v17): repair only exact old OCR-derived values
+    // from our previous release. Preserve user modifications to those fields.
+    const repairFacts=(Number(input.version)||1)<17 && completeSpellDetails;
+    if(repairFacts){
+      const legacy=window.SPELL_FACT_AUDIT.legacyFields||{};
+      for(const entry of spells){
+        const oldFields=legacy[entry.name];
+        if(!oldFields)continue;
+        const starter=defaults.find(s=>s.id===entry.id && s.name===entry.name && s.level===entry.level);
+        if(!starter)continue;
+        for(const [field,oldValue] of Object.entries(oldFields)){
+          if((entry[field]||'')===oldValue)
+            entry[field]=starter[field]||'';
+        }
       }
     }
     const ids = new Set();
