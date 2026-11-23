@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 12;
+  const DATA_VERSION = 13;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const LEVEL18_CATALOG = ['Earth bind','Fly','Ray reflection','Assay spell resistance','Dimension anchor','Ray Deflection',
@@ -29,6 +29,12 @@
     && sheetModel?.createDefault()?.identity.characterLevel===18;
   const completeEquipmentDefaults = sheetModel?.createDefault()?.inventory?.some(x=>x.id==='orange-prism-ioun-stone')
     && sheetModel?.createDefault()?.combat?.saveResistance===5;
+  // Only migrate after the entire added spell-catalog script has loaded;
+  // protects installed phones with a transient mixed PWA cache.
+  const completeLevel78Research = window.RESEARCH_ARCHIVE78?.revision===1
+    && Number(window.RESEARCH_ARCHIVE78.added)>=130
+    && defaults.some(s=>s.id==='research-7-banishment')
+    && defaults.some(s=>s.id==='research-8-greater-celerity');
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -45,7 +51,7 @@
     }));
     const slots = calcSlots(30,18).totals;
     return {
-      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults && completeLevel18Defaults && completeEquipmentDefaults ? DATA_VERSION : 1,spells,prepared,slots,
+      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults && completeLevel18Defaults && completeEquipmentDefaults && completeLevel78Research ? DATA_VERSION : 1,spells,prepared,slots,
       manualSlots:[...slots],autoSlots:true,spellcastingLevel:18,
       intelligence:30,necroBonus:2,presets:[],
       cogitation:{level:6,used:false,spellId:null},
@@ -110,6 +116,18 @@
       for(const name of LEVEL18_CATALOG){
         const starter=defaults.find(s=>s.name===name && s.status==='spellbook');
         if(starter&&!spells.some(s=>s.level===starter.level && s.name.toLowerCase()===name.toLowerCase()))
+          spells.push(structuredClone(starter));
+      }
+    }
+    // Previously completed, approved two-year project: import every new
+    // school-legal level 7/8 inscription. The current day-state is not reset.
+    const archive78=(Number(input.version)||1)<13 && completeLevel78Research;
+    if(archive78){
+      const normalizeName=name=>String(name).toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9]/g,'');
+      for(const starter of defaults){
+        if(![7,8].includes(starter.level)||!starter.id.startsWith('research-'))continue;
+        if(['Evocation','Enchantment'].includes(starter.school))continue;
+        if(!spells.some(s=>s.level===starter.level && normalizeName(s.name)===normalizeName(starter.name)))
           spells.push(structuredClone(starter));
       }
     }
@@ -319,7 +337,7 @@
         formula:String(x.formula||'').replace(/\s+/g,'').slice(0,18)
       })).filter(x=>x.name&&/^([1-9]\d?)d(3|4|6|8|10|12|20|100)([+-]\d{1,4})?$/.test(x.formula));
     return {
-      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults && completeLevel18Defaults && completeEquipmentDefaults ? DATA_VERSION : (Number(input.version) || 1),
+      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults && completeLevel18Defaults && completeEquipmentDefaults && completeLevel78Research ? DATA_VERSION : (Number(input.version) || 1),
       spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
       autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
       cogitation,abilities,skillOverrides,sheet,damagePresets,
@@ -334,7 +352,7 @@
       const next = normalizeData(previous);
       if ((Number(previous.version) || 1) < next.version) {
         // Persist the migration once so intentional later deletions are kept.
-        try { localStorage.setItem(STORAGE_KEY+'-pre-v12-backup', raw); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
+        try { localStorage.setItem(STORAGE_KEY+'-pre-v13-backup', raw); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
         catch(e) { console.warn('Unable to persist grimoire migration', e); }
       }
       return next;
