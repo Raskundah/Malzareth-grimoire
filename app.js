@@ -142,7 +142,12 @@
       const invalid=new Set(window.RESEARCH_ARCHIVE78.invalidIds);
       for(let i=spells.length-1;i>=0;i--){
         const entry=spells[i];
-        if(invalid.has(entry.id) && entry.id.startsWith('research-'))spells.splice(i,1);
+        // A repurposed, user-renamed entry is not the offending archived spell.
+        const originalName=entry.id.replace(/^research-[78]-/,'').replace(/-/g,'');
+        const currentName=String(entry.name).toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9]/g,'');
+        const originalLevel=Number(entry.id.match(/^research-([78])-/)?.[1]);
+        if(invalid.has(entry.id) && entry.level===originalLevel && currentName===originalName)
+          spells.splice(i,1);
       }
       const normalizeName=name=>String(name).toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9]/g,'');
       for(const id of window.RESEARCH_ARCHIVE78.newIds){
