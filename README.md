@@ -2,6 +2,13 @@
 
 A small, offline-ready, mobile-first D&D 3.5 spellbook built with **plain HTML, CSS and JavaScript**. There are no libraries, accounts, logins or build tools.
 
+## Level 18 update · 23 November 2026
+
+- Malzareth: Wizard 5 / Master Specialist 10 / Abjurant Champion 3, lich, 150 HP, INT 30, DEX 18, effective wizard casting 18, caster level 19 general / 21 Necromancy.
+- Recorded level 14–18 additions: Awaken Undead, Limited Wish, Greater Planar Binding, Avascular Mass, Whirling Blade, Wraithstrike, Wish, Time Stop, Foresight, Unname. Quicken Spell and Combat Casting are included in the feat record.
+- One cross-class Truespeak rank at a cost of two skill points is allocated. Eight level-18 skill points remain open. Unname requires a researched personal truename and a Truespeak check.
+- The missing records from the user's 21 November JSON export were merged into the catalogue, retaining spelling uncertainties. Existing preparations, presets, edited spells, inventory, journal and consumables are preserved during migration. The app does not invent earned XP, current cash or a new in-game date.
+
 ## Features
 - Reconstructed campaign spell ledger: 44 original entries, 6 from later post-lich preparation, and all 10 Mother Cyst spells. Two simple categories: Spellbook and Mother Cyst. Original provenance is preserved in each spell's Source field.
 - Search, level/status filters, favourites, editable spell descriptions and reference fields.
