@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 11;
+  const DATA_VERSION = 12;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const LEVEL18_CATALOG = ['Earth bind','Fly','Ray reflection','Assay spell resistance','Dimension anchor','Ray Deflection',
@@ -27,6 +27,8 @@
   const completePrefightDefaults = PREFIGHT_NAMES.every(name=>defaults.some(s=>s.name===name && s.status==='spellbook'));
   const completeLevel18Defaults = LEVEL18_CATALOG.every(name=>defaults.some(s=>s.name===name && s.status==='spellbook'))
     && sheetModel?.createDefault()?.identity.characterLevel===18;
+  const completeEquipmentDefaults = sheetModel?.createDefault()?.inventory?.some(x=>x.id==='orange-prism-ioun-stone')
+    && sheetModel?.createDefault()?.combat?.saveResistance===5;
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -43,7 +45,7 @@
     }));
     const slots = calcSlots(30,18).totals;
     return {
-      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults && completeLevel18Defaults ? DATA_VERSION : 1,spells,prepared,slots,
+      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults && completeLevel18Defaults && completeEquipmentDefaults ? DATA_VERSION : 1,spells,prepared,slots,
       manualSlots:[...slots],autoSlots:true,spellcastingLevel:18,
       intelligence:30,necroBonus:2,presets:[],
       cogitation:{level:6,used:false,spellId:null},
@@ -274,6 +276,41 @@
       const uncertain='Level 18: reconcile current XP, treasury, date and consumables with the campaign ledger; old values preserved.';
       if(!sheet.audit.includes(uncertain))sheet.audit.unshift(uncertain);
     }
+    // Separate level-18 gear migration also covers phones which loaded the
+    // initial v11 update before the equipment audit was complete.
+    const upgradeEquipment=(Number(input.version)||1)<12 && completeEquipmentDefaults;
+    if(upgradeEquipment && sheet){
+      const baseline=sheetModel.createDefault();
+      const getUpdated=id=>baseline.inventory.find(x=>x.id===id);
+      for(const [oldId,oldName,newId] of [
+        ['cloak-resistance-3','Cloak of Resistance +3','cloak-resistance-5'],
+        ['amulet-natural-armour-2','Amulet of Natural Armour +2','amulet-natural-armour-3']
+      ]){
+        const updated=getUpdated(newId);
+        if(!updated)continue;
+        const existing=sheet.inventory.some(x=>x.id===newId||x.name.toLowerCase()===updated.name.toLowerCase());
+        if(existing)continue;
+        const old=sheet.inventory.find(x=>x.id===oldId&&x.name.toLowerCase()===oldName.toLowerCase()&&x.equipped);
+        if(old){
+          old.id=updated.id;
+          old.name=updated.name;
+          old.notes=updated.notes;
+        }else sheet.inventory.push(structuredClone(updated));
+      }
+      for(const id of ['orange-prism-ioun-stone','belt-of-battle','third-eye-clarity','boots-of-speed','pearl-power-5']){
+        const updated=getUpdated(id);
+        if(updated&&!sheet.inventory.some(x=>x.id===id||x.name.toLowerCase()===updated.name.toLowerCase()))
+          sheet.inventory.push(structuredClone(updated));
+      }
+      // Replace only values matching the previous standard equipment.
+      // User-edited bonuses or charges remain untouched.
+      if(sheet.inventory.some(x=>x.id==='cloak-resistance-5'&&x.equipped)&&sheet.combat.saveResistance===3)
+        sheet.combat.saveResistance=5;
+      if(sheet.inventory.some(x=>x.id==='amulet-natural-armour-3'&&x.equipped)&&sheet.combat.enhanceNatural===2)
+        sheet.combat.enhanceNatural=3;
+      if(sheet.inventory.some(x=>x.id==='belt-of-battle'&&x.equipped)&&sheet.combat.initiativeMisc===4)
+        sheet.combat.initiativeMisc=6;
+    }
     const damagePresets=(Array.isArray(input.damagePresets)?input.damagePresets:[]).slice(0,40)
       .filter(x=>x&&typeof x==='object')
       .map(x=>({
@@ -282,7 +319,7 @@
         formula:String(x.formula||'').replace(/\s+/g,'').slice(0,18)
       })).filter(x=>x.name&&/^([1-9]\d?)d(3|4|6|8|10|12|20|100)([+-]\d{1,4})?$/.test(x.formula));
     return {
-      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults && completeLevel18Defaults ? DATA_VERSION : (Number(input.version) || 1),
+      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults && completeLevel18Defaults && completeEquipmentDefaults ? DATA_VERSION : (Number(input.version) || 1),
       spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
       autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
       cogitation,abilities,skillOverrides,sheet,damagePresets,
@@ -297,7 +334,7 @@
       const next = normalizeData(previous);
       if ((Number(previous.version) || 1) < next.version) {
         // Persist the migration once so intentional later deletions are kept.
-        try { localStorage.setItem(STORAGE_KEY+'-pre-v11-backup', raw); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
+        try { localStorage.setItem(STORAGE_KEY+'-pre-v12-backup', raw); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
         catch(e) { console.warn('Unable to persist grimoire migration', e); }
       }
       return next;
