@@ -1748,5 +1748,265 @@ for(const spell of window.STARTER_SPELLS||[]){
  if(spell.detailsSource!=='3.5 SRD (OGL)')
   spell.detailsSource='Sourcebook stat block (Spell Bible cross-check)';
 }
-window.SPELL_FACT_AUDIT={revision:1,matched:Object.keys(FACTS).length,fieldsCopied};
+// Exact-match corrections for inherited spell headers and OCR spillover.
+// Preserve every other user-recorded field and avoid supplying unsupported values.
+const CORRECTED={
+ "Greater Stone Shape": {
+  "components": "V, S, M/DF",
+  "casting": "1 standard action",
+  "range": "Touch",
+  "target": "Target: Stone or stone objects touched, up to 10 cu. ft. + 10 cu. ft./level",
+  "duration": "Instantaneous",
+  "save": "None",
+  "sr": "No"
+ },
+ "Greater Prying Eyes": {
+  "components": "V, S, M",
+  "casting": "1 minute",
+  "range": "One mile",
+  "target": "Effect: Ten or more levitating eyes",
+  "duration": "1 hour/level; see text (D)",
+  "save": "None",
+  "sr": "No"
+ },
+ "Greater Scrying": {
+  "components": "V, S",
+  "casting": "1 standard action",
+  "range": "See text",
+  "target": "Effect: Magical sensor",
+  "duration": "1 hour/level",
+  "save": "Will negates",
+  "sr": "Yes"
+ },
+ "Summon Monster VII": {
+  "components": "V, S, F/DF",
+  "casting": "1 round",
+  "range": "Close (25 ft. + 5 ft./2 levels)",
+  "target": "Effect: One or more summoned creatures",
+  "duration": "1 round/level (D)",
+  "save": "None",
+  "sr": "No"
+ },
+ "Summon Monster VIII": {
+  "components": "V, S, F/DF",
+  "casting": "1 round",
+  "range": "Close (25 ft. + 5 ft./2 levels)",
+  "target": "Effect: One or more summoned creatures",
+  "duration": "1 round/level (D)",
+  "save": "None",
+  "sr": "No"
+ },
+ "Symbol of Weakness": {
+  "components": "V, S, M",
+  "casting": "10 minutes",
+  "range": "0 ft.; see text",
+  "target": "Effect: One symbol",
+  "duration": "See text; active 10 min./level once triggered",
+  "save": "Fortitude negates",
+  "sr": "Yes"
+ },
+ "Greater Stunning Breath": {
+  "components": "S",
+  "casting": "1 swift action",
+  "range": "Personal",
+  "target": "Target: Your breath weapon",
+  "duration": "Instantaneous",
+  "save": "Fortitude negates stunning; see text",
+  "sr": ""
+ },
+ "Mass Animalistic Power": {
+  "components": "V, S, M",
+  "casting": "1 standard action",
+  "range": "Close (25 ft. + 5 ft./2 levels)",
+  "target": "Targets: One creature/level, no two more than 30 ft. apart",
+  "duration": "1 minute/level",
+  "save": "Will negates (harmless)",
+  "sr": "Yes (harmless)"
+ },
+ "Mass Adept Spirit": {
+  "casting": "1 standard action",
+  "range": "Close (25 ft. + 5 ft./2 levels)",
+  "target": "Targets: Up to one creature/level"
+ },
+ "Mass Guardian Spirit": {
+  "casting": "1 standard action",
+  "range": "Close (25 ft. + 5 ft./2 levels)",
+  "target": "Targets: Up to one creature/level"
+ },
+ "Dragon Ally": {
+  "range": "Close (25 ft. + 5 ft./2 levels)",
+  "target": "Effect: One called dragon of 15 HD or less"
+ },
+ "Sword of Darkness": {
+  "target": "Effect: Black blade of negative energy"
+ },
+ "Greater Seed of Undeath": {
+  "target": "Area: 40-ft.-radius emanation"
+ },
+ "Mass Make Manifest": {
+  "save": "None"
+ }
+};
+const LEGACY={
+ "Sword of Darkness": {
+  "target": "Effect: Black blade of negative energy You shatter the sword in your hand against a stone, bringing into"
+ },
+ "Dimension Jumper": {
+  "duration": "1 round/level You whisk yourself from place to place with a word."
+ },
+ "Assay spell resistance": {
+  "duration": "1 round/level Finishing the spell, your eyes glow with a pale blue radiance, and"
+ },
+ "Necrotic Domination": {
+  "range": "Personal Target: You"
+ },
+ "Necrotic Empowerment": {
+  "duration": "1 round/level You call upon the mother cyst that your body hosts,"
+ },
+ "Summon Monster VII": {
+  "casting": "",
+  "components": "",
+  "range": "",
+  "target": "",
+  "duration": "",
+  "save": "",
+  "sr": ""
+ },
+ "Greater Arcane Sight": {
+  "duration": "Instantaneous An augury can tell you whether a"
+ },
+ "Greater Scrying": {
+  "range": "Touch",
+  "target": "Target: Creature touched Duration: 1 minute or until discharged",
+  "save": "None"
+ },
+ "Symbol of Weakness": {
+  "casting": "",
+  "components": "",
+  "range": "",
+  "target": "",
+  "duration": "",
+  "save": "",
+  "sr": ""
+ },
+ "Summon Monster VIII": {
+  "casting": "",
+  "components": "",
+  "range": "",
+  "target": "",
+  "duration": "",
+  "save": "",
+  "sr": ""
+ },
+ "Greater Prying Eyes": {
+  "casting": "1 standard action",
+  "range": "Close (25 ft. + 5 ft./2 levels)",
+  "target": "Targets: You plus one willing creature per three levels, no two of which can be more than 30 ft. apart",
+  "duration": "10 min./level (D)"
+ },
+ "Dragon Ally": {
+  "range": "Close (25 ft. + 5 ft./2 levels)1302 Effect: One called dragon of 15 HD or less",
+  "target": ""
+ },
+ "Kiss of the Vampire": {
+  "duration": "1 round/level Drawing upon the powers of unlife, you give yourself abilities"
+ },
+ "Animate Breath": {
+  "duration": "1 round/level You imbue the energy of your breath weapon with"
+ },
+ "Bite of the Werebear": {
+  "duration": "1 round/level With an inhuman roar, your face extends and expands, and your"
+ },
+ "Elemental Body": {
+  "duration": "1 round/level You can transform your body into a particular type of"
+ },
+ "Greater Stone Shape": {
+  "casting": "1 round",
+  "components": "V, S, DF",
+  "range": "Close (25 ft. + 5 ft./2 levels)",
+  "target": "Targets: Three pebbles, no two of which are more than 30 ft. apart",
+  "duration": "1 round/level (D)"
+ },
+ "Heart of Stone": {
+  "duration": "1 year You exchange your own living heart for a finely crafted"
+ },
+ "Veil of Undeath": {
+  "duration": "10 min./level You gain many of the traits common to undead creatures.721"
+ },
+ "Ghostform": {
+  "duration": "1 round/level (D) You assume a visible, incorporeal form like that of a"
+ },
+ "Mass Make Manifest": {
+  "save": "None You toss a handful of copper dust into the air, and it clings to"
+ },
+ "Greater Stunning Breath": {
+  "casting": "1 standard action",
+  "components": "V, S, M/DF",
+  "range": "Medium (100 ft. + 10 ft./level)",
+  "target": "Area: 20-ft.-radius emanation centered on a point in space",
+  "duration": "1 round/level",
+  "save": "Fortitude negates",
+  "sr": "Yes"
+ },
+ "Greater Seed of Undeath": {
+  "target": "Area: 40-ft.-radius emanation Every creature in the area briefly takes on a corpselike appearance,"
+ },
+ "Adamantine Wings": {
+  "duration": "1 hour/level (D) or until expended You feel an instant of searing pain from your back, which swiftly"
+ },
+ "Unicorn Heart": {
+  "duration": "1 hour/level (D) or until expended Your heart beats with the power of the unicorn."
+ },
+ "Mysterious Redirection": {
+  "duration": "5 rounds or until expended Your foe’s attacks mysteriously veer toward other targets."
+ },
+ "Dreaded Form of the Eye Tyrant": {
+  "duration": "1 round/level (D) Your body withers away to dust, leaving only a floating head,"
+ },
+ "Unyielding Form of Inevitable Death": {
+  "duration": "1 round/level (D) Your flesh turns into solid onyx, and your muscled fists crackle"
+ },
+ "Mass Animalistic Power": {
+  "casting": "1 standard action Range: Personal",
+  "target": "Target: You",
+  "duration": "1 round/level With a crystalline tinkling, your body transforms into a figure",
+  "save": "",
+  "sr": ""
+ },
+ "As the Frost": {
+  "duration": "1 round/level With a crystalline tinkling, your body transforms into a figure of"
+ },
+ "Greater Celerity": {
+  "duration": "Instantaneous You borrow a slice of time from the fut"
+ },
+ "Eye of the Beholder": {
+  "duration": "1 round/level One of the caster’s eyes grows out of her head on an"
+ },
+ "Mass Adept Spirit": {
+  "casting": "1 standard action Range: Touch Target: Creature touched",
+  "target": ""
+ },
+ "Mass Guardian Spirit": {
+  "casting": "1 standard action Range: Touch Target: Creature touched",
+  "target": ""
+ }
+};
+const scrub=(field,value)=>{
+ if(!value)return '';
+ let v=value;
+ if(field==='casting')v=v.replace(/\\s+Range:\\s*.*$/i,'');
+ if(field==='range')v=v.replace(/\\s+(?:Target|Targets|Area|Effect):.*$/i,'').replace(/\\)1302$/i,')');
+ if(field==='target')v=v.replace(/\\s+Duration:\\s*.*$/i,'').replace(/\\s+(?:You shatter|Every creature in the area)\\b.*$/i,'');
+ if(field==='save')v=v.replace(/\\s+You toss\\b.*$/i,'');
+ if(field==='duration')v=v.replace(/\\s+(?:You |Your |With |Drawing |Finishing |One of |An augury )[\\s\\S]*$/,'');
+ return v.trim();
+};
+for(const spell of window.STARTER_SPELLS||[]){
+ for(const field of ['casting','components','range','target','duration','save','sr']){
+  const changes=CORRECTED[spell.name]||{};
+  if(Object.prototype.hasOwnProperty.call(changes,field))spell[field]=changes[field];
+  else if(spell[field])spell[field]=scrub(field,spell[field]);
+ }
+}
+window.SPELL_FACT_AUDIT={revision:2,matched:Object.keys(FACTS).length,fieldsCopied,legacyFields:LEGACY};
 })();
