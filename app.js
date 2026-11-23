@@ -765,7 +765,7 @@
       id:previous?.id||uid(),name,level:Number($('#spell-level').value),school:get('school'),status:get('status'),source:get('source'),
       casting:get('casting'),components:get('components'),range:get('range'),target:get('target'),duration:get('duration'),save:get('save'),sr:get('sr'),detailsSource:previous?.detailsSource||'',
       description:get('description'),notes:get('notes'),favorite:$('#spell-favorite').checked,
-      tags:[...$('[data-spell-tag]:checked').map(el=>el.dataset.spellTag),...$('#spell-custom-tags').value.split(',')]
+      tags:[...[...document.querySelectorAll('[data-spell-tag]:checked')].map(el=>el.dataset.spellTag),...$('#spell-custom-tags').value.split(',')]
     });
     if(previous){
       const currentPrepared=state.prepared.filter(p=>p.spellId===previous.id).length;
@@ -875,9 +875,9 @@
   $('#spell-tag-suggest').addEventListener('click',()=>{
     const tags=spellTagger?.tagsFor({name:$('#spell-name').value,status:$('#spell-status').value})||[];
     if(!tags.length){toast('No curated suggestions for this spell. Add tags manually.');return;}
-    const existing=$('[data-spell-tag]:checked').length||$('#spell-custom-tags').value.trim();
+    const existing=document.querySelectorAll('[data-spell-tag]:checked').length||$('#spell-custom-tags').value.trim();
     if(existing && !confirm('Replace the current tag choices with catalogue suggestions?'))return;
-    $('[data-spell-tag]').forEach(el=>{el.checked=tags.includes(el.dataset.spellTag);});
+    document.querySelectorAll('[data-spell-tag]').forEach(el=>{el.checked=tags.includes(el.dataset.spellTag);});
     $('#spell-custom-tags').value=tags.filter(tag=>!(spellTagger?.core||[]).includes(tag)).join(', ');
     toast('Catalogue tag suggestions applied. Review them before saving.');
   });
