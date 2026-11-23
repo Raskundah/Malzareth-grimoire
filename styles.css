@@ -242,3 +242,18 @@
 .spell-actions .text-button[data-action="roll-effect"]{color:var(--gold)}
 @media(max-width:1100px){.combat-effect-grid{grid-template-columns:1fr}.combat-custom-form{grid-template-columns:1fr 1fr}.combat-custom-form button{grid-column:1/-1}}
 @media(max-width:700px){.combat-attack-buttons{grid-template-columns:1fr}.combat-attack-tools{gap:10px}.combat-effect-grid{grid-template-columns:1fr}}
+
+/* v15: readable spell rules and school filtering on wide and mobile screens. */
+.spell-mechanics{border-top:1px solid #413849;padding-top:9px;margin:0;font-size:11px;color:var(--soft)}
+.spell-mechanics summary{list-style-position:outside;cursor:pointer;color:var(--gold);font-weight:680;padding:3px 0;user-select:none}
+.spell-mechanics summary:hover{text-decoration:underline}
+.spell-mechanics dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;margin:12px 0}
+.spell-mechanics dl>div{min-width:0;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#1c1a29}
+.spell-mechanics dt{font-size:9px;font-weight:720;letter-spacing:.4px;color:var(--gold-2);text-transform:uppercase;margin-bottom:4px}
+.spell-mechanics dd{margin:0;overflow-wrap:anywhere;white-space:normal;line-height:1.55;font-size:11px;color:var(--ink)}
+.spell-mechanics dd.not-verified{color:var(--muted);font-style:italic}
+.spell-mechanics[open]+.spell-actions{margin-top:4px}
+.spell-card:has(.spell-mechanics[open]) .spell-description{display:block;-webkit-line-clamp:unset;overflow:visible;min-height:auto}
+.spell-mechanics p.muted{margin:8px 0 2px;overflow-wrap:anywhere}
+.tool-strip select{min-width:126px;max-width:170px;flex:0 1 auto}
+@media(max-width:720px){.tool-strip>.search-wrap{flex-basis:100%;min-height:44px}.tool-strip select{width:calc(50% - 6px);max-width:none;min-width:0;flex:1}.spell-mechanics dl{grid-template-columns:1fr}}
