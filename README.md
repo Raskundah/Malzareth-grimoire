@@ -2,6 +2,21 @@
 
 A small, offline-ready, mobile-first D&D 3.5 spellbook built with **plain HTML, CSS and JavaScript**. There are no libraries, accounts, logins or build tools.
 
+## Multi-tag spell filtering · 23 November 2026
+
+The **Spellbook** now has editable, multi-label purpose tags, separate from the RAW spell school and spellbook/Mother Cyst category. Quick filters include **Offensive, Defensive, Buff, Damage, Control, Summon, Negative Energy, Kill, True Name, Undead, Teleportation and Utility**. Expand **More tags and custom tags** for Debuff, Mobility, Divination, Healing, Countermagic, Illusion, Transformation, Creation, Barrier, Planar, Necrotic Cyst, Ritual, custom tags and **Untagged**.
+
+- Select multiple chips. **Any (OR)** returns spells with at least one selected tag; **All (AND)** requires every selected tag.
+- Purpose tags combine with the existing search, level, school, spellbook/Mother Cyst and favourites filters.
+- The tags on each spell card are clickable filters; the first five display on the card.
+- Use **View / edit → Spell purpose tags** to tick multiple labels or enter comma-separated custom labels, then save. **Use catalogue suggestions** is optional, requires confirmation before overwriting nonempty choices, and never silently invents categories for unknown names.
+- For the existing catalogue, a conservative curated index covers **214 of 216 spells**. *Adamantine Wings* and *Soul’s Treasure Lost* remain deliberately untagged until their precise functions are reviewed.
+- **Save schema v18** adds a `tags: string[]` property per spell. Existing v17/local JSON saves receive seeded labels during the non-destructive migration; already saved explicit tag arrays (including `[]` when a player deliberately clears tags) are preserved. Preparation, casts, presets, spell descriptions, levels and character state are not reset.
+- JSON exports/imports include tags; Android/PWA offline cache is **v19** and includes `spell-tags.js`. After publishing, refresh once while online to acquire the update.
+- Regression checks: `node --test tests/spell-tags.test.cjs`.
+
+These tags are a **player indexing aid**, not additional D&D spell descriptors or rules adjudications. School, saves, ranges and spell descriptions are still recorded independently.
+
 ## Level 18 update · 23 November 2026
 
 - Malzareth: Wizard 5 / Master Specialist 10 / Abjurant Champion 3, lich, 150 HP, INT 30, DEX 18, effective wizard casting 18, caster level 19 general / 21 Necromancy.
