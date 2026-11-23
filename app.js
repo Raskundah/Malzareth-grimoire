@@ -3,9 +3,12 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 10;
+  const DATA_VERSION = 11;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
+  const LEVEL18_CATALOG = ['Earth bind','Fly','Ray reflection','Assay spell resistance','Dimension anchor','Ray Deflection',
+    'Greater Dispel Magic','Magnificent Mansion','Energy Immunity','Whirling Blade','Wraithstrike',
+    'Awaken Undead','Limited Wish','Greater Planar Binding','Avascular Mass','Wish','Time Stop','Foresight','Unname'];
   const NEW_CYST_NAMES = new Set(['Necrotic Awareness','Necrotic Burst','Necrotic Eruption','Necrotic Tumor','Necrotic Empowerment','Necrotic Termination']);
   const defaults = window.STARTER_SPELLS || [];
   const sheetModel=window.SHEET_MODEL;
@@ -20,8 +23,10 @@
   const completeCystDefaults = [...NEW_CYST_NAMES].every(name =>
     defaults.some(s => s.status === 'cyst' && s.name === name)
   );
-  const completeLevel13Defaults = LEVEL13_NAMES.every(name=>defaults.some(s=>s.name===name&&s.level===7)) && sheetModel?.createDefault()?.identity.characterLevel===13;
+  const completeLevel13Defaults = LEVEL13_NAMES.every(name=>defaults.some(s=>s.name===name&&s.level===7)) && sheetModel?.createDefault()?.identity.characterLevel>=13;
   const completePrefightDefaults = PREFIGHT_NAMES.every(name=>defaults.some(s=>s.name===name && s.status==='spellbook'));
+  const completeLevel18Defaults = LEVEL18_CATALOG.every(name=>defaults.some(s=>s.name===name && s.status==='spellbook'))
+    && sheetModel?.createDefault()?.identity.characterLevel===18;
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -36,13 +41,13 @@
       const spell = spells.find(s => s.name === name && s.level === Number(level));
       if(spell) prepared.push({id: uid(), spellId: spell.id, used:false});
     }));
-    const slots = calcSlots(30,13).totals;
+    const slots = calcSlots(30,18).totals;
     return {
-      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults ? DATA_VERSION : 1,spells,prepared,slots,
-      manualSlots:[...slots],autoSlots:true,spellcastingLevel:13,
+      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults && completeLevel18Defaults ? DATA_VERSION : 1,spells,prepared,slots,
+      manualSlots:[...slots],autoSlots:true,spellcastingLevel:18,
       intelligence:30,necroBonus:2,presets:[],
       cogitation:{level:6,used:false,spellId:null},
-      abilities:{STR:10,DEX:17,WIS:12,CHA:20},skillOverrides:{},
+      abilities:{STR:10,DEX:18,WIS:12,CHA:20},skillOverrides:{},
       sheet:sheetModel?.createDefault() || null,damagePresets:[],
       journal:[window.LEVEL13_JOURNAL,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n'),lastSaved:new Date().toISOString()
     };
@@ -96,6 +101,16 @@
         if(starter&&!spells.some(s=>s.name.toLowerCase()===name.toLowerCase() && s.level===starter.level))spells.push(structuredClone(starter));
       }
     }
+    // Version 11: import only explicitly known missing spells from level 18
+    // and the user's prior export. Existing spell edits and prep remain untouched.
+    const advance18 = (Number(input.version)||1)<11 && completeLevel18Defaults;
+    if(advance18){
+      for(const name of LEVEL18_CATALOG){
+        const starter=defaults.find(s=>s.name===name && s.status==='spellbook');
+        if(starter&&!spells.some(s=>s.level===starter.level && s.name.toLowerCase()===name.toLowerCase()))
+          spells.push(structuredClone(starter));
+      }
+    }
     const ids = new Set();
     for(const s of spells){if(ids.has(s.id)) s.id=uid(); ids.add(s.id);}
     const prepared = input.prepared.filter(p=>p && ids.has(p.spellId)).map(p=>({id:uid(),spellId:String(p.spellId),used:!!p.used}));
@@ -103,6 +118,7 @@
     let spellcastingLevel = Number.isFinite(Number(input.spellcastingLevel))
       ? Math.max(1,Math.min(20,Math.trunc(Number(input.spellcastingLevel)))) : 13;
     if(advance && spellcastingLevel===12)spellcastingLevel=13;
+    if(advance18 && spellcastingLevel<18)spellcastingLevel=18;
     const calculated = calcSlots(intelligence,spellcastingLevel).totals;
     const readSlots = (list, fallback) => Array.from({length:10},(_,l)=>{
       const n=Number(list?.[l]);
@@ -145,6 +161,7 @@
       [['STR',10],['DEX',17],['WIS',12],['CHA',20]]
         .map(([key,baseline])=>[key,clampInt(input.abilities?.[key],1,99,baseline)])
     );
+    if(advance18 && abilities.DEX===17)abilities.DEX=18;
     const skillOverrides = {};
     if(input.skillOverrides && typeof input.skillOverrides==='object' && !Array.isArray(input.skillOverrides)){
       for(const [key,record] of Object.entries(input.skillOverrides).slice(0,150)){
@@ -153,6 +170,18 @@
           ranks:clampInt(record?.ranks,0,60,0),
           extra:clampInt(record?.extra,-100,100,0)
         };
+      }
+    }
+    if(advance18){
+      // Confirmed ranks to level 17, plus one Truespeak rank at 18.
+      // Never lower an existing locally edited rank.
+      for(const [id,rank] of Object.entries({
+        'concentration':18,'spellcraft':20,'decipher-script':18,
+        'knowledge-arcana':20,'knowledge-planes':18,'knowledge-nobility':12,
+        'intimidate':16,'truespeak':1
+      })){
+        const previous=skillOverrides[id];
+        skillOverrides[id]={ranks:Math.max(rank,previous?.ranks??0),extra:previous?.extra??0};
       }
     }
     const countAt = level => prepared.filter(p=>spells.find(s=>s.id===p.spellId)?.level===level).length;
@@ -215,6 +244,36 @@
       }
       for(const note of baseline.audit.filter(note=>note.startsWith('All eight pre-Orathion'))){if(!sheet.audit.includes(note))sheet.audit.push(note);}
     }
+    if(advance18 && sheet && sheet.identity.characterLevel<18){
+      const baseline=sheetModel.createDefault();
+      const oldMax=Number(sheet.combat.maxHP)||0;
+      if(oldMax>0&&oldMax<150){
+        const gained=150-oldMax;
+        // Maintain the injury difference, rather than silently healing on upgrade.
+        if(sheet.combat.currentHP>0)sheet.combat.currentHP=Math.min(150,sheet.combat.currentHP+gained);
+        sheet.combat.maxHP=150;
+      }
+      sheet.identity.characterLevel=18;
+      sheet.identity.characterClass=baseline.identity.characterClass;
+      sheet.identity.xpNext=Math.max(Number(sheet.identity.xpNext)||0,171000);
+      sheet.identity.xpNote='Level 18 confirmed. Current XP must be reconciled; stored historical XP retained. Next level is 171,000 XP.';
+      sheet.combat.bab=Math.max(sheet.combat.bab,10);
+      for(const [key,value] of Object.entries({fort:5,ref:5,will:14}))
+        sheet.combat.baseSaves[key]=Math.max(sheet.combat.baseSaves[key]??0,value);
+      for(const feat of baseline.feats.filter(f=>['combat-casting','quicken-spell'].includes(f.id)))
+        if(!sheet.feats.some(f=>f.id===feat.id||f.name.toLowerCase()===feat.name.toLowerCase()))sheet.feats.push(feat);
+      for(const feature of baseline.features.filter(f=>['esoterica-major','abjurant-armor','extended-abjuration','swift-abjuration'].includes(f.id)))
+        if(!sheet.features.some(f=>f.id===feature.id||f.name.toLowerCase()===feature.name.toLowerCase()))sheet.features.push(feature);
+      for(const feature of sheet.features){
+        const latest=baseline.features.find(f=>f.id===feature.id);
+        if(latest&&['undead','caster-level','esoterica-minor','esoterica-major'].includes(feature.id))feature.effect=latest.effect;
+      }
+      const pending='Level 18: eight skill points remain unspent after buying one cross-class Truespeak rank for two points.';
+      sheet.audit=sheet.audit.filter(a=>!a.startsWith('Allocate 10 skill points gained at level 13')&&!a.startsWith('LA buyoff complete (+0). XP 78,674'));
+      if(!sheet.audit.includes(pending))sheet.audit.unshift(pending);
+      const uncertain='Level 18: reconcile current XP, treasury, date and consumables with the campaign ledger; old values preserved.';
+      if(!sheet.audit.includes(uncertain))sheet.audit.unshift(uncertain);
+    }
     const damagePresets=(Array.isArray(input.damagePresets)?input.damagePresets:[]).slice(0,40)
       .filter(x=>x&&typeof x==='object')
       .map(x=>({
@@ -223,11 +282,11 @@
         formula:String(x.formula||'').replace(/\s+/g,'').slice(0,18)
       })).filter(x=>x.name&&/^([1-9]\d?)d(3|4|6|8|10|12|20|100)([+-]\d{1,4})?$/.test(x.formula));
     return {
-      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults ? DATA_VERSION : (Number(input.version) || 1),
+      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults && completeLevel18Defaults ? DATA_VERSION : (Number(input.version) || 1),
       spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
       autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
       cogitation,abilities,skillOverrides,sheet,damagePresets,
-      journal:(()=>{let j=String(input.journal??''); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
+      journal:(()=>{let j=String(input.journal??''); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');if(advance18&&!j.includes('Level 18: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL18_JOURNAL].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
     };
   };
   const load = () => {
@@ -238,7 +297,7 @@
       const next = normalizeData(previous);
       if ((Number(previous.version) || 1) < next.version) {
         // Persist the migration once so intentional later deletions are kept.
-        try { localStorage.setItem(STORAGE_KEY+'-pre-v10-backup', raw); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
+        try { localStorage.setItem(STORAGE_KEY+'-pre-v11-backup', raw); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
         catch(e) { console.warn('Unable to persist grimoire migration', e); }
       }
       return next;
@@ -310,9 +369,9 @@
     $('#stat-dc').textContent=dcFor(selectedLevel,'Necromancy');
     $('#stat-dc-label').textContent=`Level ${selectedLevel} · Necromancy`;
     $('#hero-int').textContent=state.intelligence;
-    if($('#hero-class'))$('#hero-class').textContent=state.sheet?.identity.characterClass||'Wizard 5 / Master Specialist 8';
-    if($('#hero-cl'))$('#hero-cl').textContent=state.spellcastingLevel;
-    if($('#hero-necro'))$('#hero-necro').textContent=state.spellcastingLevel+1;
+    if($('#hero-class'))$('#hero-class').textContent=state.sheet?.identity.characterClass||'Wizard 5 / Master Specialist 10 / Abjurant Champion 3';
+    if($('#hero-cl'))$('#hero-cl').textContent=state.spellcastingLevel+1;
+    if($('#hero-necro'))$('#hero-necro').textContent=state.spellcastingLevel+3;
     const baseDC=10+Math.floor((state.intelligence-10)/2);
     $('#standard-dc-formula').textContent=`${baseDC} + level`;
     $('#necro-dc-formula').textContent=`${baseDC+state.necroBonus} + level`;
@@ -333,7 +392,7 @@
       const available=currentCount(s.level)<prepLimit(s.level);
       const brief=s.description||spellReference?.get(s)?.description||'';
       const rolled=spellReference?.rollFor(s,{
-        casterLevel:state.spellcastingLevel,necroLevel:state.spellcastingLevel+1
+        casterLevel:state.spellcastingLevel+1,necroLevel:state.spellcastingLevel+3
       });
       return `<article class="spell-card">
         <div class="spell-top"><span class="spell-level" title="${esc(labelLevel(s.level))}">${s.level}</span><div class="spell-head"><h3>${esc(s.name)}</h3><div class="spell-tags">${s.school?`<span class="tag ${s.school==='Necromancy'?'necro':''}">${esc(s.school)}</span>`:'<span class="tag">School unverified</span>'}${s.status==='cyst'?'<span class="tag cyst">Mother Cyst</span>':''}<span class="tag spell-dc" title="Saving throw DC, if applicable">DC ${dcFor(s.level,s.school)}</span></div></div></div>
@@ -606,7 +665,7 @@
     else if(action==='roll-effect'){
       const spell=state.spells.find(s=>s.id===id);
       const effect=spellReference?.rollFor(spell,{
-        casterLevel:state.spellcastingLevel,necroLevel:state.spellcastingLevel+1
+        casterLevel:state.spellcastingLevel+1,necroLevel:state.spellcastingLevel+3
       });
       if(!effect)return;
       setView('dice');
