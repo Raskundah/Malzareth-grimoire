@@ -1,4 +1,4 @@
-/* The Ashen Crown: bulk archive from Malzareth's confirmed two-year spell research.
+/* The Ashen Crown: audited bulk archive from Malzareth's confirmed two-year spell research.
    Scope: 7th- and 8th-level sorcerer/wizard spells in approved 3.5 sources.
    Neither Evocation nor Enchantment is available to this specialist.
    This is a spellbook catalogue, NOT the prepared-spell list. Sources are cited
@@ -12,7 +12,7 @@
         Conjuration:['Drawmij’s Instant Summons','Mordenkainen’s Magnificent Mansion','Phase Door','Plane Shift','Summon Monster VII','Teleport Object','Greater Teleport'],
         Divination:['Greater Arcane Sight','Greater Scrying','Vision'],
         Illusion:['Mass Invisibility','Project Image','Greater Shadow Conjuration','Simulacrum'],
-        Necromancy:['Control Undead','Finger of Death','Symbol of Stunning','Symbol of Weakness','Waves of Exhaustion'],
+        Necromancy:['Control Undead','Finger of Death','Symbol of Weakness','Waves of Exhaustion'],
         Transmutation:['Control Weather','Ethereal Jaunt','Reverse Gravity','Statue'],
         Universal:['Limited Wish']
       },
@@ -21,7 +21,7 @@
         Conjuration:['Incendiary Cloud','Maze','Greater Planar Binding','Summon Monster VIII','Trap the Soul'],
         Divination:['Discern Location','Moment of Prescience','Greater Prying Eyes'],
         Illusion:['Scintillating Pattern','Screen','Greater Shadow Evocation'],
-        Necromancy:['Clone','Create Greater Undead','Horrid Wilting','Symbol of Death','Symbol of Insanity'],
+        Necromancy:['Clone','Create Greater Undead','Horrid Wilting','Symbol of Death'],
         Transmutation:['Iron Body','Polymorph Any Object','Temporal Stasis']
       }
     }],
@@ -56,15 +56,16 @@
       }
     }],
     ['Complete Arcane',{
+      // Only Sor/Wiz level-7 and level-8 entries. Five previously included entries
+      // are spells of level 5 or 6; Greater Dispelling Screen is level 7, not 8.
       7:{
-        Abjuration:['Greater Sign of Sealing'],
-        Illusion:['Illusory Pit'],
-        Necromancy:['Arrow of Bone'],
-        Transmutation:['Brilliant Blade','Fiendform','Imbue Familiar with Spell Ability']
+        Abjuration:['Energy Immunity','Greater Dispelling Screen'],
+        Necromancy:['Arrow of Bone','Sword of Darkness']
       },
       8:{
-        Abjuration:['Greater Dispelling Screen'],
-        Transmutation:['Ghostform']
+        Illusion:['Superior Invisibility'],
+        Necromancy:['Blackfire','Heart of Stone'],
+        Transmutation:['Flensing','Ghostform']
       }
     }],
     ['Libris Mortis',{
@@ -90,7 +91,7 @@
       }
     }],
     ['Frostburn',{
-      7:{Abjuration:['Greater Glacial Ward']},
+      7:{Abjuration:['Greater Glacial Ward'],Conjuration:['Ice Castle']},
       8:{Transmutation:['Fimbulwinter']}
     }],
     ['Tome of Magic',{
@@ -99,7 +100,7 @@
     }],
     ['Stormwrack',{
       7:{Conjuration:['Waterspout']},
-      8:{Conjuration:['Mordenkainen’s Capable Caravel','Stormwalk']}
+      8:{Conjuration:['Mordenkainen’s Capable Caravel']}
     }],
     ['Book of Vile Darkness',{
       7:{Conjuration:['Wall of Eyes'],Divination:['Fiendish Clarity'],Transmutation:['Eye of the Beholder']},
@@ -145,6 +146,7 @@
     'Plane Shift':'Transport willing creatures between planes, with uncertain arrival location.',
     'Summon Monster VII':'Call an extraplanar ally for a limited time.',
     'Simulacrum':'Fashion a partially real duplicate of a creature using special materials and XP.',
+    'Ice Castle':'Conjure a fortified castle of ice and snow with magical defenses for 24 hours.',
     'Control Undead':'Direct undead creatures within the spell’s Hit Dice limit.',
     'Finger of Death':'Attempt to slay one living target; a successful save still causes damage.',
     'Reverse Gravity':'Turn gravity upside down in a selected volume for a short duration.',
@@ -201,6 +203,21 @@
       }
     }
   }
-  window.RESEARCH_ARCHIVE78={revision:1,added:inserted,totalSourceEntries:bySource.length,
-    level7:added.filter(s=>s.level===7).length,level8:added.filter(s=>s.level===8).length};
+  // Exact IDs from the earlier bulk catalog that failed source/level/school audit.
+  // Purge only these *automatically imported* records in the one-time v14 migration.
+  const invalidIds=[
+    'research-7-symbol-of-stunning',
+    'research-8-symbol-of-insanity',
+    'research-7-greater-sign-of-sealing',
+    'research-7-illusory-pit',
+    'research-7-brilliant-blade',
+    'research-7-fiendform',
+    'research-7-imbue-familiar-with-spell-ability',
+    'research-8-greater-dispelling-screen',
+    'research-8-stormwalk'
+  ];
+  const newIds=['research-7-ice-castle'];
+  window.RESEARCH_ARCHIVE78={revision:2,added:inserted,totalSourceEntries:bySource.length,
+    level7:added.filter(s=>s.level===7).length,level8:added.filter(s=>s.level===8).length,
+    invalidIds,newIds,verified:true};
 })();
