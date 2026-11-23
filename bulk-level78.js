@@ -106,8 +106,8 @@
       8:{Conjuration:['Phantasmal Thief'],Necromancy:['Gutwrench','Steal Life'],Transmutation:['Bestow Greater Curse','Soul’s Treasure Lost']}
     }],
     ['Magic of Incarnum',{
-      7:{Transmutation:['Mass Adept Spirit','Open Lesser Chakra']},
-      8:{Conjuration:['Conjure Greater Midnight Construct'],Transmutation:['Mass Guardian Spirit'],Abjuration:['Soulbanned Zone']}
+      7:{Divination:['Mass Adept Spirit'],Conjuration:['Incarnum Bladestorm'],Transmutation:['Open Lesser Chakra']},
+      8:{Conjuration:['Conjure Greater Midnight Construct'],Divination:['Mass Guardian Spirit'],Abjuration:['Soulbanned Zone']}
     }]
   ];
   // Arcane spells that are already listed by a conventional alternative name.
