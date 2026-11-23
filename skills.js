@@ -5,24 +5,24 @@
    Only a modifier tracker: this does not spend/validate skill points. */
 (() => {
   'use strict';
-  const BASE_ABILITIES={STR:10,DEX:17,INT:30,WIS:12,CHA:20};
+  const BASE_ABILITIES={STR:10,DEX:18,INT:30,WIS:12,CHA:20};
   // [id, name, ability, ranks, total, group, trainedOnly, notes]
   const base=[
-    ['concentration','Concentration','CHA',12,17,'Arcane',false,'Undead: Charisma instead of Constitution'],
+    ['concentration','Concentration','CHA',18,23,'Arcane',false,'Undead: Charisma instead of Constitution'],
     ['craft','Craft (any)','INT',0,10,'Practical',false,'Specify a craft when rolling'],
-    ['decipher-script','Decipher Script','INT',15,25,'Arcane'],
-    ['knowledge-arcana','Knowledge (arcana)','INT',15,25,'Knowledge'],
+    ['decipher-script','Decipher Script','INT',18,28,'Arcane'],
+    ['knowledge-arcana','Knowledge (arcana)','INT',20,30,'Knowledge'],
     ['knowledge-architecture','Knowledge (architecture & engineering)','INT',2,12,'Knowledge'],
     ['knowledge-dungeoneering','Knowledge (dungeoneering)','INT',2,12,'Knowledge'],
     ['knowledge-geography','Knowledge (geography)','INT',1,11,'Knowledge'],
     ['knowledge-history','Knowledge (history)','INT',10,20,'Knowledge'],
     ['knowledge-local','Knowledge (local)','INT',9,19,'Knowledge'],
     ['knowledge-nature','Knowledge (nature)','INT',1,11,'Knowledge'],
-    ['knowledge-nobility','Knowledge (nobility & royalty)','INT',1,11,'Knowledge'],
+    ['knowledge-nobility','Knowledge (nobility & royalty)','INT',12,22,'Knowledge'],
     ['knowledge-religion','Knowledge (religion)','INT',4,14,'Knowledge'],
-    ['knowledge-planes','Knowledge (the planes)','INT',15,25,'Knowledge'],
+    ['knowledge-planes','Knowledge (the planes)','INT',18,28,'Knowledge'],
     ['profession','Profession (any)','WIS',0,1,'Practical',true,'Needs training for normal skill use'],
-    ['spellcraft','Spellcraft','INT',15,30,'Arcane',false,'Includes Skill Focus +3 and synergy +2'],
+    ['spellcraft','Spellcraft','INT',20,35,'Arcane',false,'Includes Skill Focus +3 and synergy +2'],
     ['appraise','Appraise','INT',0,10,'Practical'],
     ['balance','Balance','DEX',0,3,'Movement'],
     ['bluff','Bluff','CHA',4,11,'Social',false,'Includes lesser tiefling racial +2'],
@@ -36,7 +36,7 @@
     ['heal','Heal','WIS',0,1,'Practical'],
     ['handle-animal','Handle Animal','CHA',0,5,'Practical',true,'Trained only'],
     ['hide','Hide','DEX',0,11,'Movement',false,'Lich +8 racial bonus'],
-    ['intimidate','Intimidate','CHA',0,5,'Social'],
+    ['intimidate','Intimidate','CHA',16,21,'Social'],
     ['jump','Jump','STR',0,0,'Movement'],
     ['listen','Listen','WIS',0,9,'Perception',false,'Lich +8 racial bonus'],
     ['move-silently','Move Silently','DEX',0,11,'Movement',false,'Lich +8 racial bonus'],
@@ -51,7 +51,8 @@
     ['swim','Swim','STR',0,0,'Movement'],
     ['tumble','Tumble','DEX',0,3,'Movement',true,'Trained only'],
     ['use-rope','Use Rope','DEX',0,3,'Practical'],
-    ['use-magic-device','Use Magic Device','CHA',4,9,'Arcane',true,'Scroll activation variant available below']
+    ['use-magic-device','Use Magic Device','CHA',4,9,'Arcane',true,'Scroll activation variant available below'],
+    ['truespeak','Truespeak','INT',1,11,'Arcane',true,'One cross-class rank (2 skill points) at level 18. The target’s personal truename must first be discovered; speaking it requires a check (Tome of Magic).']
   ].map(([id,name,ability,ranks,total,group,trainedOnly=false,notes=''])=>
     ({id,name,ability,ranks,total,group,trainedOnly,notes}));
   // Variant modifiers are derived from the base skill's *current* bonus,
