@@ -257,3 +257,35 @@
 .spell-mechanics p.muted{margin:8px 0 2px;overflow-wrap:anywhere}
 .tool-strip select{min-width:126px;max-width:170px;flex:0 1 auto}
 @media(max-width:720px){.tool-strip>.search-wrap{flex-basis:100%;min-height:44px}.tool-strip select{width:calc(50% - 6px);max-width:none;min-width:0;flex:1}.spell-mechanics dl{grid-template-columns:1fr}}
+
+/* Spell purpose facets: compact multi-select, separated from D&D schools. */
+.tag-filter-panel{margin:1px 0 13px;padding:10px 12px;border:1px solid #473b50;border-radius:11px;background:#201d2c}
+.tag-filter-panel>summary{cursor:pointer;color:#ead5bc;font-weight:700;font-size:12px;list-style-position:inside}
+.tag-filter-panel>summary .muted{margin-left:9px;font-weight:400}
+.tag-filter-contents{padding:12px 0 1px}
+.tag-filter-chips{display:flex;flex-wrap:wrap;gap:7px}
+.tag-filter-chip{border:1px solid #52445c;border-radius:100px;background:#282437;color:#ddcddd;padding:7px 10px;font-size:11px;min-height:34px;cursor:pointer;white-space:normal}
+.tag-filter-chip:hover,.tag-filter-chip:focus-visible{border-color:#cfaa77}
+.tag-filter-chip.active{background:#634635;color:#ffe1af;border-color:#efc589}
+.tag-filter-chip .tag-count{font-size:10px;opacity:.72;margin-left:4px}
+.tag-filter-chip:disabled{opacity:.45;cursor:default}
+.tag-filter-more{margin-top:9px}
+.tag-filter-more>summary{cursor:pointer;color:#cdb1d6;font-size:11px;padding:6px 0}
+.tag-filter-more .tag-filter-chips{padding-top:6px}
+.tag-filter-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:13px}
+.tag-filter-actions label{font-size:11px;color:#bfaec5;display:flex;align-items:center;gap:8px}
+.tag-filter-actions select{padding:6px 9px;background:#292438;color:#efdeec;border:1px solid #584761;border-radius:7px;min-height:35px}
+.tag-purpose{background:#30283e;color:#d9bff1;border-color:#594872;padding:3px 8px;line-height:1.45}
+.tag-purpose:hover{border-color:#c8a7e5;color:#f5e3ff}
+.spell-purpose-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:-1px;margin-bottom:1px}
+.spell-tag-editor{border:1px solid #524255;border-radius:10px;padding:12px 13px;margin:0}
+.spell-tag-editor legend{padding:0 6px;color:#e7c38e;font-weight:700}
+.spell-tag-editor .muted{margin:2px 0 9px}
+.tag-editor-options{display:flex;flex-wrap:wrap;gap:7px}
+.tag-option{display:flex;gap:6px;align-items:center;cursor:pointer;background:#292437;border:1px solid #514459;padding:7px 9px;border-radius:8px;color:#e3d4e3;font-size:11px}
+.tag-option:has(input:checked){border-color:#cda673;background:#4e3a38}
+.tag-option input{width:15px;min-height:15px;accent-color:#d1a56f}
+.spell-tag-editor .custom-tags-label{margin-top:10px;display:flex;flex-direction:column;gap:5px;color:#cdbac9;font-size:11px}
+.spell-tag-editor #spell-custom-tags{width:100%;font-size:12px}
+.spell-tag-editor #spell-tag-suggest{align-self:flex-start;margin-top:8px}
+@media(max-width:720px){.tag-filter-chip{min-height:38px;padding:8px 10px}.tag-filter-actions label{width:100%;justify-content:space-between}.tag-filter-panel{padding:9px 10px}.spell-purpose-tags .tag-purpose{font-size:10px}.spell-tag-editor{padding:10px}}
