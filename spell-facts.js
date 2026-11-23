@@ -1362,7 +1362,7 @@ const FACTS={
  },
  "Skeletal Guard": {
   "components": "V, S, M",
-  "casting": "1 action",
+  "casting": "1 standard action",
   "range": "Touch",
   "target": "Target: One or more finger bones",
   "duration": "Instantaneous",
