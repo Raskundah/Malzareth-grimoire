@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 17;
+  const DATA_VERSION = 18;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const LEVEL18_CATALOG = ['Earth bind','Fly','Ray reflection','Assay spell resistance','Dimension anchor','Ray Deflection',
@@ -13,6 +13,7 @@
   const defaults = window.STARTER_SPELLS || [];
   const sheetModel=window.SHEET_MODEL;
   const spellReference=window.SPELL_REFERENCES;
+  const spellTagger=window.SPELL_TAGS;
   const slotRules = window.SPELL_SLOT_RULES;
   const calcSlots = (score,level) => slotRules
     ? slotRules.calculate(score,level,true)
@@ -47,7 +48,8 @@
     && Number(window.SPELL_FACT_AUDIT.matched)>=200
     && defaults.some(s=>s.name==='Ice Castle' && !!s.casting && !!s.target && !!s.duration);
   const catalogueReady = completeCystDefaults && completeLevel13Defaults && completePrefightDefaults
-    && completeLevel18Defaults && completeEquipmentDefaults && completeLevel78Research && completeSpellDetails;
+    && completeLevel18Defaults && completeEquipmentDefaults && completeLevel78Research && completeSpellDetails
+    && spellTagger?.revision===1;
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -56,7 +58,7 @@
   const statusLabels = {spellbook:'Spellbook',cyst:'Mother Cyst'};
   const byName = (name) => state.spells.find(s => s.name === name);
   const stateFactory = () => {
-    const spells = structuredClone(defaults);
+    const spells = structuredClone(defaults).map(s=>({...s,tags:spellTagger?.tagsFor(s)||[]}));
     const prepared = [];
     Object.entries(window.STARTER_PREPARATION||{}).forEach(([level, names]) => names.forEach(name => {
       const spell = spells.find(s => s.name === name && s.level === Number(level));
@@ -79,7 +81,8 @@
       id:clean('id',160)||uid(),name:clean('name',100).trim(),level:Math.max(0,Math.min(9,Math.trunc(Number(s?.level)||0))),
       school:clean('school',80),status:s?.status==='cyst'?'cyst':'spellbook',source:clean('source',120),detailsSource:clean('detailsSource',120),
       casting:clean('casting',140),components:clean('components',140),range:clean('range',200),target:clean('target',250),duration:clean('duration',200),sr:clean('sr',120),
-      save:clean('save',200),description:clean('description'),notes:clean('notes'),favorite:!!s?.favorite
+      save:clean('save',200),description:clean('description'),notes:clean('notes'),favorite:!!s?.favorite,
+      tags:Array.isArray(s?.tags)?(spellTagger?.normalise(s.tags)||s.tags.slice(0,16)):(spellTagger?.tagsFor(s)||[])
     };
   };
   const normalizeData = (input) => {
@@ -198,6 +201,9 @@
         }
       }
     }
+    // Tag migration is additive and never replaces an explicitly saved tag list,
+    // including an intentionally emptied list. New starter inscriptions are seeded.
+    for(const spell of spells)if(!Array.isArray(spell.tags))spell.tags=spellTagger?.tagsFor(spell)||[];
     const ids = new Set();
     for(const s of spells){if(ids.has(s.id)) s.id=uid(); ids.add(s.id);}
     const prepared = input.prepared.filter(p=>p && ids.has(p.spellId)).map(p=>({id:uid(),spellId:String(p.spellId),used:!!p.used}));
@@ -482,6 +488,14 @@
   };
   const dcFor = (level,school) => 10 + Number(level) + Math.floor((state.intelligence-10)/2) + (school==='Necromancy'?state.necroBonus:0);
   let levelFilter='all';
+  const activeTags=new Set();
+  const tagsOf=spell=>Array.isArray(spell.tags)?spell.tags:(spellTagger?.tagsFor(spell)||[]);
+  const spellMatchesTags=(spell,mode)=>{
+    if(!activeTags.size)return true;
+    const names=tagsOf(spell);
+    const hit=tag=>tag==='__untagged__'?!names.length:names.includes(tag);
+    return mode==='all'?[...activeTags].every(hit):[...activeTags].some(hit);
+  };
   let view='library';
   let toastTimeout;
   function persist(){
@@ -514,12 +528,32 @@
       return `<button type="button" class="filter-pill ${String(l)===String(levelFilter)?'active':''}" data-level="${l}" aria-pressed="${String(l)===String(levelFilter)}">${text}</button>`;
     }).join('');
   }
+  function renderTagFilters(base){
+    const main=$('#tag-filter-primary'),more=$('#tag-filter-more');
+    if(!main||!more||!spellTagger)return;
+    const observed=new Set(state.spells.flatMap(tagsOf));
+    const core=spellTagger.core.filter(tag=>observed.has(tag)||activeTags.has(tag));
+    const custom=[...observed].filter(tag=>!spellTagger.core.includes(tag)).sort((a,b)=>a.localeCompare(b));
+    const all=[...core,...custom,'__untagged__'];
+    const primary=new Set(spellTagger.primary);
+    const makeButton=tag=>{
+      const number=base.filter(s=>tag==='__untagged__'?!tagsOf(s).length:tagsOf(s).includes(tag)).length;
+      const label=tag==='__untagged__'?'Untagged':tag;
+      return `<button type="button" class="tag-filter-chip ${activeTags.has(tag)?'active':''}" data-tag-filter="${esc(tag)}" aria-pressed="${activeTags.has(tag)}">${esc(label)} <span class="tag-count">${number}</span></button>`;
+    };
+    main.innerHTML=all.filter(tag=>primary.has(tag)).map(makeButton).join('');
+    more.innerHTML=all.filter(tag=>!primary.has(tag)).map(makeButton).join('');
+    $('#tag-selection-summary').textContent=activeTags.size?`${activeTags.size} selected`:'All purposes';
+    $('#tag-clear').disabled=!activeTags.size;
+  }
   function renderLibrary(){
     const q=$('#search').value.trim().toLocaleLowerCase();
     const status=$('#status-filter').value;
     const schoolFilter=$('#school-filter').value;
     const favorites=$('#only-faves').checked;
-    const spells=state.spells.filter(s=>(levelFilter==='all'||s.level===Number(levelFilter)) && (status==='all'||s.status===status) && (schoolFilter==='all'||(schoolFilter==='unverified'?!s.school:s.school===schoolFilter)) && (!favorites||s.favorite) && (!q||[s.name,s.school,s.source,s.description,spellReference?.get(s)?.description||'',s.notes,s.components,s.range,s.target,s.duration,s.sr].join(' ').toLocaleLowerCase().includes(q))).sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name));
+    const base=state.spells.filter(s=>(levelFilter==='all'||s.level===Number(levelFilter)) && (status==='all'||s.status===status) && (schoolFilter==='all'||(schoolFilter==='unverified'?!s.school:s.school===schoolFilter)) && (!favorites||s.favorite) && (!q||[s.name,s.school,s.source,s.description,spellReference?.get(s)?.description||'',s.notes,s.components,s.range,s.target,s.duration,s.sr,...tagsOf(s)].join(' ').toLocaleLowerCase().includes(q)));
+    const spells=base.filter(s=>spellMatchesTags(s,$('#tag-match-mode').value)).sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name));
+    renderTagFilters(base);
     $('#result-count').textContent=`${spells.length} ${spells.length===1?'spell':'spells'} shown`;
     $('#spell-list').innerHTML=spells.length?spells.map(s=>{
       const available=currentCount(s.level)<prepLimit(s.level);
@@ -532,6 +566,7 @@
       });
       return `<article class="spell-card">
         <div class="spell-top"><span class="spell-level" title="${esc(labelLevel(s.level))}">${s.level}</span><div class="spell-head"><h3>${esc(s.name)}</h3><div class="spell-tags">${s.school?`<span class="tag ${s.school==='Necromancy'?'necro':''}">${esc(s.school)}</span>`:'<span class="tag">School unverified</span>'}${s.status==='cyst'?'<span class="tag cyst">Mother Cyst</span>':''}<span class="tag spell-dc" title="Saving throw DC, if applicable">DC ${dcFor(s.level,s.school)}</span></div></div></div>
+        <div class="spell-purpose-tags" aria-label="Spell purpose tags">${tagsOf(s).slice(0,5).map(tag=>`<button type="button" class="tag tag-purpose" data-tag-filter="${esc(tag)}" title="Filter spells tagged ${esc(tag)}">${esc(tag)}</button>`).join('')}${tagsOf(s).length>5?`<span class="tag" title="View or edit to see all tags">+${tagsOf(s).length-5}</span>`:''}</div>
         <p class="spell-description ${brief?'':'empty'}">${brief?esc(brief):'Description not yet recorded. Add an effect summary in this spell record.'}</p>
         <details class="spell-mechanics"><summary>Full spell details</summary><dl>${mechanicsHTML}</dl><p class="muted small">Reference: ${esc(s.source||'Not recorded')} · ${esc(s.detailsSource||'Campaign notes / user entry')}</p></details>
         <div class="spell-actions"><button type="button" class="text-button" data-action="edit" data-id="${esc(s.id)}">View / edit</button>${rolled?`<button type="button" class="text-button" data-action="roll-effect" data-id="${esc(s.id)}" title="${esc(rolled.type)}">⚄ Roll effect</button>`:''}<button type="button" class="star-button ${s.favorite?'starred':''}" data-action="favorite" data-id="${esc(s.id)}" aria-label="${s.favorite?'Remove from':'Add to'} favourites" title="Favourite">${s.favorite?'★':'☆'}</button><button type="button" class="add-button" data-action="quick-prepare" data-id="${esc(s.id)}" ${available?'':'disabled title="All slots are filled"'}>＋ Prepare</button></div>
@@ -708,6 +743,12 @@
       $(`#${sel}`).value=(key==='description'&&!base&&spell)
         ? (spellReference?.get(spell)?.description||'') : base;
     }
+    const knownTags=spellTagger?.core||[];
+    const selectedTags=spell?tagsOf(spell):[];
+    $('#spell-tag-options').innerHTML=knownTags.map(tag=>
+      `<label class="tag-option"><input type="checkbox" data-spell-tag="${esc(tag)}" ${selectedTags.includes(tag)?'checked':''}>${esc(tag)}</label>`
+    ).join('');
+    $('#spell-custom-tags').value=selectedTags.filter(tag=>!knownTags.includes(tag)).join(', ');
     $('#spell-favorite').checked=!!spell?.favorite;
     $('#delete-spell').hidden=!spell;
     renderDCPreview();
@@ -723,7 +764,8 @@
     const data=normalizeSpell({
       id:previous?.id||uid(),name,level:Number($('#spell-level').value),school:get('school'),status:get('status'),source:get('source'),
       casting:get('casting'),components:get('components'),range:get('range'),target:get('target'),duration:get('duration'),save:get('save'),sr:get('sr'),detailsSource:previous?.detailsSource||'',
-      description:get('description'),notes:get('notes'),favorite:$('#spell-favorite').checked
+      description:get('description'),notes:get('notes'),favorite:$('#spell-favorite').checked,
+      tags:[...$('[data-spell-tag]:checked').map(el=>el.dataset.spellTag),...$('#spell-custom-tags').value.split(',')]
     });
     if(previous){
       const currentPrepared=state.prepared.filter(p=>p.spellId===previous.id).length;
@@ -792,6 +834,8 @@
     state=stateFactory();persist();$('#journal-notes').value=state.journal;render();toast('Starting spellbook restored.');
   }
   function actions(event){
+    const tagButton=event.target.closest('[data-tag-filter]');
+    if(tagButton){const tag=tagButton.dataset.tagFilter;activeTags.has(tag)?activeTags.delete(tag):activeTags.add(tag);renderLibrary();return;}
     const nav=event.target.closest('[data-view]');if(nav){setView(nav.dataset.view);return;}
     const pill=event.target.closest('[data-level]');if(pill && pill.matches('.filter-pill')){levelFilter=pill.dataset.level==='all'?'all':Number(pill.dataset.level);renderLibrary();updateStats();return;}
     const btn=event.target.closest('[data-action]');if(!btn)return;
@@ -826,6 +870,17 @@
   $('#search').addEventListener('input',renderLibrary);
   $('#status-filter').addEventListener('change',renderLibrary);
   $('#school-filter').addEventListener('change',renderLibrary);
+  $('#tag-match-mode').addEventListener('change',renderLibrary);
+  $('#tag-clear').addEventListener('click',()=>{activeTags.clear();renderLibrary();});
+  $('#spell-tag-suggest').addEventListener('click',()=>{
+    const tags=spellTagger?.tagsFor({name:$('#spell-name').value,status:$('#spell-status').value})||[];
+    if(!tags.length){toast('No curated suggestions for this spell. Add tags manually.');return;}
+    const existing=$('[data-spell-tag]:checked').length||$('#spell-custom-tags').value.trim();
+    if(existing && !confirm('Replace the current tag choices with catalogue suggestions?'))return;
+    $('[data-spell-tag]').forEach(el=>{el.checked=tags.includes(el.dataset.spellTag);});
+    $('#spell-custom-tags').value=tags.filter(tag=>!(spellTagger?.core||[]).includes(tag)).join(', ');
+    toast('Catalogue tag suggestions applied. Review them before saving.');
+  });
   $('#only-faves').addEventListener('change',renderLibrary);
   $('#reset-casts').addEventListener('click',resetCasts);
   $('#alacritous-level').addEventListener('change',e=>{
