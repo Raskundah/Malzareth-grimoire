@@ -17,16 +17,16 @@ const feature=(id,name,category,effect,usesPerDay=null)=>({
 const baseline={
  identity:{
    name:'Malzareth Vhane',title:'The Seventh Keeper',
-   campaign:'The Ashen Crown',era:'25 Mirtul 1373 DR · 19:00',
-   race:'Lesser Tiefling Lich',characterClass:'Wizard 5 / Master Specialist 8',
+   campaign:'The Ashen Crown',era:'1373 DR · level 18; day not reconciled',
+   race:'Lesser Tiefling Lich',characterClass:'Wizard 5 / Master Specialist 10 / Abjurant Champion 3',
    alignment:'Neutral Evil',origin:'Thay',size:'Medium',
-   characterLevel:13,xp:78674,xpNext:91000,
+   characterLevel:18,xp:78674,xpNext:171000,
    languages:'',description:'',deity:'',playerNotes:'',
-   xpNote:'XP 78,674 / 91,000. LA +0, ECL 13; 10 skill points awaiting allocation.'
+   xpNote:'Level 18 achieved; 78,674 XP is a historical snapshot, not the current confirmed XP. Next level 171,000 XP.'
  },
  combat:{
-   maxHP:104,currentHP:104,tempHP:17,damageNotes:'',speedFt:30,
-   bab:6,baseSaves:{fort:3,ref:3,will:10},saveMisc:{fort:0,ref:0,will:0},
+   maxHP:150,currentHP:150,tempHP:0,damageNotes:'',speedFt:30,
+   bab:10,baseSaves:{fort:5,ref:5,will:14},saveMisc:{fort:0,ref:0,will:0},
    naturalArmor:5,enhanceNatural:2,deflection:3,armorMisc:0,shieldMisc:0,saveResistance:3,
    initiativeMisc:4,attackMisc:0,actionPoints:7,
    buffs:{greaterMageArmor:false,shield:false,haste:false},
@@ -86,10 +86,12 @@ const baseline={
    feat('improved-initiative','Improved Initiative','Player’s Handbook','+4 Initiative checks.','Combat'),
    feat('craft-wondrous','Craft Wondrous Item','Player’s Handbook','Allows crafting qualifying wondrous items; used for phylactery.','Item creation'),
    feat('alacritous-cogitation','Alacritous Cogitation','Complete Mage','Once per day, cast a known arcane spell using an open reserved slot as a full-round action. Managed in Prepared tab.','Spellcasting'),
-   feat('mother-cyst','Mother Cyst','Libris Mortis','Enables the full Necrotic Cyst spell family.','Necromancy')
+   feat('mother-cyst','Mother Cyst','Libris Mortis','Enables the full Necrotic Cyst spell family.','Necromancy'),
+   feat('combat-casting','Combat Casting','Player’s Handbook','+4 Concentration when casting defensively or grappled; qualification for Abjurant Champion.','Combat'),
+   feat('quicken-spell','Quicken Spell','Player’s Handbook','Swift action metamagic, normally +4 slot levels; shares swift action with Wraithstrike and Swift Abjuration.','Metamagic')
  ],
  features:[
-   feature('undead','Undead traits','Type','No Constitution; 13d12 HD. Immune to poison, sleep, paralysis, stunning, disease, death effects, nonlethal damage, critical hits, fatigue, exhaustion, energy drain, and other standard undead immunities.'),
+   feature('undead','Undead traits','Type','No Constitution; 18d12 HD. Immune to poison, sleep, paralysis, stunning, disease, death effects, nonlethal damage, critical hits, fatigue, exhaustion, energy drain, and other standard undead immunities.'),
    feature('lich-defenses','Lich resistances','Lich','Cold and electricity immunity; DR 15/bludgeoning and magic; darkvision 60 ft; +4 turn resistance.'),
    feature('lich-touch','Lich damaging touch','Lich','Melee touch attack; 1d8+5 negative energy to living creatures, Will half. Save DC scales with 1/2 HD + CHA.'),
    feature('lich-paralysis','Paralysing touch','Lich','Living creatures hit by lich touch must make Fortitude save (DC scales with 1/2 HD + CHA) or be permanently paralysed.'),
@@ -97,15 +99,19 @@ const baseline={
    feature('lich-phylactery','Lich phylactery','Lich','If phylactery survives, lich can reform in 1d10 days; location must remain protected.'),
    feature('darkness','Darkness','Heritage','Lesser tiefling: Darkness 1/day.',1),
    feature('fire-resistance','Fire resistance','Heritage','Lesser tiefling: Fire resistance 5.'),
-   feature('esoterica-minor','Minor school esoterica','Master Specialist','When casting Necromancy, allied undead within 60 ft gain +8 turn resistance and +8 saving throws for 8 rounds.'),
-   feature('caster-level','Necromancy caster-level bonus','Master Specialist','+1 caster level on Necromancy (typically CL 14 at current progression; increases further at Master Specialist 9).'),
+   feature('esoterica-minor','Minor school esoterica','Master Specialist','When casting Necromancy, allied undead within 60 ft gain +10 turn resistance and +10 saves for 10 rounds.'),
+   feature('caster-level','Necromancy caster-level bonus','Master Specialist','Master Specialist adds +2 to Necromancy caster level; Orange Prism Ioun Stone adds +1 general caster level. Level 18: CL 19 general, 21 Necromancy.'),
    feature('esoterica-moderate','Moderate school esoterica','Master Specialist','When casting Necromancy, temporary immunity to ability damage/drain, energy drain and negative levels for rounds equal to spell level.'),
-   feature('expanded-spellbook','Expanded spellbook','Master Specialist','At class levels 2, 5 and 8, add an extra spell of the specialty school. Level 8 choice: Waves of Exhaustion.')
+   feature('expanded-spellbook','Expanded spellbook','Master Specialist','At class levels 2, 5 and 8, add an extra spell of the specialty school. Level 8 choice: Waves of Exhaustion.'),
+   feature('esoterica-major','Major school esoterica','Master Specialist 10','Casting Necromancy grants allied undead within 60 ft fast healing 10 for 5 rounds.'),
+   feature('abjurant-armor','Abjurant Armor','Abjurant Champion 3','Adds +3 to shield and armour bonuses from Abjuration: Shield grants +7 shield AC. Greater Mage Armour does not benefit.'),
+   feature('extended-abjuration','Extended Abjuration','Abjurant Champion','Automatically doubles duration of Abjuration spells, no slot increase.'),
+   feature('swift-abjuration','Swift Abjuration','Abjurant Champion 3','2nd-level or lower Abjuration spells can be swift actions; shares one swift action per turn with Quicken Spell and Wraithstrike.')
  ],
  resolvedAudit:[],
  audit:[
-   'Allocate 10 skill points gained at level 13; do not invent selections.',
-   'LA buyoff complete (+0). XP 78,674 / 91,000 at level 13.',
+   'Level 18: 1 Truespeak cross-class rank bought with 2 skill points; 8 level-18 points remain unallocated.',
+   'LA buyoff complete (+0). Current level-18 XP requires reconciliation; old number is historical.',
    'Confirm pending 3,510 gp sale receipts, exact gem/valuable breakdown and unallocated magic inventory; do not double count.',
    'Action-point uses since the last sheet are not fully itemised; 7 is a historical value.',
    'Black onyx balance and staff/wand charges should be updated after each expenditure.',
