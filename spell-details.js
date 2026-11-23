@@ -864,13 +864,37 @@ const SUPPLEMENT={
  "Mass Guardian Spirit": "Places an incarnum-linked guardian influence on multiple allies. Its protective reaction depends on the recipients and the soul-energy supplied.",
  "Soulbanned Zone": "Creates an area that interferes with soulmelds and incarnum abilities. Within its boundaries, appropriate incarnum effects are suppressed."
 };
+const CORE_PARAPHRASES={
+ "Drawmij’s Instant Summons": "Binds a designated object to a sapphire focus. When the sapphire is crushed and its command word spoken, the item comes to the caster if it is unclaimed; an item held by another creature may be located instead. Requires a costly gem and prior inscription.",
+ "Phase Door": "Creates a temporary passage through a wooden, plaster or stone barrier that only the caster or designated creatures can use. The passage is invisible to others, allows limited uses and lasts until exhausted or dispelled.",
+ "Teleport Object": "Teleports one unattended object to a chosen destination as Teleport would a traveller. Alternatively sends it to the Ethereal Plane, where retrieval requires separate magic. Object weight and distance are limited by caster level.",
+ "Greater Arcane Sight": "Arcane Sight reveals nearby magical auras automatically; the greater version reveals the spell effects active on creatures or objects and can identify their magical nature with greater precision. It does not by itself dispel magic.",
+ "Greater Scrying": "Magically observes a creature remotely through a scrying sensor, like Scrying but with shorter casting time and longer duration. The target receives its normal Will save and protective magic can block observation.",
+ "Vision": "Seek a supernatural answer about a person, place or object through an intense divination. It functions like Legend Lore but produces an answer much more quickly at a significant personal or experience cost.",
+ "Mass Invisibility": "Renders multiple creatures invisible as Invisibility. The recipients must remain near one another; when a recipient attacks, its own invisibility ends. Detecting invisible creatures still depends on the normal counters.",
+ "Project Image": "Creates a visual and auditory duplicate of the caster at a distance. The caster can see and cast spells as if occupying the image's space under the illusion's line-of-effect rules; the image has no physical body.",
+ "Greater Shadow Conjuration": "Forms quasi-real versions of lower-level Conjuration spells from shadow substance. Creatures that disbelieve suffer reduced effects; the maximum imitated spell level and special limitations follow the greater shadow-conjuration rules.",
+ "Symbol of Weakness": "Inscribe a magically triggered rune that deals 3d6 Strength damage to affected creatures within 60 feet after activation. The trigger and dispel rules parallel Symbol of Death; the active rune has its own duration and an expensive powdered-gem material cost.",
+ "Control Weather": "Gradually alters the prevailing weather in a broad area over the following minutes, then maintains the chosen seasonal conditions. The caster does not command individual lightning strikes or bypass seasonal limits.",
+ "Ethereal Jaunt": "Shift the caster and carried gear briefly onto the Ethereal Plane, from which the Material Plane remains visible but mostly inaccessible. Return to the Material Plane at the same position when the effect ends.",
+ "Prismatic Wall": "Forms a stationary barrier made of seven coloured magical layers. Each layer has a different harmful or protective effect, and destroying the wall requires the prescribed sequence of countermeasures rather than ordinary damage.",
+ "Protection from Spells": "Grants up to eight creatures a resistance bonus on saving throws against spells and spell-like abilities. A substantial diamond component is consumed, and the bonus does not stack with other resistance bonuses.",
+ "Incendiary Cloud": "Summons a roiling cloud of burning smoke that obscures vision and inflicts fire damage on creatures inside. The cloud spreads and drifts with the wind as an Acid Fog variant, with its own fire-damage and save rules.",
+ "Summon Monster VIII": "Summons one outsider or magical creature from the 8th-level list, several from the 7th-level list, or more from lower lists. The summoned allies fight for the caster for the spell's rounds-per-level duration.",
+ "Discern Location": "Locates a named creature or object exactly, revealing its current place and plane when the caster meets the familiarity and possession requirements. Mind Blank or divine intervention can defeat the divination.",
+ "Greater Prying Eyes": "Creates a swarm of magical scouting eyes capable of travelling, observing and returning information. The greater version has additional vision abilities, including enhanced detection of invisible targets.",
+ "Scintillating Pattern": "Projects a shifting display of colour that fascinates, confuses or stuns nearby creatures according to their Hit Dice. The effect is visual and mind-affecting and uses the spell's ordered HD thresholds.",
+ "Screen": "Creates a complex programmed illusion over a wide area that presents an alternative scene to observers, including those using many kinds of magical detection. It alters appearances rather than physically changing objects.",
+ "Greater Shadow Evocation": "Imitates an Evocation spell of up to the allowed level by shaping shadow substance. Targets that disbelieve experience only partial effects, and the spell cannot duplicate an evocation above its stated ceiling.",
+ "Symbol of Death": "Inscribes an expensive runic death trap with configurable triggers. Once activated it slays creatures within a 60-foot radius up to a total hit-point budget; it remains active for a limited time or until the budget is exhausted."
+};
 const previousDescriptionById={};
 const clean=name=>String(name).toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9]/g,'');
 const fromCore=(name)=>CORE[name]||null;
 const fromSupplement=(name)=>SUPPLEMENT[name]||null;
 const detailsFor=spell=>{
   const core=fromCore(spell?.name)||{};
-  const supplemental=fromSupplement(spell?.name)||'';
+  const supplemental=fromSupplement(spell?.name)||CORE_PARAPHRASES[spell?.name]||'';
   return { ...core, ...(supplemental?{description:supplemental}:{}) };
 };
 let updated=0;
@@ -883,7 +907,7 @@ for(const s of window.STARTER_SPELLS||[]){
     const generic=field==='description' && (/^Consult .+ for this spell/.test(old)||!old);
     if(!old||generic){s[field]=value;updated++;}
   }
-  s.detailsSource=CORE[s.name]?'3.5 SRD (OGL)':SUPPLEMENT[s.name]?'Paraphrased supplement; check source for precise mechanics':'Existing campaign reference';
+  s.detailsSource=(CORE[s.name]||CORE_PARAPHRASES[s.name])?'3.5 SRD (OGL)':SUPPLEMENT[s.name]?'Paraphrased supplement; check source for precise mechanics':'Existing campaign reference';
 }
-window.SPELL_DETAIL_AUDIT={revision:1,coreEntries:Object.keys(CORE).length,originalSupplements:Object.keys(SUPPLEMENT).length,updatedFields:updated,previousDescriptionById,detailsFor};
+window.SPELL_DETAIL_AUDIT={revision:2,coreEntries:Object.keys(CORE).length,originalSupplements:Object.keys(SUPPLEMENT).length,updatedFields:updated,previousDescriptionById,detailsFor};
 })();
