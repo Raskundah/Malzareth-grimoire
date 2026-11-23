@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 15;
+  const DATA_VERSION = 16;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const LEVEL18_CATALOG = ['Earth bind','Fly','Ray reflection','Assay spell resistance','Dimension anchor','Ray Deflection',
@@ -38,11 +38,14 @@
     && defaults.some(s=>s.id==='research-7-ice-castle')
     && defaults.some(s=>s.id==='research-8-greater-celerity')
     && !defaults.some(s=>window.RESEARCH_ARCHIVE78.invalidIds.includes(s.id));
-  const completeSpellDetails = window.SPELL_DETAIL_AUDIT?.revision===1
+  const completeSpellDetails = window.SPELL_DETAIL_AUDIT?.revision===2
     && window.SPELL_DETAIL_AUDIT.coreEntries>=80
     && window.SPELL_DETAIL_AUDIT.originalSupplements>=90
     && defaults.some(s=>s.name==='Mind Blank' && !!s.range && !!s.target && !!s.sr)
-    && defaults.some(s=>s.name==='Fimbulwinter' && !!s.description);
+    && defaults.some(s=>s.name==='Fimbulwinter' && !!s.description)
+    && window.SPELL_FACT_AUDIT?.revision===1
+    && Number(window.SPELL_FACT_AUDIT.matched)>=200
+    && defaults.some(s=>s.name==='Ice Castle' && !!s.casting && !!s.target && !!s.duration);
   const catalogueReady = completeCystDefaults && completeLevel13Defaults && completePrefightDefaults
     && completeLevel18Defaults && completeEquipmentDefaults && completeLevel78Research && completeSpellDetails;
   const $ = (sel) => document.querySelector(sel);
@@ -165,7 +168,7 @@
     }
     // Populate blank verified fields. Replace only unchanged old boilerplate;
     // never overwrite the player's edited descriptions or named custom spells.
-    const enhanceDetails=(Number(input.version)||1)<15 && completeSpellDetails;
+    const enhanceDetails=(Number(input.version)||1)<16 && completeSpellDetails;
     if(enhanceDetails){
       const original=window.SPELL_DETAIL_AUDIT.previousDescriptionById;
       for(const entry of spells){
