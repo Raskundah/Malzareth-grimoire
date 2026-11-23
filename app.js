@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 14;
+  const DATA_VERSION = 15;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const LEVEL18_CATALOG = ['Earth bind','Fly','Ray reflection','Assay spell resistance','Dimension anchor','Ray Deflection',
@@ -38,6 +38,13 @@
     && defaults.some(s=>s.id==='research-7-ice-castle')
     && defaults.some(s=>s.id==='research-8-greater-celerity')
     && !defaults.some(s=>window.RESEARCH_ARCHIVE78.invalidIds.includes(s.id));
+  const completeSpellDetails = window.SPELL_DETAIL_AUDIT?.revision===1
+    && window.SPELL_DETAIL_AUDIT.coreEntries>=80
+    && window.SPELL_DETAIL_AUDIT.originalSupplements>=90
+    && defaults.some(s=>s.name==='Mind Blank' && !!s.range && !!s.target && !!s.sr)
+    && defaults.some(s=>s.name==='Fimbulwinter' && !!s.description);
+  const catalogueReady = completeCystDefaults && completeLevel13Defaults && completePrefightDefaults
+    && completeLevel18Defaults && completeEquipmentDefaults && completeLevel78Research && completeSpellDetails;
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -54,7 +61,7 @@
     }));
     const slots = calcSlots(30,18).totals;
     return {
-      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults && completeLevel18Defaults && completeEquipmentDefaults && completeLevel78Research ? DATA_VERSION : 1,spells,prepared,slots,
+      version:catalogueReady ? DATA_VERSION : 1,spells,prepared,slots,
       manualSlots:[...slots],autoSlots:true,spellcastingLevel:18,
       intelligence:30,necroBonus:2,presets:[],
       cogitation:{level:6,used:false,spellId:null},
@@ -67,8 +74,8 @@
     const clean = (k,max=4000) => String(s?.[k]??'').slice(0,max);
     return {
       id:clean('id',160)||uid(),name:clean('name',100).trim(),level:Math.max(0,Math.min(9,Math.trunc(Number(s?.level)||0))),
-      school:clean('school',80),status:s?.status==='cyst'?'cyst':'spellbook',source:clean('source',120),
-      casting:clean('casting',140),components:clean('components',140),range:clean('range',200),duration:clean('duration',200),
+      school:clean('school',80),status:s?.status==='cyst'?'cyst':'spellbook',source:clean('source',120),detailsSource:clean('detailsSource',120),
+      casting:clean('casting',140),components:clean('components',140),range:clean('range',200),target:clean('target',250),duration:clean('duration',200),sr:clean('sr',120),
       save:clean('save',200),description:clean('description'),notes:clean('notes'),favorite:!!s?.favorite
     };
   };
@@ -154,6 +161,22 @@
         const starter=defaults.find(s=>s.id===id);
         if(starter && !spells.some(s=>s.level===starter.level && normalizeName(s.name)===normalizeName(starter.name)))
           spells.push(structuredClone(starter));
+      }
+    }
+    // Populate blank verified fields. Replace only unchanged old boilerplate;
+    // never overwrite the player's edited descriptions or named custom spells.
+    const enhanceDetails=(Number(input.version)||1)<15 && completeSpellDetails;
+    if(enhanceDetails){
+      const original=window.SPELL_DETAIL_AUDIT.previousDescriptionById;
+      for(const entry of spells){
+        const starter=defaults.find(s=>s.id===entry.id && s.name===entry.name && s.level===entry.level);
+        if(!starter)continue;
+        for(const field of ['casting','components','range','target','duration','save','sr','detailsSource']){
+          if(!entry[field] && starter[field])entry[field]=starter[field];
+        }
+        const oldText=original[entry.id]??'';
+        if(starter.description && (!entry.description || (entry.description===oldText && oldText!==starter.description)))
+          entry.description=starter.description;
       }
     }
     const ids = new Set();
@@ -372,7 +395,7 @@
         formula:String(x.formula||'').replace(/\s+/g,'').slice(0,18)
       })).filter(x=>x.name&&/^([1-9]\d?)d(3|4|6|8|10|12|20|100)([+-]\d{1,4})?$/.test(x.formula));
     return {
-      version:completeCystDefaults && completeLevel13Defaults && completePrefightDefaults && completeLevel18Defaults && completeEquipmentDefaults && completeLevel78Research ? DATA_VERSION : (Number(input.version) || 1),
+      version:catalogueReady ? DATA_VERSION : (Number(input.version) || 1),
       spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
       autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
       cogitation,abilities,skillOverrides,sheet,damagePresets,
@@ -475,18 +498,23 @@
   function renderLibrary(){
     const q=$('#search').value.trim().toLocaleLowerCase();
     const status=$('#status-filter').value;
+    const schoolFilter=$('#school-filter').value;
     const favorites=$('#only-faves').checked;
-    const spells=state.spells.filter(s=>(levelFilter==='all'||s.level===Number(levelFilter)) && (status==='all'||s.status===status) && (!favorites||s.favorite) && (!q||[s.name,s.school,s.source,s.description,spellReference?.get(s)?.description||'',s.notes,s.components].join(' ').toLocaleLowerCase().includes(q))).sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name));
+    const spells=state.spells.filter(s=>(levelFilter==='all'||s.level===Number(levelFilter)) && (status==='all'||s.status===status) && (schoolFilter==='all'||(schoolFilter==='unverified'?!s.school:s.school===schoolFilter)) && (!favorites||s.favorite) && (!q||[s.name,s.school,s.source,s.description,spellReference?.get(s)?.description||'',s.notes,s.components,s.range,s.target,s.duration,s.sr].join(' ').toLocaleLowerCase().includes(q))).sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name));
     $('#result-count').textContent=`${spells.length} ${spells.length===1?'spell':'spells'} shown`;
     $('#spell-list').innerHTML=spells.length?spells.map(s=>{
       const available=currentCount(s.level)<prepLimit(s.level);
       const brief=s.description||spellReference?.get(s)?.description||'';
+      const mechanics=[['Casting time',s.casting],['Components',s.components],['Range',s.range],
+        ['Target / area / effect',s.target],['Duration',s.duration],['Saving throw',s.save],['Spell resistance',s.sr]];
+      const mechanicsHTML=mechanics.map(([label,value])=>'<div><dt>'+esc(label)+'</dt><dd class="'+(value?'':'not-verified')+'">'+esc(value||'Not yet verified')+'</dd></div>').join('');
       const rolled=spellReference?.rollFor(s,{
         casterLevel:state.spellcastingLevel+1,necroLevel:state.spellcastingLevel+3
       });
       return `<article class="spell-card">
         <div class="spell-top"><span class="spell-level" title="${esc(labelLevel(s.level))}">${s.level}</span><div class="spell-head"><h3>${esc(s.name)}</h3><div class="spell-tags">${s.school?`<span class="tag ${s.school==='Necromancy'?'necro':''}">${esc(s.school)}</span>`:'<span class="tag">School unverified</span>'}${s.status==='cyst'?'<span class="tag cyst">Mother Cyst</span>':''}<span class="tag spell-dc" title="Saving throw DC, if applicable">DC ${dcFor(s.level,s.school)}</span></div></div></div>
         <p class="spell-description ${brief?'':'empty'}">${brief?esc(brief):'Description not yet recorded. Add an effect summary in this spell record.'}</p>
+        <details class="spell-mechanics"><summary>Full spell details</summary><dl>${mechanicsHTML}</dl><p class="muted small">Reference: ${esc(s.source||'Not recorded')} · ${esc(s.detailsSource||'Campaign notes / user entry')}</p></details>
         <div class="spell-actions"><button type="button" class="text-button" data-action="edit" data-id="${esc(s.id)}">View / edit</button>${rolled?`<button type="button" class="text-button" data-action="roll-effect" data-id="${esc(s.id)}" title="${esc(rolled.type)}">⚄ Roll effect</button>`:''}<button type="button" class="star-button ${s.favorite?'starred':''}" data-action="favorite" data-id="${esc(s.id)}" aria-label="${s.favorite?'Remove from':'Add to'} favourites" title="Favourite">${s.favorite?'★':'☆'}</button><button type="button" class="add-button" data-action="quick-prepare" data-id="${esc(s.id)}" ${available?'':'disabled title="All slots are filled"'}>＋ Prepare</button></div>
       </article>`;
     }).join(''):'<div class="empty-state"><strong>No spells found</strong><p>Try a different search or filter, or create a new inscription.</p></div>';
@@ -655,7 +683,7 @@
     $('#spell-form').reset();
     $('#edit-id').value=spell?.id||'';
     $('#dialog-title').textContent=spell?'Edit inscription':'New inscription';
-    const fields={name:'spell-name',level:'spell-level',school:'spell-school',status:'spell-status',source:'spell-source',casting:'spell-casting',components:'spell-components',range:'spell-range',duration:'spell-duration',save:'spell-save',description:'spell-description',notes:'spell-notes'};
+    const fields={name:'spell-name',level:'spell-level',school:'spell-school',status:'spell-status',source:'spell-source',casting:'spell-casting',components:'spell-components',range:'spell-range',target:'spell-target',duration:'spell-duration',save:'spell-save',sr:'spell-sr',description:'spell-description',notes:'spell-notes'};
     for(const [key,sel] of Object.entries(fields)){
       const base=spell?.[key]??(key==='status'?'spellbook':'');
       $(`#${sel}`).value=(key==='description'&&!base&&spell)
@@ -675,7 +703,7 @@
     const editing=!!previous;
     const data=normalizeSpell({
       id:previous?.id||uid(),name,level:Number($('#spell-level').value),school:get('school'),status:get('status'),source:get('source'),
-      casting:get('casting'),components:get('components'),range:get('range'),duration:get('duration'),save:get('save'),
+      casting:get('casting'),components:get('components'),range:get('range'),target:get('target'),duration:get('duration'),save:get('save'),sr:get('sr'),detailsSource:previous?.detailsSource||'',
       description:get('description'),notes:get('notes'),favorite:$('#spell-favorite').checked
     });
     if(previous){
@@ -778,6 +806,7 @@
   $('#spell-dialog').addEventListener('click',e=>{if(e.target.id==='spell-dialog')closeEditor();});
   $('#search').addEventListener('input',renderLibrary);
   $('#status-filter').addEventListener('change',renderLibrary);
+  $('#school-filter').addEventListener('change',renderLibrary);
   $('#only-faves').addEventListener('change',renderLibrary);
   $('#reset-casts').addEventListener('click',resetCasts);
   $('#alacritous-level').addEventListener('change',e=>{
