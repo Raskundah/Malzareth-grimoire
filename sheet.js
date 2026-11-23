@@ -24,7 +24,7 @@
     const s=get(),c=sheet().combat,a=s.abilities;
     const dex=mod(a.DEX),wis=mod(a.WIS),str=mod(a.STR),cha=mod(a.CHA);
     const haste=c.buffs.haste?1:0,mage=c.buffs.greaterMageArmor?6:0,
-      shield=c.buffs.shield?4:0;
+      shield=c.buffs.shield?4+Math.max(0,Math.min(5,whole(sheet().identity.characterLevel,18)-15)):0;
     const ac=10+dex+c.naturalArmor+c.enhanceNatural+c.deflection+
       c.armorMisc+c.shieldMisc+haste+mage+shield;
     const touch=10+dex+c.deflection+haste;
