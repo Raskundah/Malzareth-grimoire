@@ -1847,6 +1847,60 @@ const CORRECTED={
   "save": "None"
  }
 };
+Object.assign(CORRECTED,{
+ "Greater Mage Armour": {
+  "components": "V, S, M",
+  "casting": "1 standard action",
+  "range": "Touch",
+  "target": "Target: Creature touched",
+  "duration": "1 hour/level (D)",
+  "save": "Will negates (harmless)",
+  "sr": "No"
+ },
+ "Earth bind": {
+  "components": "V, S",
+  "casting": "1 standard action",
+  "range": "Close (25 ft. + 5 ft./2 levels)",
+  "target": "Target: One creature",
+  "duration": "1 minute/level (D)",
+  "save": "Fortitude partial",
+  "sr": "Yes"
+ },
+ "Greater Arcane Sight": {
+  "components": "V, S",
+  "casting": "1 standard action",
+  "range": "Personal",
+  "target": "Target: You",
+  "duration": "1 min./level (D)",
+  "save": "None",
+  "sr": "No"
+ },
+ "Necrotic Domination": {
+  "range": "Close (25 ft. + 5 ft./2 levels)",
+  "target": "Target: Humanoid living creature bearing a necrotic cyst",
+  "duration": "1 day/level",
+  "save": "Will negates",
+  "sr": "Yes"
+ },
+ "Greater Teleport": {
+  "components": "V",
+  "casting": "1 standard action",
+  "range": "Personal and touch",
+  "target": "Target: You and touched objects or other touched willing creatures",
+  "duration": "Instantaneous",
+  "save": "None and Will negates (object)",
+  "sr": "No and Yes (object)"
+ },
+ "Sword of Darkness": {
+  "components": "V, S, M",
+  "casting": "1 standard action",
+  "range": "Medium (100 ft. + 10 ft./level)",
+  "target": "Effect: Black blade of negative energy",
+  "duration": "1 round/level",
+  "save": "None",
+  "sr": "Yes"
+ }
+});
 const LEGACY={
  "Sword of Darkness": {
   "target": "Effect: Black blade of negative energy You shatter the sword in your hand against a stone, bringing into"
@@ -1994,11 +2048,11 @@ const LEGACY={
 const scrub=(field,value)=>{
  if(!value)return '';
  let v=value;
- if(field==='casting')v=v.replace(/\\s+Range:\\s*.*$/i,'');
- if(field==='range')v=v.replace(/\\s+(?:Target|Targets|Area|Effect):.*$/i,'').replace(/\\)1302$/i,')');
- if(field==='target')v=v.replace(/\\s+Duration:\\s*.*$/i,'').replace(/\\s+(?:You shatter|Every creature in the area)\\b.*$/i,'');
- if(field==='save')v=v.replace(/\\s+You toss\\b.*$/i,'');
- if(field==='duration')v=v.replace(/\\s+(?:You |Your |With |Drawing |Finishing |One of |An augury )[\\s\\S]*$/,'');
+ if(field==='casting')v=v.replace(/\s+Range:\s*.*$/i,'');
+ if(field==='range')v=v.replace(/\s+(?:Target|Targets|Area|Effect):.*$/i,'').replace(/\)1302$/i,')');
+ if(field==='target')v=v.replace(/\s+Duration:\s*.*$/i,'').replace(/\s+(?:You shatter|Every creature in the area)\b.*$/i,'');
+ if(field==='save')v=v.replace(/\s+You toss\b.*$/i,'');
+ if(field==='duration')v=v.replace(/\s+(?:You |Your |With |Drawing |Finishing |One of |An augury )[\s\S]*$/,'');
  return v.trim();
 };
 for(const spell of window.STARTER_SPELLS||[]){
