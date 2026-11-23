@@ -20,7 +20,7 @@ const entries = {
  'Arcane Mark':['Leaves a personal magical rune that can be visible or invisible.'],
  'Prestidigitation':['Performs minor harmless magical effects, cleaning, colouring, chilling or shaping small objects.'],
  'Mage Armour':['Grants a +4 armour bonus to AC for hours; does not stack with another armour bonus such as Greater Mage Armour.'],
- 'Shield':['Provides a +4 shield bonus to AC and protects against magic missile.'],
+ 'Shield':['Base +4 shield AC and protection against magic missile. Abjurant Champion 3 raises Malzareth’s shield bonus to +7; Extended Abjuration doubles duration.'],
  'Ray of Enfeeblement':['Ranged touch ray imposes a Strength penalty of 1d6 + 1 per two caster levels, maximum +5; it cannot lower Strength below 1. No saving throw.','None','ranged'],
  'Protection from Good':['Protects against good creatures with defensive bonuses and guards against certain mental controls.'],
  'Identify':['Examines one magic item to determine its properties; normally requires costly material.'],
@@ -75,7 +75,18 @@ const entries = {
  'Freezing Fog':['Dense slippery 20-ft-radius fog; maximum 5-ft movement, no 5-ft steps, difficult footing and cold damage. Conceals targets. No spell resistance. Use Spell Compendium 6th-level version.','None; SR no'],
  'Necrotic Tumor':['Transforms an implanted cyst to allow potent domination of a cyst-bearing creature, potentially permanently.','Fortitude partial'],
  'Necrotic Empowerment':['Draws on your mother cyst to greatly boost mental agility, natural armour and temporary HP, but blocks other Mother Cyst spells for its duration.'],
- 'Necrotic Termination':['Severe cyst-based death magic: failure destroys an encysted host and soul, preventing normal resurrection; success causes major vile damage. Costs 1,000 XP.','Fortitude partial']
+ 'Necrotic Termination':['Severe cyst-based death magic: failure destroys an encysted host and soul, preventing normal resurrection; success causes major vile damage. Costs 1,000 XP.','Fortitude partial'],
+ 'Ray Deflection':['Abjuration to deflect incoming ray attacks; see the full published spell for the applicable conditions.'],
+ 'Awaken Undead':['Bestow intelligence upon mindless undead. See Spell Compendium for target conditions and material component.'],
+ 'Limited Wish':['Versatile spell replication and reality changes subject to precise restrictions and XP cost.'],
+ 'Greater Planar Binding':['Call one extraplanar creature of up to 18 HD into a prepared magic circle. Requires safeguards and bargaining.','Will negates; SR yes'],
+ 'Avascular Mass':['Necromantic assault on a living target creates a strangling mass, affecting the target and nearby creatures. See Spell Compendium for saves.','Fortitude partial; SR yes'],
+ 'Whirling Blade':['Throw a held weapon along a line, making melee attacks; you may substitute Intelligence for Strength on attack and damage rolls.'],
+ 'Wraithstrike':['Swift action; your melee attacks resolve against touch AC for one round. Competes for the swift action with Quicken Spell.'],
+ 'Wish':['Powerful reality-altering spell. Normal casting costs at least 5,000 XP and some effects cost more.'],
+ 'Time Stop':['Grants 1d4+1 rounds of apparent time for planning and preparation, with restrictions against directly affecting other creatures.'],
+ 'Foresight':['Prevents surprise and flat-footedness; +2 insight to AC and Reflex, warnings of danger. Lasts 10 minutes per caster level.'],
+ 'Unname':['Tome of Magic p. 260: erases one creature with Int 3+ and its equipment; Fort negates, SR applies. Requires knowing and correctly pronouncing the personal truename with Truespeak.','Fortitude negates; SR yes']
 };
 const specials={
  'Acid Splash':{type:'Acid damage',formula:()=> '1d3'},
