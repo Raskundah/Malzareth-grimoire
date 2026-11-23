@@ -1,7 +1,7 @@
 /* Network-first while online; cached grimoire remains available offline.
    The old cache-first strategy could indefinitely serve outdated spell lists
    on installed phones even after GitHub Pages had published new files. */
-const CACHE = 'malzareth-grimoire-cache-v17';
+const CACHE = 'malzareth-grimoire-cache-v18';
 const ASSETS = [
   './','./index.html','./styles.css','./data.js','./bulk-level78.js','./slots.js','./app.js',
   './manifest.webmanifest','./icons/grimoire.svg','./dice.js','./skills.js','./sheet-data.js','./sheet.js','./spell-reference.js','./spell-details.js','./spell-facts.js','./combat.js'
