@@ -24,33 +24,33 @@
     ['profession','Profession (any)','WIS',0,1,'Practical',true,'Needs training for normal skill use'],
     ['spellcraft','Spellcraft','INT',20,35,'Arcane',false,'Includes Skill Focus +3 and synergy +2'],
     ['appraise','Appraise','INT',0,10,'Practical'],
-    ['balance','Balance','DEX',0,3,'Movement'],
+    ['balance','Balance','DEX',0,4,'Movement'],
     ['bluff','Bluff','CHA',4,11,'Social',false,'Includes lesser tiefling racial +2'],
     ['climb','Climb','STR',0,0,'Movement'],
     ['diplomacy','Diplomacy','CHA',0,5,'Social'],
     ['disable-device','Disable Device','INT',0,10,'Practical',true,'Trained only'],
     ['disguise','Disguise','CHA',0,5,'Social',false,'Ring of Mortal Guise variant available below'],
-    ['escape-artist','Escape Artist','DEX',0,3,'Movement'],
+    ['escape-artist','Escape Artist','DEX',0,4,'Movement'],
     ['gather-information','Gather Information','CHA',0,7,'Social'],
     ['forgery','Forgery','INT',0,10,'Practical'],
     ['heal','Heal','WIS',0,1,'Practical'],
     ['handle-animal','Handle Animal','CHA',0,5,'Practical',true,'Trained only'],
-    ['hide','Hide','DEX',0,11,'Movement',false,'Lich +8 racial bonus'],
+    ['hide','Hide','DEX',0,12,'Movement',false,'Lich +8 racial bonus'],
     ['intimidate','Intimidate','CHA',16,21,'Social'],
     ['jump','Jump','STR',0,0,'Movement'],
     ['listen','Listen','WIS',0,9,'Perception',false,'Lich +8 racial bonus'],
-    ['move-silently','Move Silently','DEX',0,11,'Movement',false,'Lich +8 racial bonus'],
-    ['open-lock','Open Lock','DEX',0,3,'Practical',true,'Trained only'],
+    ['move-silently','Move Silently','DEX',0,12,'Movement',false,'Lich +8 racial bonus'],
+    ['open-lock','Open Lock','DEX',0,4,'Practical',true,'Trained only'],
     ['perform','Perform (any)','CHA',0,5,'Social',true,'Trained for normal skill use'],
-    ['ride','Ride','DEX',0,3,'Movement'],
+    ['ride','Ride','DEX',0,4,'Movement'],
     ['search','Search','INT',0,18,'Perception',false,'Lich +8 racial bonus'],
     ['sense-motive','Sense Motive','WIS',0,9,'Perception',false,'Lich +8 racial bonus'],
-    ['sleight-of-hand','Sleight of Hand','DEX',3,6,'Practical',true,'Trained only'],
+    ['sleight-of-hand','Sleight of Hand','DEX',3,7,'Practical',true,'Trained only'],
     ['spot','Spot','WIS',0,9,'Perception',false,'Lich +8 racial bonus'],
     ['survival','Survival','WIS',0,1,'Perception'],
     ['swim','Swim','STR',0,0,'Movement'],
-    ['tumble','Tumble','DEX',0,3,'Movement',true,'Trained only'],
-    ['use-rope','Use Rope','DEX',0,3,'Practical'],
+    ['tumble','Tumble','DEX',0,4,'Movement',true,'Trained only'],
+    ['use-rope','Use Rope','DEX',0,4,'Practical'],
     ['use-magic-device','Use Magic Device','CHA',4,9,'Arcane',true,'Scroll activation variant available below'],
     ['truespeak','Truespeak','INT',1,11,'Arcane',true,'One cross-class rank (2 skill points) at level 18. The target’s personal truename must first be discovered; speaking it requires a check (Tome of Magic).']
   ].map(([id,name,ability,ranks,total,group,trainedOnly=false,notes=''])=>
@@ -63,10 +63,10 @@
     {id:'disguise-ring',name:'Disguise · Ring of Mortal Guise',baseId:'disguise',modifier:10,group:'Special cases',notes:'Disguise Self from ring adds +10 while the effect applies'}
   ];
   const quick=[
-    {id:'initiative',name:'Initiative',ability:'DEX',ranks:0,total:7,group:'Quick checks',notes:'Includes Improved Initiative +4'},
-    {id:'fortitude-save',name:'Fortitude save',ability:null,ranks:0,total:6,group:'Quick checks',notes:'Undead have no Constitution; recorded +6 includes cloak +3'},
-    {id:'reflex-save',name:'Reflex save',ability:'DEX',ranks:0,total:9,group:'Quick checks',notes:'Includes cloak of Resistance +3'},
-    {id:'will-save',name:'Will save',ability:'WIS',ranks:0,total:13,group:'Quick checks',notes:'Includes cloak of Resistance +3'}
+    {id:'initiative',name:'Initiative',ability:'DEX',ranks:0,total:7,group:'Quick checks',notes:'Includes Improved Initiative +4 and Belt of Battle +2 competence when equipped'},
+    {id:'fortitude-save',name:'Fortitude save',ability:null,ranks:0,total:6,group:'Quick checks',notes:'Undead have no Constitution; live total includes the equipped cloak +5'},
+    {id:'reflex-save',name:'Reflex save',ability:'DEX',ranks:0,total:9,group:'Quick checks',notes:'Live total includes the equipped cloak of Resistance +5'},
+    {id:'will-save',name:'Will save',ability:'WIS',ranks:0,total:13,group:'Quick checks',notes:'Live total includes the equipped cloak of Resistance +5'}
   ];
   const byId=new Map([...base,...quick,...variants].map(skill=>[skill.id,skill]));
   const $=id=>document.getElementById(id);
