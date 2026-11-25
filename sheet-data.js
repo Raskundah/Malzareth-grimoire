@@ -117,6 +117,7 @@ const baseline={
  resolvedAudit:[],
  audit:[
    'Level 19: rolled 10 on lich d12, maximum HP 160. The 8 unspent level-18 skill points and 11 level-19 points have been allocated; compare against local skill edits before applying.',
+   'Future level-up skill priorities: Spellcraft, Knowledge (arcana), Concentration, then Truespeak. Maximise the first three toward class-skill caps; pay Truespeak cross-class costs and respect cap. Remaining points may go to secondary skills; do not retroactively alter approved level-18/19 allocation.',
    'LA buyoff complete (+0). Current level-19 XP requires reconciliation; old 78,674 figure is historical.',
    'Confirm pending 3,510 gp sale receipts, exact gem/valuable breakdown and unallocated magic inventory; do not double count.',
    'Action-point uses since the last sheet are not fully itemised; 7 is a historical value.',
