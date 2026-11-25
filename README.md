@@ -2,6 +2,26 @@
 
 A small, offline-ready, mobile-first D&D 3.5 spellbook built with **plain HTML, CSS and JavaScript**. There are no libraries, accounts, logins or build tools.
 
+## Level 19 advancement · 25 November 2026
+
+Malzareth Vhane is **Wizard 5 / Master Specialist 10 / Abjurant Champion 4**, lich, **160 maximum HP** after rolling 10 on his d12. Natural Intelligence is 28 after two confirmed *Wish* inherent bonuses and the +6 Headband makes total INT **34** (+12). Effective wizard casting level **19**; new Abjurant Champion class feature **Arcane Boost**, BAB **+11/+6/+1**, base Will save improved to +15, Abjurant Armor grants *Shield* **+8 shield AC**. This level grants no general feat or ability-score increase.
+
+The previous 8 unallocated level-18 skill points and new 11 level-19 points were assigned separately, respecting level-18 cap 21 and level-19 cap 22:
+
+| Skill | Previous ranks | Level 18 +points | Level 19 +points | Current ranks |
+|---|---:|---:|---:|---:|
+| Concentration | 18 | +3 | +1 | 22 |
+| Spellcraft | 20 | +1 | +1 | 22 |
+| Knowledge (arcana) | 20 | +1 | +1 | 22 |
+| Intimidate | 16 | +3 | — | 19 |
+| Knowledge (the planes) | 18 | — | +4 (2 ranks cross-class) | 20 |
+| Truespeak | 1 | — | +4 (2 ranks cross-class) | 3 |
+| **Skill point totals** | | **8** | **11** | |
+
+**Spellbook:** The campaign's established convention of two spellbook additions per arcane prestige-class advancement grants **Plague of Undead** (Spell Compendium, Sor/Wiz 9, Necromancy [Evil]) and **Gate** (Player's Handbook, Sor/Wiz 9, Conjuration). These are spells **known**, not automatically prepared. Plague of Undead consumes 100 gp in black sapphires, raises skeletons/zombies at maximum hit points and shares animate dead's control pool; the Rod of Undead Mastery doubles the controlled HD limit while held, not the single-cast HD limit. Gate only costs 1,000 XP when **calling**, not for planar travel. The automatic two-spell benefit is an established campaign convention, not strict published prestige-class RAW.
+
+The v19 JSON save migration (PWA cache v20) is guarded on all necessary spell and detail scripts. It preserves saved preparations, uses/charges, presets, spell tags, edited spells, journals, money and custom skill ranks unless a rank exactly matches the prior confirmed baseline. It boosts current HP only by the ten new HD points if max HP was exactly 150, retaining existing injury. It does not invent current XP or deduct the two previously cast *Wish* XP costs twice. A browser-local pre-v19 JSON backup is created on normal migration. Local Android data and live deployment must still be verified separately.
+
 ## Multi-tag spell filtering · 23 November 2026
 
 The **Spellbook** now has editable, multi-label purpose tags, separate from the RAW spell school and spellbook/Mother Cyst category. Quick filters include **Offensive, Defensive, Buff, Damage, Control, Summon, Negative Energy, Kill, True Name, Undead, Teleportation and Utility**. Expand **More tags and custom tags** for Debuff, Mobility, Divination, Healing, Countermagic, Illusion, Transformation, Creation, Barrier, Planar, Necrotic Cyst, Ritual, custom tags and **Untagged**.
