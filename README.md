@@ -4,7 +4,7 @@ A small, offline-ready, mobile-first D&D 3.5 spellbook built with **plain HTML, 
 
 ## Post-Marquis equipment purchases · 25 November 2026
 
-**Player-confirmed checkpoint:** The Seventh Sovereign held **approximately 845,000 gp** after the Marquis; this supersedes the much older 99,817 gp and 262,892 gp checkpoints. Do not add historical balances together. The approximate treasury remaining **before** pricing two custom rod clips is **544,000 gp**. Exact fractional currency is not reconciled.
+**Player-confirmed checkpoint:** The Seventh Sovereign held **approximately 845,000 gp** after the Marquis; this supersedes the much older 99,817 gp and 262,892 gp checkpoints. Do not add historical balances together. The approximate treasury remaining **after** two custom rod clips and one Wand Bracelet is **508,000 gp**. Exact fractional currency is not reconciled.
 
 | Confirmed purchase | Price (gp) | Item state |
 |---|---:|---|
@@ -13,19 +13,22 @@ A small, offline-ready, mobile-first D&D 3.5 spellbook built with **plain HTML, 
 | Greater Metamagic Rod of Quicken | 170,000 | Carried, 3/day, spells up to 9th level |
 | Normal Metamagic Rod of Maximize | 54,000 | Carried, 3/day, spells up to 6th level |
 | **Confirmed expenditure** | **301,000** | No sale credits assumed |
-| **Estimated remaining** | **544,000** | Before two rod-clip costs |
+| Two custom rod keychains, 12,000 gp each | 24,000 | Campaign adaptation for 5-lb rods |
+| Standard Wand Bracelet (MIC p.147) | 12,000 | Worn in arms slot, holds up to four 3-lb items |
+| **Total approved expenditure** | **337,000** | Four previous items plus three holders |
+| **Estimated remaining** | **508,000** | Approximate, after three holders |
 
 **Ring policy:** Keep the Ring of Protection +5 as ring 1. Ring of Spell-Battle is worn in ring 2 for combat; the custom Ring of Mortal Guise is retained, unequipped, and can replace Spell-Battle for social/infiltration scenes. No free-action ring swapping is implied.
 
 **Staff charge table:** Cause Fear (1); Ghoul Touch (1); Halt Undead (1); Enervation (**2**); Waves of Fatigue (**2**); Circle of Death (**3**). The staff uses Malzareth's higher caster level and own spell DCs if applicable (D&D 3.5 staff rules). Never calculate Enervation as only 1 charge.
 
-**Rod keychains:** Two custom rod-carrying chains/clips were requested. The price and any action-economy benefit have *not* been agreed, so no gp has been subtracted for them. The published *Wand Bracelet* costs 12,000 gp but only holds items up to 3 lb., while standard rods weigh about 5 lb.; it does not qualify as a RAW rod holder. For now the two accessories are mundane retention-only; do not imply magical quick draw.
+**Rod keychains and Wand Bracelet:** The two custom rod clips have been purchased for 12,000 gp each, priced like the published *Wand Bracelet* (MIC p.147), and a standard Wand Bracelet for actual wands has been purchased for another 12,000 gp. The RAW Wand Bracelet holds up to four one-handed items weighing up to 3 lb each, uses a swift action to retrieve, and a move action to stow/exchange. The two rod clips use those action rules but are **campaign-specific slotless adapters for approximately 5-lb metamagic rods**, which the standard item cannot hold. No free-action retrieval, activation or extra hands are implied. Three magic items cost 36,000 gp and reduce the estimated treasury from 544,000 to 508,000 gp.
 
 **Historical charge warning:** Staff of Transmutation ~44/50; Wand of Orb of Force ~42/50; acid-effect wand ~48/50; Wand of Greater Invisibility ~21/50. These are historical checkpoint counts and were not refreshed or reset. Rod of Undead Mastery is retained, but its doubling of controlled undead HD applies while *held*; swapping to another rod can affect that capacity.
 
 **Voss equipment resolution:** The user confirmed Malrec Voss wears a **Cloak of Resistance +5**. His level-19 saving throws use **Fort +20, Reflex +11, Will +26**. The earlier +3/+5 cloak ambiguity is closed; no new cloak purchase or deduction was recorded.
 
-The v20 save migration updates only recognised older inventory entries, retains existing custom inventory and consumables, and creates a pre-v20 backup. The stored amount is an explicitly **approximate** post-Marquis checkpoint; do not mistake it for an exact coin audit.
+The v20/v21 save migrations update only recognised older inventory entries and amounts, retain existing custom inventory and consumables, and create versioned backups; v21 adds the paid wand holder and rod-clip pricing. The stored amount is an explicitly **approximate** post-Marquis checkpoint; do not mistake it for an exact coin audit.
 
 ## Level 19 advancement · 25 November 2026
 
