@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 20;
+  const DATA_VERSION = 21;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const LEVEL19_CATALOG = ['Plague of Undead','Gate'];
@@ -34,6 +34,9 @@
   const completePostMarquisDefaults = ['ring-spell-battle','staff-necromancy','rod-quicken-greater','rod-maximize-normal','rod-keychains'].every(id=>
     sheetModel?.createDefault()?.inventory?.some(x=>x.id===id))
     && sheetModel?.createDefault()?.currency?.notes?.includes('After the Marquis');
+  const completeHolderPurchaseDefaults = sheetModel?.createDefault()?.inventory?.some(x=>x.id==='wand-bracelet'&&x.valueGp===12000)
+    && sheetModel?.createDefault()?.inventory?.some(x=>x.id==='rod-keychains'&&x.qty===2&&x.valueGp===12000)
+    && sheetModel?.createDefault()?.currency?.gp===508000;
   const completeEquipmentDefaults = sheetModel?.createDefault()?.inventory?.some(x=>x.id==='orange-prism-ioun-stone')
     && sheetModel?.createDefault()?.combat?.saveResistance===5;
   // Only migrate after the entire added spell-catalog script has loaded;
@@ -54,7 +57,7 @@
     && Number(window.SPELL_FACT_AUDIT.matched)>=200
     && defaults.some(s=>s.name==='Ice Castle' && !!s.casting && !!s.target && !!s.duration);
   const catalogueReady = completeCystDefaults && completeLevel13Defaults && completePrefightDefaults
-    && completeLevel18Defaults && completeLevel19Defaults && completeEquipmentDefaults && completePostMarquisDefaults && completeLevel78Research && completeSpellDetails
+    && completeLevel18Defaults && completeLevel19Defaults && completeEquipmentDefaults && completePostMarquisDefaults && completeHolderPurchaseDefaults && completeLevel78Research && completeSpellDetails
     && spellTagger?.revision===1;
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
@@ -534,6 +537,35 @@
       const note='Post-Marquis: purchased Ring of Spell-Battle (combat slot), full Staff of Necromancy, Greater Quicken Rod and normal Maximize Rod for 301,000 gp total. Two custom rod keychains requested: price/quick-draw rules unconfirmed.';
       if(!sheet.audit.includes(note))sheet.audit.unshift(note);
     }
+    // v21: two heavier rod clips and one standard Wand Bracelet, 12,000 gp
+    // each. Only recognised former checkpoints are updated, once.
+    const buyHolders=(Number(input.version)||1)<21 && completeHolderPurchaseDefaults;
+    if(buyHolders && sheet){
+      const latest=sheetModel.createDefault();
+      const clipDefault=latest.inventory.find(x=>x.id==='rod-keychains');
+      const wandDefault=latest.inventory.find(x=>x.id==='wand-bracelet');
+      const clips=sheet.inventory.find(x=>x.id==='rod-keychains');
+      if(clips){
+        if(clips.valueGp===null || clips.valueGp===undefined || clips.valueGp===0)clips.valueGp=12000;
+        if(String(clips.notes||'').includes('exact price and whether anything more than mundane tethering is allowed remain unagreed'))
+          clips.notes=clipDefault.notes;
+        else if(!String(clips.notes||'').includes('12,000 gp each'))
+          clips.notes=(String(clips.notes||'')+' Confirmed price 12,000 gp per clip; heavier rod capacity is a house rule.').trim();
+        if(clips.certainty==='provisional')clips.certainty='recorded';
+        if(clips.location==='Commissioned / carried')clips.location=clipDefault.location;
+      }else sheet.inventory.push(structuredClone(clipDefault));
+      if(!sheet.inventory.some(x=>x.id==='wand-bracelet'||String(x.name).toLowerCase()==='wand bracelet'))
+        sheet.inventory.push(structuredClone(wandDefault));
+      if(Number(sheet.currency.gp)===544000)sheet.currency.gp=508000;
+      const pricing='Two custom rod clips 12,000 gp each plus one Wand Bracelet 12,000 gp: additional 36,000 gp approved. Total after-Marquis purchases 337,000 gp; estimated remaining treasury ~508,000 gp.';
+      if(!String(sheet.currency.notes||'').includes('additional 36,000 gp approved'))
+        sheet.currency.notes=(pricing+'\n'+String(sheet.currency.notes||'')).slice(0,2000);
+      sheet.audit=sheet.audit.map(note=>String(note).includes('Two custom rod keychains requested: price/quick-draw rules unconfirmed.')
+        ? String(note).replace('Two custom rod keychains requested: price/quick-draw rules unconfirmed.','Two custom rod keychains and Wand Bracelet purchased for another 36,000 gp; heavier rod capacity is a house rule.')
+        :note);
+      const auditNote='Post-Marquis holder purchases: two rod keychains and one Wand Bracelet, 12,000 gp each, 36,000 gp total; estimated remaining ~508,000 gp. Rod holder weight allowance is campaign-specific.';
+      if(!sheet.audit.includes(auditNote))sheet.audit.unshift(auditNote);
+    }
     const damagePresets=(Array.isArray(input.damagePresets)?input.damagePresets:[]).slice(0,40)
       .filter(x=>x&&typeof x==='object')
       .map(x=>({
@@ -546,7 +578,7 @@
       spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
       autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
       cogitation,abilities,skillOverrides,sheet,damagePresets,
-      journal:(()=>{let j=String(input.journal??''); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');if(advance18&&!j.includes('Level 18: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL18_JOURNAL].filter(Boolean).join('\n\n');if(advance19&&!j.includes('Level 19: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL19_JOURNAL].filter(Boolean).join('\n\n');if((Number(input.version)||1)<20&&completePostMarquisDefaults&&!j.includes('Post-Marquis equipment purchase 301,000 gp'))j=[j,'Post-Marquis equipment purchase 301,000 gp: Ring of Spell-Battle 12,000; full Staff of Necromancy 65,000; Greater Quicken Rod 170,000; normal Maximize Rod 54,000. Two custom rod clips unpriced. Estimated balance ~544,000 gp.'].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
+      journal:(()=>{let j=String(input.journal??''); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');if(advance18&&!j.includes('Level 18: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL18_JOURNAL].filter(Boolean).join('\n\n');if(advance19&&!j.includes('Level 19: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL19_JOURNAL].filter(Boolean).join('\n\n');if((Number(input.version)||1)<20&&completePostMarquisDefaults&&!j.includes('Post-Marquis equipment purchase 301,000 gp'))j=[j,'Post-Marquis equipment purchase 301,000 gp: Ring of Spell-Battle 12,000; full Staff of Necromancy 65,000; Greater Quicken Rod 170,000; normal Maximize Rod 54,000.'].filter(Boolean).join('\n\n');if(buyHolders&&!j.includes('Two rod keychains and one Wand Bracelet'))j=[j,'Two rod keychains and one Wand Bracelet purchased at 12,000 gp each, 36,000 gp combined. Total post-Marquis purchase outlay 337,000 gp; treasury approximately 508,000 gp. Custom rod holders use approved heavier capacity.'].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
     };
   };
   const load = () => {
