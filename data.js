@@ -28,6 +28,8 @@
   // Confirmed selections across levels 14–18; do not add merely suggested spells.
   const level14to18={2:['Whirling Blade','Wraithstrike'],7:['Awaken Undead','Limited Wish'],
     8:['Greater Planar Binding','Avascular Mass'],9:['Wish','Time Stop','Foresight','Unname']};
+  // Approved level-19 additions use the campaign's established prestige-class spellbook convention.
+  const level19Additions={9:['Plague of Undead','Gate']};
   const cyst = {
     1: ['Necrotic Awareness'],
     2: ['Necrotic Cyst','Necrotic Scrying'],
@@ -70,7 +72,8 @@
     'Magnificent Mansion':'Conjuration','Energy Immunity':'Abjuration',
     'Whirling Blade':'Transmutation','Wraithstrike':'Transmutation','Awaken Undead':'Necromancy',
     'Limited Wish':'Universal','Greater Planar Binding':'Conjuration','Avascular Mass':'Necromancy',
-    'Wish':'Universal','Time Stop':'Transmutation','Foresight':'Divination','Unname':'Necromancy'
+    'Wish':'Universal','Time Stop':'Transmutation','Foresight':'Divination','Unname':'Necromancy',
+    'Plague of Undead':'Necromancy','Gate':'Conjuration'
   };
   const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   const make = (map,status,source) => Object.entries(map).flatMap(([level,items]) => items.map(name=>({
@@ -84,12 +87,35 @@
     ...make(titanAcquisitions,'spellbook','Purchased scroll / Boccob\'s Blessed Book · 23 Eleasis 1373 DR pre-Orathion'),
     ...make(previousExport,'spellbook','21 Nov user export / Ray Deflection transcription; names may need verification'),
     ...make(level14to18,'spellbook','Confirmed level-14 through level-18 spellbook additions'),
+    ...make(level19Additions,'spellbook','Level 19 campaign-approved spellbook additions; no daily preparation automatically changed'),
     ...make(cyst,'cyst','Mother Cyst feat (Libris Mortis p. 28; no spellbook required)')
   ];
+  // Accurate 3.5e reference fields for the two newly approved 9th-level spells.
+  const level19Details={
+    'Plague of Undead':{
+      components:'V, S, M (black sapphire worth 100 gp)',
+      casting:'1 standard action',range:'Close (25 ft. + 5 ft./2 caster levels)',
+      target:'One or more corpses within range',duration:'Instantaneous',
+      save:'None',sr:'No',detailsSource:'Spell Compendium p. 158',
+      description:'Animates available bones or corpses into skeletons or zombies at maximum hit points. A casting creates up to 4 HD per caster level; creatures share the animate dead control pool. Corpsecrafter improves qualifying undead. Requires 100 gp of black sapphire.'
+    },
+    'Gate':{
+      components:'V, S, XP (only when calling a creature)',
+      casting:'1 standard action',range:'Medium (100 ft. + 10 ft./caster level)',
+      target:'Effect: interdimensional connection or called extraplanar creature',duration:'Concentration, up to 1 round/level, or instantaneous (calling)',
+      save:'None',sr:'No',detailsSource:'Player’s Handbook v.3.5, Gate',
+      description:'Creates a precise portal between planes for travel, or calls extraplanar creatures subject to Gate’s restrictions. Calling incurs a 1,000 XP cost; portal travel alone has no XP cost.'
+    }
+  };
+  for(const spell of window.STARTER_SPELLS){
+    const detail=level19Details[spell.name];
+    if(detail && spell.level===9 && spell.status==='spellbook')Object.assign(spell,detail);
+  }
   window.PREFIGHT_ACQUISITION_JOURNAL = "23 Eleasis 1373 DR · BEFORE ORATHION — Eight scrolls bought at standard minimum caster level and transcribed over eight separate 24-hour periods before the existing 16:30 battle checkpoint. 2nd: Mirror Image, Heroics (150 gp each); 5th: Wall of Stone, Greater Blink, Dimension Jumper (1,125 gp each); 6th: Disintegrate, Planar Binding, Freezing Fog (1,650 gp each). Total 8,625 gp deducted from previous 271,517 gp 4 sp 8 cp liquid treasury; revised liquid treasury 262,892 gp 4 sp 8 cp. All eight entered in Malzareth's previously owned Boccob's Blessed Book (37 pages, no additional magic ink cost). Scrolls consumed. Spellcraft DCs 17/20/21, passed with established modifier. Fighter 15+ arms fragment required for each Heroics casting; one acquired with procurement for immediate use, no fixed extra gp price. This adds spells KNOWN, not magically prepared spells or unspent slots. Do not rewind active encounter or reset daily consumables. The 245,000 gp contract escrow remains contingent on victory; Orathion's hoard and equipment unvalued. Earlier protective Greater Spell Immunity scrolls have already been consumed in preparation.";
   window.LEVEL13_JOURNAL = "25 Mirtul 1373 DR, 19:00 — Dordrien Crypts. Wizard 5 / Master Specialist 8, LA +0, ECL 13, XP 78,674 / 91,000 (+675 since 77,999). Rolled 9 on d12; maximum HP 104. Last HP before advancement 95 +17 temporary; rest/preparation not yet reconciled. New spells: Greater Teleport and Sword of Darkness (ordinary), Waves of Exhaustion (Expanded Spellbook); Necrotic Tumor via Mother Cyst. 10 skill points pending. Liquid treasury 11,367 gp 9 sp 8 cp; pending sales 3,510 gp; projected 14,877 gp 9 sp 8 cp. Gems 7,200 gp (including 10 black onyx, 3 diamonds, 3 bloodstones), ordinary valuables 1,695 gp, unallocated magic 13,720 gp; subtotal 33,982.98 gp includes liquid, not extra cash. Force: 24 operational (6 living, 18 undead), 3 dread warriors, 7 zombies; 3 prisoners and 1 rescued patient. Exploration secured; rest/advancement decisions pending. Earlier: Brokk released; Edric, Maerith, Garran and Vesryn restored (6,000 gp total); lich LA fully bought off.";
   window.LEVEL18_JOURNAL = "Level 18: Wizard 5 / Master Specialist 10 / Abjurant Champion 3, 150 HP (d12 roll 10), BAB +10/+5, effective wizard casting 18. Quicken Spell feat. Foresight and Unname learned. Level 17 Wish and Time Stop; level 16 Whirling Blade and Wraithstrike; level 15 Greater Planar Binding and Avascular Mass; level 14 Awaken Undead and Limited Wish. Truespeak 1 rank costs two cross-class skill points, eight points unspent. Unname requires a researched personal truename and a successful pronunciation check. Existing battle preparations and resources are not reset.";
-  window.DEFAULT_SLOTS = [5,8,8,7,7,7,7,5,5,4];
+  window.LEVEL19_JOURNAL = "Level 19: Wizard 5 / Master Specialist 10 / Abjurant Champion 4. Lich d12 HP roll 10; maximum HP 160. Two Wish spells had increased natural Intelligence 26→28, with Headband +6 for total INT 34. Skills: 8 pending level-18 points and 11 new level-19 points allocated to Concentration, Spellcraft, Knowledge (arcana), Intimidate, Knowledge (the planes) and Truespeak. Campaign spellbook convention grants Plague of Undead and Gate as two new ninth-level inscriptions. No preparation, item charges, current HP or earned XP totals are fabricated.";
+  window.DEFAULT_SLOTS = [5,8,8,8,8,7,7,7,6,5];
   // Latest documented preparation, not a claim about current unused slots.
   window.STARTER_PREPARATION = {
     0: ['Message','Ghost Sound','Mage Hand','Detect Magic'],
