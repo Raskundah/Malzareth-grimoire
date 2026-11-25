@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 19;
+  const DATA_VERSION = 20;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const LEVEL19_CATALOG = ['Plague of Undead','Gate'];
@@ -31,6 +31,9 @@
     && sheetModel?.createDefault()?.identity.characterLevel>=18;
   const completeLevel19Defaults = LEVEL19_CATALOG.every(name=>defaults.some(s=>s.name===name && s.level===9 && s.status==='spellbook'))
     && sheetModel?.createDefault()?.identity.characterLevel>=19 && !!window.LEVEL19_JOURNAL;
+  const completePostMarquisDefaults = ['ring-spell-battle','staff-necromancy','rod-quicken-greater','rod-maximize-normal','rod-keychains'].every(id=>
+    sheetModel?.createDefault()?.inventory?.some(x=>x.id===id))
+    && sheetModel?.createDefault()?.currency?.notes?.includes('After the Marquis');
   const completeEquipmentDefaults = sheetModel?.createDefault()?.inventory?.some(x=>x.id==='orange-prism-ioun-stone')
     && sheetModel?.createDefault()?.combat?.saveResistance===5;
   // Only migrate after the entire added spell-catalog script has loaded;
@@ -51,7 +54,7 @@
     && Number(window.SPELL_FACT_AUDIT.matched)>=200
     && defaults.some(s=>s.name==='Ice Castle' && !!s.casting && !!s.target && !!s.duration);
   const catalogueReady = completeCystDefaults && completeLevel13Defaults && completePrefightDefaults
-    && completeLevel18Defaults && completeLevel19Defaults && completeEquipmentDefaults && completeLevel78Research && completeSpellDetails
+    && completeLevel18Defaults && completeLevel19Defaults && completeEquipmentDefaults && completePostMarquisDefaults && completeLevel78Research && completeSpellDetails
     && spellTagger?.revision===1;
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
@@ -475,6 +478,62 @@
       const note='Level 19: 160 HP (d12 roll 10), INT 34 with +6 headband; 8 level-18 and 11 level-19 skill points allocated; two new 9th-level spells (Gate, Plague of Undead). Exact current XP pending.';
       if(!sheet.audit.includes(note))sheet.audit.unshift(note);
     }
+    // Level-19 post-Marquis inventory reconciliation. Adds confirmed purchases once,
+    // repairs only recognised old equipped defaults, and never resets item charges.
+    const postMarquis=(Number(input.version)||1)<20 && completePostMarquisDefaults;
+    if(postMarquis && sheet){
+      const latest=sheetModel.createDefault();
+      const inventory=sheet.inventory;
+      const fetch=id=>latest.inventory.find(x=>x.id===id);
+      const has=item=>inventory.some(x=>x.id===item.id || String(x.name).toLowerCase()===item.name.toLowerCase());
+      const upgrade=[
+        ['headband-intellect-4','Headband of Intellect +4','headband-intellect-6'],
+        ['ring-protection-3','Ring of Protection +3','ring-protection-5'],
+        ['amulet-natural-armour-3','Amulet of Natural Armour +3','amulet-natural-armour-5']
+      ];
+      for(const [oldId,oldName,newId] of upgrade){
+        const newer=fetch(newId);if(!newer||has(newer))continue;
+        const old=inventory.find(x=>x.id===oldId&&x.name===oldName&&x.equipped);
+        if(old)Object.assign(old,{id:newer.id,name:newer.name,location:newer.location,notes:newer.notes,equipped:true});
+        else inventory.push(structuredClone(newer));
+      }
+      const sold=inventory.findIndex(x=>x.id==='cloak-resistance-5'&&x.name==='Cloak of Resistance +5'&&x.equipped);
+      if(sold>=0)inventory.splice(sold,1);
+      const mortal=inventory.find(x=>x.id==='ring-mortal-guise'&&x.name==='Ring of Mortal Guise');
+      if(mortal){mortal.equipped=false;mortal.location='Carried / social-use swap';mortal.notes=fetch('ring-mortal-guise').notes;}
+      // Old local saves can have individually edited magic gear. Add by exact
+      // identity and leave existing items, charges, values and annotations intact.
+      for(const id of [
+        'ring-spell-battle','vest-archmagi','robe-arcane-might-necromancy',
+        'cloak-displacement-minor','pale-green-prism-ioun-stone','dusty-rose-prism-ioun-stone',
+        'rod-undead-mastery','rod-quicken-greater','rod-maximize-normal',
+        'staff-necromancy','rod-keychains',
+        'wand-acid','wand-greater-invisibility'
+      ]){
+        const item=fetch(id);
+        if(item&&!has(item))inventory.push(structuredClone(item));
+      }
+      // Metamagic rods grant 3 daily uses; only the newly purchased copies
+      // start fully charged. Historical staff/wand charges are never overwritten.
+      const combat=sheet.combat;
+      if(combat.enhanceNatural===3)combat.enhanceNatural=5;
+      if(combat.deflection===3)combat.deflection=5;
+      if(combat.armorMisc===0)combat.armorMisc=8;
+      if(combat.attackMisc===0)combat.attackMisc=1;
+      if(combat.saveMisc.fort===0)combat.saveMisc.fort=-2;
+      if(combat.saveMisc.ref===0)combat.saveMisc.ref=1;
+      if(combat.saveMisc.will===0)combat.saveMisc.will=1;
+      if([262892,99817,845000].includes(Number(sheet.currency.gp))){
+        sheet.currency.gp=544000;
+        // The old copper/silver figures are left unchanged, but the note
+        // explicitly warns that the new total is approximate.
+      }
+      const ledger='Post-Marquis estimated treasury ~845,000 gp. Confirmed expenditure 301,000 gp (Spell-Battle ring 12k, Staff of Necromancy 65k full, Greater Quicken Rod 170k, normal Maximize Rod 54k). Estimated remaining ~544,000 gp before two unpriced rod keychains. Earlier gold estimates superseded, not added.';
+      if(!String(sheet.currency.notes).includes('Post-Marquis estimated treasury'))
+        sheet.currency.notes=(ledger+'\\n'+sheet.currency.notes).slice(0,2000);
+      const note='Post-Marquis: purchased Ring of Spell-Battle (combat slot), full Staff of Necromancy, Greater Quicken Rod and normal Maximize Rod for 301,000 gp total. Two custom rod keychains requested: price/quick-draw rules unconfirmed.';
+      if(!sheet.audit.includes(note))sheet.audit.unshift(note);
+    }
     const damagePresets=(Array.isArray(input.damagePresets)?input.damagePresets:[]).slice(0,40)
       .filter(x=>x&&typeof x==='object')
       .map(x=>({
@@ -487,7 +546,7 @@
       spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
       autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
       cogitation,abilities,skillOverrides,sheet,damagePresets,
-      journal:(()=>{let j=String(input.journal??''); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');if(advance18&&!j.includes('Level 18: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL18_JOURNAL].filter(Boolean).join('\n\n');if(advance19&&!j.includes('Level 19: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL19_JOURNAL].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
+      journal:(()=>{let j=String(input.journal??''); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');if(advance18&&!j.includes('Level 18: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL18_JOURNAL].filter(Boolean).join('\n\n');if(advance19&&!j.includes('Level 19: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL19_JOURNAL].filter(Boolean).join('\n\n');if((Number(input.version)||1)<20&&completePostMarquisDefaults&&!j.includes('Post-Marquis equipment purchase 301,000 gp'))j=[j,'Post-Marquis equipment purchase 301,000 gp: Ring of Spell-Battle 12,000; full Staff of Necromancy 65,000; Greater Quicken Rod 170,000; normal Maximize Rod 54,000. Two custom rod clips unpriced. Estimated balance ~544,000 gp.'].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
     };
   };
   const load = () => {
