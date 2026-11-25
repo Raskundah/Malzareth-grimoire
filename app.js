@@ -3,9 +3,10 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 18;
+  const DATA_VERSION = 19;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
+  const LEVEL19_CATALOG = ['Plague of Undead','Gate'];
   const LEVEL18_CATALOG = ['Earth bind','Fly','Ray reflection','Assay spell resistance','Dimension anchor','Ray Deflection',
     'Greater Dispel Magic','Magnificent Mansion','Energy Immunity','Whirling Blade','Wraithstrike',
     'Awaken Undead','Limited Wish','Greater Planar Binding','Avascular Mass','Wish','Time Stop','Foresight','Unname'];
@@ -27,7 +28,9 @@
   const completeLevel13Defaults = LEVEL13_NAMES.every(name=>defaults.some(s=>s.name===name&&s.level===7)) && sheetModel?.createDefault()?.identity.characterLevel>=13;
   const completePrefightDefaults = PREFIGHT_NAMES.every(name=>defaults.some(s=>s.name===name && s.status==='spellbook'));
   const completeLevel18Defaults = LEVEL18_CATALOG.every(name=>defaults.some(s=>s.name===name && s.status==='spellbook'))
-    && sheetModel?.createDefault()?.identity.characterLevel===18;
+    && sheetModel?.createDefault()?.identity.characterLevel>=18;
+  const completeLevel19Defaults = LEVEL19_CATALOG.every(name=>defaults.some(s=>s.name===name && s.level===9 && s.status==='spellbook'))
+    && sheetModel?.createDefault()?.identity.characterLevel>=19 && !!window.LEVEL19_JOURNAL;
   const completeEquipmentDefaults = sheetModel?.createDefault()?.inventory?.some(x=>x.id==='orange-prism-ioun-stone')
     && sheetModel?.createDefault()?.combat?.saveResistance===5;
   // Only migrate after the entire added spell-catalog script has loaded;
@@ -48,7 +51,7 @@
     && Number(window.SPELL_FACT_AUDIT.matched)>=200
     && defaults.some(s=>s.name==='Ice Castle' && !!s.casting && !!s.target && !!s.duration);
   const catalogueReady = completeCystDefaults && completeLevel13Defaults && completePrefightDefaults
-    && completeLevel18Defaults && completeEquipmentDefaults && completeLevel78Research && completeSpellDetails
+    && completeLevel18Defaults && completeLevel19Defaults && completeEquipmentDefaults && completeLevel78Research && completeSpellDetails
     && spellTagger?.revision===1;
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
@@ -64,11 +67,11 @@
       const spell = spells.find(s => s.name === name && s.level === Number(level));
       if(spell) prepared.push({id: uid(), spellId: spell.id, used:false});
     }));
-    const slots = calcSlots(30,18).totals;
+    const slots = calcSlots(34,19).totals;
     return {
       version:catalogueReady ? DATA_VERSION : 1,spells,prepared,slots,
-      manualSlots:[...slots],autoSlots:true,spellcastingLevel:18,
-      intelligence:30,necroBonus:2,presets:[],
+      manualSlots:[...slots],autoSlots:true,spellcastingLevel:19,
+      intelligence:34,necroBonus:2,presets:[],
       cogitation:{level:6,used:false,spellId:null},
       abilities:{STR:10,DEX:18,WIS:12,CHA:20},skillOverrides:{},
       sheet:sheetModel?.createDefault() || null,damagePresets:[],
@@ -132,6 +135,14 @@
       for(const name of LEVEL18_CATALOG){
         const starter=defaults.find(s=>s.name===name && s.status==='spellbook');
         if(starter&&!spells.some(s=>s.level===starter.level && s.name.toLowerCase()===name.toLowerCase()))
+          spells.push(structuredClone(starter));
+      }
+    }
+    const advance19=(Number(input.version)||1)<19 && completeLevel19Defaults;
+    if(advance19){
+      for(const name of LEVEL19_CATALOG){
+        const starter=defaults.find(s=>s.name===name&&s.level===9&&s.status==='spellbook');
+        if(starter&&!spells.some(s=>s.level===9&&s.name.toLocaleLowerCase()===name.toLocaleLowerCase()))
           spells.push(structuredClone(starter));
       }
     }
@@ -207,11 +218,13 @@
     const ids = new Set();
     for(const s of spells){if(ids.has(s.id)) s.id=uid(); ids.add(s.id);}
     const prepared = input.prepared.filter(p=>p && ids.has(p.spellId)).map(p=>({id:uid(),spellId:String(p.spellId),used:!!p.used}));
-    const intelligence = Number.isFinite(Number(input.intelligence)) ? Math.max(1, Math.min(99, Math.trunc(Number(input.intelligence)))) : 30;
+    let intelligence = Number.isFinite(Number(input.intelligence)) ? Math.max(1, Math.min(99, Math.trunc(Number(input.intelligence)))) : 30;
+    if(advance19 && [30,32].includes(intelligence))intelligence=34;
     let spellcastingLevel = Number.isFinite(Number(input.spellcastingLevel))
       ? Math.max(1,Math.min(20,Math.trunc(Number(input.spellcastingLevel)))) : 13;
     if(advance && spellcastingLevel===12)spellcastingLevel=13;
     if(advance18 && spellcastingLevel<18)spellcastingLevel=18;
+    if(advance19 && spellcastingLevel===18)spellcastingLevel=19;
     const calculated = calcSlots(intelligence,spellcastingLevel).totals;
     const readSlots = (list, fallback) => Array.from({length:10},(_,l)=>{
       const n=Number(list?.[l]);
@@ -285,6 +298,19 @@
       })){
         const previous=skillOverrides[id];
         skillOverrides[id]={ranks:Math.max(rank,previous?.ranks??0),extra:previous?.extra??0};
+      }
+    }
+    if(advance19){
+      // 8 points from level 18, 11 from level 19. Never overwrite a locally
+      // edited rank outside the exact previous recorded values.
+      const finalRanks={
+        concentration:[18,22],spellcraft:[20,22],
+        'knowledge-arcana':[20,22],intimidate:[16,19],
+        'knowledge-planes':[18,20],truespeak:[1,3]
+      };
+      for(const [id,[previous,latest]] of Object.entries(finalRanks)){
+        const entry=skillOverrides[id];
+        if(!entry||entry.ranks===previous)skillOverrides[id]={ranks:latest,extra:entry?.extra??0};
       }
     }
     const countAt = level => prepared.filter(p=>spells.find(s=>s.id===p.spellId)?.level===level).length;
@@ -412,6 +438,43 @@
       if(sheet.inventory.some(x=>x.id==='belt-of-battle'&&x.equipped)&&sheet.combat.initiativeMisc===4)
         sheet.combat.initiativeMisc=6;
     }
+    if(advance19 && sheet){
+      const baseline=sheetModel.createDefault();
+      const wasEarlier=Number(sheet.identity.characterLevel)<19;
+      if(wasEarlier){
+        sheet.identity.characterLevel=19;
+        if(['Wizard 5 / Master Specialist 10 / Abjurant Champion 3','Wizard 5 / Master Specialist 10 / Abjurant Champion 4'].includes(sheet.identity.characterClass))
+          sheet.identity.characterClass=baseline.identity.characterClass;
+        if(String(sheet.identity.era||'').includes('level 18'))
+          sheet.identity.era=String(sheet.identity.era).replace('level 18','level 19');
+        sheet.identity.xpNext=Math.max(Number(sheet.identity.xpNext)||0,190000);
+        sheet.identity.xpNote='Level 19 confirmed, with 160 maximum HP. Exact current XP, including Wish costs, needs reconciliation; historical XP preserved. Next level 190,000 XP.';
+        if(sheet.combat.maxHP===150){
+          // Increase the maximum without healing unrelated damage.
+          if(sheet.combat.currentHP>0)sheet.combat.currentHP=Math.min(160,sheet.combat.currentHP+10);
+          sheet.combat.maxHP=160;
+        }
+        sheet.combat.bab=Math.max(Number(sheet.combat.bab)||0,11);
+        sheet.combat.baseSaves.will=Math.max(Number(sheet.combat.baseSaves.will)||0,15);
+      }
+      for(const feature of baseline.features.filter(f=>f.id==='arcane-boost')){
+        if(!sheet.features.some(x=>x.id===feature.id))sheet.features.push(feature);
+      }
+      for(const feature of sheet.features){
+        const newer=baseline.features.find(x=>x.id===feature.id);
+        if(!newer)continue;
+        if(feature.id==='abjurant-armor' && String(feature.effect).includes('Shield grants +7'))
+          Object.assign(feature,{effect:newer.effect,category:newer.category});
+        if(feature.id==='caster-level' && String(feature.effect).includes('Level 18:'))
+          feature.effect=newer.effect;
+        if(feature.id==='undead' && String(feature.effect).includes('18d12'))
+          feature.effect=newer.effect;
+      }
+      const oldAudit=/^Level 18: (1 Truespeak|eight skill points remain)/;
+      sheet.audit=sheet.audit.filter(note=>!oldAudit.test(note));
+      const note='Level 19: 160 HP (d12 roll 10), INT 34 with +6 headband; 8 level-18 and 11 level-19 skill points allocated; two new 9th-level spells (Gate, Plague of Undead). Exact current XP pending.';
+      if(!sheet.audit.includes(note))sheet.audit.unshift(note);
+    }
     const damagePresets=(Array.isArray(input.damagePresets)?input.damagePresets:[]).slice(0,40)
       .filter(x=>x&&typeof x==='object')
       .map(x=>({
@@ -424,7 +487,7 @@
       spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
       autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
       cogitation,abilities,skillOverrides,sheet,damagePresets,
-      journal:(()=>{let j=String(input.journal??''); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');if(advance18&&!j.includes('Level 18: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL18_JOURNAL].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
+      journal:(()=>{let j=String(input.journal??''); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');if(advance18&&!j.includes('Level 18: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL18_JOURNAL].filter(Boolean).join('\n\n');if(advance19&&!j.includes('Level 19: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL19_JOURNAL].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
     };
   };
   const load = () => {
