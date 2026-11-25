@@ -35,9 +35,9 @@ const baseline={
    actionNote:'Action points: 7 last recorded, current expenditures not reconciled.'
  },
  currency:{
-   gp:544000,sp:0,cp:0,pp:0,
+   gp:508000,sp:0,cp:0,pp:0,
    fortressTreasuryGp:35543,
-   notes:'After the Marquis: approximately 845,000 gp liquid treasury reported by player. Approved purchases: Ring of Spell-Battle 12,000; full Staff of Necromancy 65,000; Greater Quicken Rod 170,000; normal Maximize Rod 54,000. Total 301,000 gp; estimated remaining ~544,000 gp before two unpriced rod keychains. This is an estimate, not an exact coin audit. Earlier treasury and fortressTreasuryGp figures are historical and must not be added. No remaining escrow counted twice.'
+   notes:'After the Marquis: approximately 845,000 gp liquid treasury reported by player. Approved purchases: Ring of Spell-Battle 12,000; full Staff of Necromancy 65,000; Greater Quicken Rod 170,000; normal Maximize Rod 54,000; plus two custom rod keychains 12,000 gp each (24,000) and one standard Wand Bracelet 12,000. Total 337,000 gp; estimated remaining ~508,000 gp. This is an estimate, not an exact coin audit. Earlier treasury and fortressTreasuryGp figures are historical and must not be added. No remaining escrow counted twice.'
  },
  inventory:[
    item('headband-intellect-6','Headband of Intellect +6','Magic item','Worn / head',1,{equipped:true,notes:'+6 enhancement to natural Intelligence 28; equipped score 34. Does not add skill points.'}),
@@ -53,7 +53,8 @@ const baseline={
    item('rod-quicken-greater','Greater Metamagic Rod of Quicken','Rod','Carried / accessible',1,{valueGp:170000,charges:3,maxCharges:3,notes:'Purchased after Marquis. 3 uses/day, quicken one arcane spell of up to 9th level without increasing slot; each still consumes one swift action and rod must be held.'}),
    item('rod-maximize-normal','Normal Metamagic Rod of Maximize','Rod','Carried / accessible',1,{valueGp:54000,charges:3,maxCharges:3,notes:'Purchased after Marquis. 3 uses/day, maximize a spell of up to 6th level. Maximize Enervation to 4 negative levels; rod must be held.'}),
    item('staff-necromancy','Staff of Necromancy','Staff / wand','Carried',1,{valueGp:65000,charges:50,maxCharges:50,notes:'Purchased full 50 charges after Marquis. DMG p244: Cause Fear 1; Ghoul Touch 1; Halt Undead 1; Enervation 2; Waves of Fatigue 2; Circle of Death 3. User chooses caster level and spell DCs when higher than staff (subject to staff rules).'}),
-   item('rod-keychains','Rod keychains / retention clips (custom)', 'Accessory','Commissioned / carried',2,{notes:'Two requested rod retention keychains; exact price and whether anything more than mundane tethering is allowed remain unagreed. Standard MIC Wand Bracelet holds <=3lb items; metamagic rods typically weigh ~5lb. No magical quick-draw ability credited.',certainty:'provisional'}),
+   item('rod-keychains','Rod keychains / retention clips (custom)', 'Accessory','Carried / custom rod holders',2,{valueGp:12000,notes:'Two purchased at 12,000 gp each = 24,000 gp. House-rule Wand Bracelet adaptation for heavier 5-lb metamagic rods. Up to four rods per clip as capacity permits; swift action to retrieve an item, move action to stow or exchange. These clips are custom slotless carriers by campaign approval, not official RAW; a retrieved rod must still be held to activate. No additional free-action drawing or magic-item activation.',certainty:'recorded'}),
+   item('wand-bracelet','Wand Bracelet','Magic item','Worn / arms',1,{equipped:true,valueGp:12000,notes:'Magic Item Compendium p. 147. Stores up to four hand-held items of at most 3 lb each; swift action to retrieve, move action to store or switch. Intended for wands, not standard 5-lb rods. Arms slot; no other arms-slot magical item is currently equipped. Purchased after Marquis for 12,000 gp.'}),
    item('amulet-natural-armour-5','Amulet of Natural Armour +5','Magic item','Worn / throat',1,{equipped:true,notes:'+5 enhancement to lich natural armor +5; total natural armor +10.'}),
     item('orange-prism-ioun-stone','Orange Prism Ioun Stone','Magic item','Worn / slotless',1,{equipped:true,notes:'+1 general caster level; at 19th level general CL 20, Necromancy CL 23 including Master Specialist +2 and Robe +1.'}),
     item('belt-of-battle','Belt of Battle','Magic item','Worn',1,{equipped:true,charges:3,maxCharges:3,notes:'+2 competence initiative included in combat values; 3 daily charges, spent for additional actions. Current charges require session verification.'}),
@@ -130,7 +131,7 @@ const baseline={
  resolvedAudit:[],
  audit:[
    'Level 19: rolled 10 on lich d12, maximum HP 160. The 8 unspent level-18 skill points and 11 level-19 points have been allocated; compare against local skill edits before applying.',
-   'Post-Marquis: roughly 845,000 gp treasury reported; 301,000 gp confirmed purchases; roughly 544,000 gp remains before rod clips. Ring of Spell-Battle worn in combat, Mortal Guise stored. New staff has 50 charges. Rod clips not yet priced or given quick-draw mechanics.',
+   'Post-Marquis: roughly 845,000 gp treasury reported; 337,000 gp spent on four magic items, two custom rod keychains and one Wand Bracelet; estimated remaining treasury ~508,000 gp. Ring of Spell-Battle worn in combat, Mortal Guise stored. Staff of Necromancy began with 50 charges. Rod keychain heavier capacity and slotless design are house rules; price and retrieval actions follow Wand Bracelet.',
    'Future level-up skill priorities: Spellcraft, Knowledge (arcana), Concentration, then Truespeak. Maximise the first three toward class-skill caps; pay Truespeak cross-class costs and respect cap. Remaining points may go to secondary skills; do not retroactively alter approved level-18/19 allocation.',
    'LA buyoff complete (+0). Current level-19 XP requires reconciliation; old 78,674 figure is historical.',
    'Confirm pending 3,510 gp sale receipts, exact gem/valuable breakdown and unallocated magic inventory; do not double count.',
