@@ -2,6 +2,31 @@
 
 A small, offline-ready, mobile-first D&D 3.5 spellbook built with **plain HTML, CSS and JavaScript**. There are no libraries, accounts, logins or build tools.
 
+## Post-Marquis equipment purchases · 25 November 2026
+
+**Player-confirmed checkpoint:** The Seventh Sovereign held **approximately 845,000 gp** after the Marquis; this supersedes the much older 99,817 gp and 262,892 gp checkpoints. Do not add historical balances together. The approximate treasury remaining **before** pricing two custom rod clips is **544,000 gp**. Exact fractional currency is not reconciled.
+
+| Confirmed purchase | Price (gp) | Item state |
+|---|---:|---|
+| Ring of Spell-Battle (Magic Item Compendium, p.127) | 12,000 | Equipped in combat as ring 2 |
+| Staff of Necromancy (DMG, p.244), full 50 charges | 65,000 | Carried, 50/50 |
+| Greater Metamagic Rod of Quicken | 170,000 | Carried, 3/day, spells up to 9th level |
+| Normal Metamagic Rod of Maximize | 54,000 | Carried, 3/day, spells up to 6th level |
+| **Confirmed expenditure** | **301,000** | No sale credits assumed |
+| **Estimated remaining** | **544,000** | Before two rod-clip costs |
+
+**Ring policy:** Keep the Ring of Protection +5 as ring 1. Ring of Spell-Battle is worn in ring 2 for combat; the custom Ring of Mortal Guise is retained, unequipped, and can replace Spell-Battle for social/infiltration scenes. No free-action ring swapping is implied.
+
+**Staff charge table:** Cause Fear (1); Ghoul Touch (1); Halt Undead (1); Enervation (**2**); Waves of Fatigue (**2**); Circle of Death (**3**). The staff uses Malzareth's higher caster level and own spell DCs if applicable (D&D 3.5 staff rules). Never calculate Enervation as only 1 charge.
+
+**Rod keychains:** Two custom rod-carrying chains/clips were requested. The price and any action-economy benefit have *not* been agreed, so no gp has been subtracted for them. The published *Wand Bracelet* costs 12,000 gp but only holds items up to 3 lb., while standard rods weigh about 5 lb.; it does not qualify as a RAW rod holder. For now the two accessories are mundane retention-only; do not imply magical quick draw.
+
+**Historical charge warning:** Staff of Transmutation ~44/50; Wand of Orb of Force ~42/50; acid-effect wand ~48/50; Wand of Greater Invisibility ~21/50. These are historical checkpoint counts and were not refreshed or reset. Rod of Undead Mastery is retained, but its doubling of controlled undead HD applies while *held*; swapping to another rod can affect that capacity.
+
+**Voss equipment resolution:** The user confirmed Malrec Voss wears a **Cloak of Resistance +5**. His level-19 saving throws use **Fort +20, Reflex +11, Will +26**. The earlier +3/+5 cloak ambiguity is closed; no new cloak purchase or deduction was recorded.
+
+The v20 save migration updates only recognised older inventory entries, retains existing custom inventory and consumables, and creates a pre-v20 backup. The stored amount is an explicitly **approximate** post-Marquis checkpoint; do not mistake it for an exact coin audit.
+
 ## Level 19 advancement · 25 November 2026
 
 Malzareth Vhane is **Wizard 5 / Master Specialist 10 / Abjurant Champion 4**, lich, **160 maximum HP** after rolling 10 on his d12. Natural Intelligence is 28 after two confirmed *Wish* inherent bonuses and the +6 Headband makes total INT **34** (+12). Effective wizard casting level **19**; new Abjurant Champion class feature **Arcane Boost**, BAB **+11/+6/+1**, base Will save improved to +15, Abjurant Armor grants *Shield* **+8 shield AC**. This level grants no general feat or ability-score increase.
