@@ -17,16 +17,16 @@ const feature=(id,name,category,effect,usesPerDay=null)=>({
 const baseline={
  identity:{
    name:'Malzareth Vhane',title:'The Seventh Keeper',
-   campaign:'The Ashen Crown',era:'1373 DR · level 19; day not reconciled',
-   race:'Lesser Tiefling Lich',characterClass:'Wizard 5 / Master Specialist 10 / Abjurant Champion 4',
+   campaign:'The Ashen Crown',era:'1375 DR · level 20; precise session day to reconcile',
+   race:'Lesser Tiefling Lich',characterClass:'Wizard 5 / Master Specialist 10 / Abjurant Champion 5',
    alignment:'Neutral Evil',origin:'Thay',size:'Medium',
-   characterLevel:19,xp:78674,xpNext:190000,
+   characterLevel:20,xp:78674,xpNext:210000,
    languages:'',description:'',deity:'',playerNotes:'',
-   xpNote:'Level 19 achieved; 78,674 XP is an obsolete historical snapshot. Exact earned XP and two Wish casting costs remain for ledger reconciliation. Next level 190,000 XP.'
+   xpNote:'Level-20 progression staged; 78,674 XP is an obsolete historical snapshot, NOT current XP. Exact XP including Wish costs and the level-20 advancement threshold must be verified. Next level 210,000 XP.'
  },
  combat:{
    maxHP:160,currentHP:160,tempHP:0,damageNotes:'',speedFt:30,
-   bab:11,baseSaves:{fort:5,ref:5,will:15},saveMisc:{fort:-2,ref:1,will:1},
+   bab:12,baseSaves:{fort:5,ref:5,will:15},saveMisc:{fort:-2,ref:1,will:1},
    naturalArmor:5,enhanceNatural:5,deflection:5,armorMisc:8,shieldMisc:0,saveResistance:5,
    initiativeMisc:6,attackMisc:1,actionPoints:7,
    buffs:{greaterMageArmor:false,shield:false,haste:false},
@@ -110,7 +110,7 @@ const baseline={
    feat('quicken-spell','Quicken Spell','Player’s Handbook','Swift action metamagic, normally +4 slot levels; shares swift action with Wraithstrike and Swift Abjuration.','Metamagic')
  ],
  features:[
-   feature('undead','Undead traits','Type','No Constitution; 19d12 HD. Immune to poison, sleep, paralysis, stunning, disease, death effects, nonlethal damage, critical hits, fatigue, exhaustion, energy drain, and other standard undead immunities.'),
+   feature('undead','Undead traits','Type','No Constitution; 20d12 HD (20th d12 HP roll pending). Immune to poison, sleep, paralysis, stunning, disease, death effects, nonlethal damage, critical hits, fatigue, exhaustion, energy drain, and other standard undead immunities.'),
    feature('lich-defenses','Lich resistances','Lich','Cold and electricity immunity; DR 15/bludgeoning and magic; darkvision 60 ft; +4 turn resistance.'),
    feature('lich-touch','Lich damaging touch','Lich','Melee touch attack; 1d8+5 negative energy to living creatures, Will half. Save DC scales with 1/2 HD + CHA.'),
    feature('lich-paralysis','Paralysing touch','Lich','Living creatures hit by lich touch must make Fortitude save (DC scales with 1/2 HD + CHA) or be permanently paralysed.'),
@@ -119,17 +119,19 @@ const baseline={
    feature('darkness','Darkness','Heritage','Lesser tiefling: Darkness 1/day.',1),
    feature('fire-resistance','Fire resistance','Heritage','Lesser tiefling: Fire resistance 5.'),
    feature('esoterica-minor','Minor school esoterica','Master Specialist','When casting Necromancy, allied undead within 60 ft gain +10 turn resistance and +10 saves for 10 rounds.'),
-   feature('caster-level','Necromancy caster-level bonus','Master Specialist','Master Specialist adds +2 to Necromancy caster level; Orange Prism Ioun Stone adds +1 general caster level. Level 19: CL 20 general with Orange Prism; CL 23 Necromancy with Necromancy robe (+1) and Master Specialist (+2).'),
+   feature('caster-level','Necromancy caster-level bonus','Master Specialist','Master Specialist adds +2 to Necromancy caster level; Orange Prism Ioun Stone adds +1 general caster level. Level 20: CL 21 general with Orange Prism; CL 24 Necromancy with Necromancy robe (+1) and Master Specialist (+2). Martial Arcanist has no extra impact while BAB 12 is below casting CL.'),
    feature('esoterica-moderate','Moderate school esoterica','Master Specialist','When casting Necromancy, temporary immunity to ability damage/drain, energy drain and negative levels for rounds equal to spell level.'),
    feature('expanded-spellbook','Expanded spellbook','Master Specialist','At class levels 2, 5 and 8, add an extra spell of the specialty school. Level 8 choice: Waves of Exhaustion.'),
    feature('esoterica-major','Major school esoterica','Master Specialist 10','Casting Necromancy grants allied undead within 60 ft fast healing 10 for 5 rounds.'),
-   feature('abjurant-armor','Abjurant Armor','Abjurant Champion 4','Adds +4 to qualifying shield and armour bonuses from Abjuration: Shield grants +8 shield AC. Greater Mage Armour does not benefit.'),
+   feature('abjurant-armor','Abjurant Armor','Abjurant Champion 5','Adds +5 to qualifying shield and armour bonuses from Abjuration: Shield grants +9 shield AC. Greater Mage Armour does not benefit.'),
    feature('extended-abjuration','Extended Abjuration','Abjurant Champion','Automatically doubles duration of Abjuration spells, no slot increase.'),
    feature('swift-abjuration','Swift Abjuration','Abjurant Champion 4','2nd-level or lower Abjuration spells can be swift actions; shares one swift action per turn with Quicken Spell and Wraithstrike.'),
-   feature('arcane-boost','Arcane Boost','Abjurant Champion 4','Swift action: sacrifice one prepared arcane spell for 1-round insight bonus to AC, attack or damage, saves, or energy resistance. Scale benefits by expended spell level; competes with other swift actions.')
+   feature('arcane-boost','Arcane Boost','Abjurant Champion 4','Swift action: sacrifice one prepared arcane spell for 1-round insight bonus to AC, attack or damage, saves, or energy resistance. Scale benefits by expended spell level; competes with other swift actions.'),
+   feature('martial-arcanist','Martial Arcanist','Abjurant Champion 5','For one chosen advanced arcane casting class, caster level is at least BAB. Malzareth has BAB +12 and wizard caster level 20 before item boosts, so this currently adds no caster-level bonus.')
  ],
  resolvedAudit:[],
  audit:[
+   'Level 20 pending decisions: roll lich d12 for HP, choose one level-20 ability increase, choose two campaign-convention new spellbook entries. Eleven skill points allocated by standing priority: Spellcraft 23, Knowledge (arcana) 23, Concentration 23, Truespeak 7 (four cross-class ranks for eight points).',
    'Level 19: rolled 10 on lich d12, maximum HP 160. The 8 unspent level-18 skill points and 11 level-19 points have been allocated; compare against local skill edits before applying.',
    'Post-Marquis: roughly 845,000 gp treasury reported; 337,000 gp spent on four magic items, two custom rod keychains and one Wand Bracelet; estimated remaining treasury ~508,000 gp. Ring of Spell-Battle worn in combat, Mortal Guise stored. Staff of Necromancy began with 50 charges. Rod keychain heavier capacity and slotless design are house rules; price and retrieval actions follow Wand Bracelet.',
    'Future level-up skill priorities: Spellcraft, Knowledge (arcana), Concentration, then Truespeak. Maximise the first three toward class-skill caps; pay Truespeak cross-class costs and respect cap. Remaining points may go to secondary skills; do not retroactively alter approved level-18/19 allocation.',
