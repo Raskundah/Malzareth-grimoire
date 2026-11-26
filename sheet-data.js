@@ -17,15 +17,15 @@ const feature=(id,name,category,effect,usesPerDay=null)=>({
 const baseline={
  identity:{
    name:'Malzareth Vhane',title:'The Seventh Keeper',
-   campaign:'The Ashen Crown',era:'1375 DR · level 20; precise session day to reconcile',
+   campaign:'The Ashen Crown',era:'18 Marpenoth 1375 DR · preparing for the Stolen Hour',
    race:'Lesser Tiefling Lich',characterClass:'Wizard 5 / Master Specialist 10 / Abjurant Champion 5',
    alignment:'Neutral Evil',origin:'Thay',size:'Medium',
-   characterLevel:20,xp:78674,xpNext:210000,
+   characterLevel:20,xp:199525,xpNext:210000,
    languages:'',description:'',deity:'',playerNotes:'',
-   xpNote:'Level-20 progression staged; 78,674 XP is an obsolete historical snapshot, NOT current XP. Exact XP including Wish costs and the level-20 advancement threshold must be verified. Next level 210,000 XP.'
+   xpNote:'Confirmed current XP 199,525 after +9,000 shared campaign milestones and -1,000 for calling Gate. Two Wish XP costs were paid before level 19. Level 21 starts at 210,000 XP.'
  },
  combat:{
-   maxHP:160,currentHP:160,tempHP:0,damageNotes:'',speedFt:30,
+   maxHP:168,currentHP:168,tempHP:0,damageNotes:'',speedFt:30,
    bab:12,baseSaves:{fort:5,ref:5,will:15},saveMisc:{fort:-2,ref:1,will:1},
    naturalArmor:5,enhanceNatural:5,deflection:5,armorMisc:8,shieldMisc:0,saveResistance:5,
    initiativeMisc:6,attackMisc:1,actionPoints:7,
@@ -35,12 +35,12 @@ const baseline={
    actionNote:'Action points: 7 last recorded, current expenditures not reconciled.'
  },
  currency:{
-   gp:508000,sp:0,cp:0,pp:0,
-   fortressTreasuryGp:35543,
-   notes:'After the Marquis: approximately 845,000 gp liquid treasury reported by player. Approved purchases: Ring of Spell-Battle 12,000; full Staff of Necromancy 65,000; Greater Quicken Rod 170,000; normal Maximize Rod 54,000; plus two custom rod keychains 12,000 gp each (24,000) and one standard Wand Bracelet 12,000. Total 337,000 gp; estimated remaining ~508,000 gp. This is an estimate, not an exact coin audit. Earlier treasury and fortressTreasuryGp figures are historical and must not be added. No remaining escrow counted twice.'
+   gp:667820,sp:0,cp:0,pp:0,
+   fortressTreasuryGp:395750,
+   notes:'After the Marquis treasury estimates (~508,000 gp) are historical and superseded. Verified 18 Marpenoth 1375 DR discretionary liquid funds: 667,820 gp after five scrolls (21,170 gp) and jade Shapechange focus (1,500 gp). Separately ring-fenced war reserve: 395,750 gp. The fortress treasury field tracks this war reserve, not an additional third cash balance. Unliquidated valuables: 269,115 gp, not counted as cash. New payroll outlays only when actually disbursed.'
  },
  inventory:[
-   item('headband-intellect-6','Headband of Intellect +6','Magic item','Worn / head',1,{equipped:true,notes:'+6 enhancement to natural Intelligence 28; equipped score 34. Does not add skill points.'}),
+   item('headband-intellect-6','Headband of Intellect +6','Magic item','Worn / head',1,{equipped:true,notes:'+6 enhancement to natural Intelligence 29 (level-20 ability increase); equipped score 35. Does not add skill points.'}),
    item('ring-protection-5','Ring of Protection +5','Magic item','Worn / ring 1',1,{equipped:true,notes:'+5 deflection AC included in baseline.'}),
    item('cloak-displacement-minor','Minor Cloak of Displacement','Magic item','Worn / shoulders',1,{equipped:true,notes:'Continuous 20% miss chance against eligible attacks. Old Cloak of Resistance +5 was sold; Vest of the Archmagi gives +5 resistance instead.'}),
    item('ring-mortal-guise','Ring of Mortal Guise','Magic item','Carried / social-use swap',1,{equipped:false,notes:'Retained. Swap into ring 2 outside combat when needed: Disguise Self at will and +10 Disguise. Ring of Spell-Battle occupies ring 2 in combat.'}),
@@ -68,6 +68,7 @@ const baseline={
    item('rod-extend-unknown','Metamagic Rod of Extend (tier unverified)','Rod','Stored / unconfirmed',1,{notes:'Earlier campaign references lesser and/or normal Extend rod; exact item/tier and current 3/day uses require verification. Do not double count with newly purchased rods.',certainty:'unverified'}),
    item('bag-holding-iv','Bag of Holding, Type IV','Container','Carried',1,{weightLb:60,notes:'Purchased in Suzail. Capacity 1,500 lb and 250 cubic feet. The bag itself weighs 60 lb. Contents are tracked separately.',certainty:'recent-session'}),
    item('blessed-book','Boccob\'s Blessed Book','Book / document','Carried / spellbook',1,{notes:'Already owned before the titan spell purchase; eight new spells occupy 37 pages. No further material transcription cost, 24 hours per spell.'}),
+    item('jade-shapechange-circlet','Jade Circlet (Shapechange focus)','Magic focus','Carried / spell component pouch',1,{valueGp:1500,notes:'Reusable jade circlet, at least 1,500 gp, required focus for Shapechange; purchased 18 Marpenoth 1375 DR. This cost is already deducted from liquid treasury.'}),
    item('heroics-fighter-fragment','Heroics — 15th-level fighter equipment fragment','Component','Component pouch',1,{notes:'Consumable piece of armament used in combat by a fighter of at least 15th level, secured during pre-fight procurement; one casting only. No book-listed GP cost.'}),
    item('spellbooks','Personal spellbooks','Book / document','Carried',1,{notes:'Full transcription still being reconciled against Grimoire spell archive.'}),
    item('robes','Ornate robes','Clothing','Stored / spare',1,{equipped:false}),
@@ -131,7 +132,7 @@ const baseline={
  ],
  resolvedAudit:[],
  audit:[
-   'Level 20 pending decisions: roll lich d12 for HP, choose one level-20 ability increase, choose two campaign-convention new spellbook entries. Eleven skill points allocated by standing priority: Spellcraft 23, Knowledge (arcana) 23, Concentration 23, Truespeak 7 (four cross-class ranks for eight points).',
+   'Level 20 choices confirmed: d12 roll 8 for 168 maximum HP, +1 natural Intelligence to 29 (35 equipped), Absorption and Reaving Dispel as spell selections. Five further 9th-level scroll spells transcribed. Standing-priority ranks: Spellcraft 23, Knowledge (arcana) 23, Concentration 23, Truespeak 7.',
    'Level 19: rolled 10 on lich d12, maximum HP 160. The 8 unspent level-18 skill points and 11 level-19 points have been allocated; compare against local skill edits before applying.',
    'Post-Marquis: roughly 845,000 gp treasury reported; 337,000 gp spent on four magic items, two custom rod keychains and one Wand Bracelet; estimated remaining treasury ~508,000 gp. Ring of Spell-Battle worn in combat, Mortal Guise stored. Staff of Necromancy began with 50 charges. Rod keychain heavier capacity and slotless design are house rules; price and retrieval actions follow Wand Bracelet.',
    'Future level-up skill priorities: Spellcraft, Knowledge (arcana), Concentration, then Truespeak. Maximise the first three toward class-skill caps; pay Truespeak cross-class costs and respect cap. Remaining points may go to secondary skills; do not retroactively alter approved level-18/19 allocation.',
