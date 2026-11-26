@@ -33,6 +33,7 @@
   // Confirmed campaign convention: two level-20 spell choices plus five paid, copied scrolls.
   const level20Choices={9:['Absorption','Reaving Dispel']};
   const purchased9={9:['Effulgent Epuration','Teleportation Circle','Astral Projection','Shapechange',"Mage's Disjunction"]};
+  const freedomAcquisition={9:['Freedom']};
   const cyst = {
     1: ['Necrotic Awareness'],
     2: ['Necrotic Cyst','Necrotic Scrying'],
@@ -78,7 +79,7 @@
     'Wish':'Universal','Time Stop':'Transmutation','Foresight':'Divination','Unname':'Necromancy',
     'Plague of Undead':'Necromancy','Gate':'Conjuration',
     'Absorption':'Abjuration','Reaving Dispel':'Abjuration',
-    'Effulgent Epuration':'Abjuration','Teleportation Circle':'Conjuration',
+    'Freedom':'Abjuration','Effulgent Epuration':'Abjuration','Teleportation Circle':'Conjuration',
     'Astral Projection':'Necromancy','Shapechange':'Transmutation',"Mage's Disjunction":'Abjuration'
   };
   const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -96,6 +97,7 @@
     ...make(level19Additions,'spellbook','Level 19 campaign-approved spellbook additions; no daily preparation automatically changed'),
     ...make(level20Choices,'spellbook','Level 20 campaign-approved choices: Absorption, Reaving Dispel'),
     ...make(purchased9,'spellbook','18 Marpenoth 1375 DR · five purchased ninth-circle scrolls transcribed into Blessed Book'),
+    ...make(freedomAcquisition,'spellbook','19 Marpenoth 1375 DR · one purchased Freedom scroll transcribed; second scroll retained'),
     ...make(cyst,'cyst','Mother Cyst feat (Libris Mortis p. 28; no spellbook required)')
   ];
   // Accurate 3.5e reference fields for the two newly approved 9th-level spells.
@@ -116,6 +118,7 @@
     }
   };
   const level20SpellDetails={
+  "Freedom": {casting:"1 standard action",components:"V, S",range:"Close (25 ft. + 5 ft./2 levels)",target:"One creature",duration:"Instantaneous",save:"Will negates (harmless)",sr:"Yes (harmless)",detailsSource:"Player's Handbook v3.5; 3.5 SRD",description:"Releases a creature from movement restrictions including temporal stasis, imprisonment, maze, paralysis, petrification, stunning and slow. If ending imprisonment or maze, the caster must know the creature and cast at the relevant location. Does not automatically grant immunity against repeated null-time field saves."},
   "Absorption": {
     "casting": "1 standard action",
     "components": "V, S",
