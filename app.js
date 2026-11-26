@@ -37,7 +37,7 @@
     && sheetModel?.createDefault()?.currency?.notes?.includes('After the Marquis');
   const completeHolderPurchaseDefaults = sheetModel?.createDefault()?.inventory?.some(x=>x.id==='wand-bracelet'&&x.valueGp===12000)
     && sheetModel?.createDefault()?.inventory?.some(x=>x.id==='rod-keychains'&&x.qty===2&&x.valueGp===12000)
-    && sheetModel?.createDefault()?.currency?.gp===667820;
+    && sheetModel?.createDefault()?.currency?.gp===660070;
   const completeLevel20Defaults = sheetModel?.createDefault()?.identity?.characterLevel===20
     && sheetModel?.createDefault()?.features?.some(x=>x.id==='martial-arcanist');
   const completeFreedomDefault=defaults.some(s=>s.name==='Freedom'&&s.level===9&&s.status==='spellbook'&&!!s.description)
