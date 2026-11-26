@@ -94,7 +94,7 @@
       'Shield gives +9 AC. '+(hp===null?'<b>HP remains at known level-19 maximum until you roll a d12.</b>':'HP roll '+hp+' recorded.')+'</p>'+
       '<p><b>11 skill points already allocated</b> by your standing priorities: Spellcraft 23, '+
       'Knowledge (arcana) 23, Concentration 23, Truespeak 7. '+(ability?'Ability increase: +1 '+esc(ability)+'.':'One level-20 ability increase remains to be chosen.')+'</p>';
-    $('level20-spells-note').textContent='Two campaign-approved spellbook additions remain for you to choose. No unselected spells or XP expenditure have been fabricated.';
+    $('level20-spells-note').textContent='Confirmed level-20 choices: Absorption and Reaving Dispel. Five additional ninth-circle scrolls have been copied into the Blessed Book. No preparations changed.';
   }
   function renderCombat(){
     const sh=sheet(),c=sh.combat,x=calcCombat(),hp=c.currentHP,temp=c.tempHP;
