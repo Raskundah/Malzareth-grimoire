@@ -1,5 +1,5 @@
 /* D&D 3.5 wizard spells per day (SRD, PHB Table 3-18).
-   Wizard 5 / Master Specialist 7 advances casting as a 12th-level wizard.
+   Wizard 5 / Master Specialist 10 / Abjurant Champion 5 advances casting as a 20th-level wizard.
    Bonus spell slots use Intelligence; specialists get one extra slot
    at each available spell level (including cantrips).
    These are spellcasting progression levels, NOT adjusted caster levels. */
