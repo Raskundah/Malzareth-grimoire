@@ -1,5 +1,10 @@
 # Malzareth's Grimoire · The Ashen Crown
 
+## Freedom scroll and phane defensive preparation · 26 November 2026
+
+v24 one-time additive save migration: purchased two Freedom scrolls (3,825 gp each) and one oil of Bless Weapon (100 gp), deducted 7,750 gp from the 667,820 gp discretionary checkpoint, leaving 660,070 gp. One Freedom scroll is transcribed into the Blessed Book and consumed; the other and the oil remain in inventory. War reserve 395,750 gp unchanged. Full spell stat fields are provided; no existing spell preparation, custom text or used-resource tracker is overwritten. Offline cache v25 refresh.
+
+
 ## Ninth-circle acquisition and level-20 continuity · 26 November 2026
 
 Save migration v23 adds **seven confirmed ninth-level inscriptions** (level-20 selections Absorption and Reaving Dispel, and five purchased scrolls Effulgent Epuration, Teleportation Circle, Astral Projection, Shapechange and Mage's Disjunction). Full paraphrased spell details are included, including component costs and the correct Spell Compendium +20 maximum dispel check for Reaving Dispel. The jade circlet for Shapechange is included in the inventory. The 18 Marpenoth 1375 DR campaign checkpoint records 168 HP, Intelligence 35 equipped, XP 199,525, discretionary 667,820 gp and ring-fenced war reserve 395,750 gp. These are not extra funds. Pre-v23 browser saves are backed up before migration, and custom preparations, used flags, presets, notes, tags and gear charges survive.
