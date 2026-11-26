@@ -3,10 +3,11 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 22;
+  const DATA_VERSION = 23;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const LEVEL19_CATALOG = ['Plague of Undead','Gate'];
+  const NEW_NINTH_CATALOG = ['Absorption','Reaving Dispel','Effulgent Epuration','Teleportation Circle','Astral Projection','Shapechange',"Mage's Disjunction"];
   const LEVEL18_CATALOG = ['Earth bind','Fly','Ray reflection','Assay spell resistance','Dimension anchor','Ray Deflection',
     'Greater Dispel Magic','Magnificent Mansion','Energy Immunity','Whirling Blade','Wraithstrike',
     'Awaken Undead','Limited Wish','Greater Planar Binding','Avascular Mass','Wish','Time Stop','Foresight','Unname'];
@@ -36,9 +37,11 @@
     && sheetModel?.createDefault()?.currency?.notes?.includes('After the Marquis');
   const completeHolderPurchaseDefaults = sheetModel?.createDefault()?.inventory?.some(x=>x.id==='wand-bracelet'&&x.valueGp===12000)
     && sheetModel?.createDefault()?.inventory?.some(x=>x.id==='rod-keychains'&&x.qty===2&&x.valueGp===12000)
-    && sheetModel?.createDefault()?.currency?.gp===508000;
+    && sheetModel?.createDefault()?.currency?.gp===667820;
   const completeLevel20Defaults = sheetModel?.createDefault()?.identity?.characterLevel===20
     && sheetModel?.createDefault()?.features?.some(x=>x.id==='martial-arcanist');
+  const completeNewNinthDefaults = NEW_NINTH_CATALOG.every(name=>defaults.some(s=>s.name===name && s.level===9 && s.status==='spellbook' && !!s.description))
+    && sheetModel?.createDefault()?.inventory?.some(x=>x.id==='jade-shapechange-circlet');
   const completeEquipmentDefaults = sheetModel?.createDefault()?.inventory?.some(x=>x.id==='orange-prism-ioun-stone')
     && sheetModel?.createDefault()?.combat?.saveResistance===5;
   // Only migrate after the entire added spell-catalog script has loaded;
@@ -60,7 +63,7 @@
     && defaults.some(s=>s.name==='Ice Castle' && !!s.casting && !!s.target && !!s.duration);
   const catalogueReady = completeCystDefaults && completeLevel13Defaults && completePrefightDefaults
     && completeLevel18Defaults && completeLevel19Defaults && completeLevel20Defaults && completeEquipmentDefaults && completePostMarquisDefaults && completeHolderPurchaseDefaults && completeLevel78Research && completeSpellDetails
-    && spellTagger?.revision===1;
+    && spellTagger?.revision===1 && completeNewNinthDefaults;
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -75,16 +78,16 @@
       const spell = spells.find(s => s.name === name && s.level === Number(level));
       if(spell) prepared.push({id: uid(), spellId: spell.id, used:false});
     }));
-    const slots = calcSlots(34,20).totals;
+    const slots = calcSlots(35,20).totals;
     return {
       version:catalogueReady ? DATA_VERSION : 1,spells,prepared,slots,
       manualSlots:[...slots],autoSlots:true,spellcastingLevel:20,
-      intelligence:34,necroBonus:2,presets:[],
+      intelligence:35,necroBonus:2,presets:[],
       cogitation:{level:6,used:false,spellId:null},
       abilities:{STR:10,DEX:18,WIS:12,CHA:20},skillOverrides:{
         concentration:{ranks:23,extra:0},spellcraft:{ranks:23,extra:0},
         'knowledge-arcana':{ranks:23,extra:0},truespeak:{ranks:7,extra:0}
-      },level20:{hitDie:null,ability:null},
+      },level20:{hitDie:8,ability:'INT'},
       sheet:sheetModel?.createDefault() || null,damagePresets:[],
       journal:[window.LEVEL13_JOURNAL,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n'),lastSaved:new Date().toISOString()
     };
@@ -154,6 +157,17 @@
       for(const name of LEVEL19_CATALOG){
         const starter=defaults.find(s=>s.name===name&&s.level===9&&s.status==='spellbook');
         if(starter&&!spells.some(s=>s.level===9&&s.name.toLocaleLowerCase()===name.toLocaleLowerCase()))
+          spells.push(structuredClone(starter));
+      }
+    }
+    // v23: add the two chosen level-20 spells and the five bought/transcribed scrolls
+    // without altering any prior preparation, cast flag, custom spell or preset.
+    const acquireNinth=(Number(input.version)||1)<23 && completeNewNinthDefaults;
+    if(acquireNinth){
+      const canonical=name=>String(name).toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9]/g,'');
+      for(const name of NEW_NINTH_CATALOG){
+        const starter=defaults.find(s=>s.name===name && s.level===9 && s.status==='spellbook');
+        if(starter&&!spells.some(s=>s.level===9 && canonical(s.name)===canonical(name)))
           spells.push(structuredClone(starter));
       }
     }
@@ -354,6 +368,29 @@
     // If a phone briefly loads an old asset bundle, preserve existing
     // sheet information rather than replacing it with empty defaults.
     const sheet=sheetModel?.normalize(input.sheet) ?? input.sheet ?? null;
+    if(acquireNinth && sheet){
+      const updated=sheetModel.createDefault();
+      const circlet=updated.inventory.find(x=>x.id==='jade-shapechange-circlet');
+      if(circlet && !sheet.inventory.some(x=>x.id===circlet.id || x.name===circlet.name))
+        sheet.inventory.push(structuredClone(circlet));
+      if(Number(sheet.identity.characterLevel)===20){
+        if([78674,191525,190525].includes(Number(sheet.identity.xp)))
+          sheet.identity.xp=199525;
+        sheet.identity.xpNext=210000;
+        sheet.identity.xpNote=updated.identity.xpNote;
+        if(Number(sheet.combat.maxHP)===160){
+          sheet.combat.maxHP=168;
+          if(Number(sheet.combat.currentHP)>0)sheet.combat.currentHP=Math.min(168,Number(sheet.combat.currentHP)+8);
+        }
+      }
+      if([508000,690490,669320].includes(Number(sheet.currency.gp)))sheet.currency.gp=667820;
+      if(Number(sheet.currency.fortressTreasuryGp)===35543)sheet.currency.fortressTreasuryGp=395750;
+      const ledger='18 Marpenoth 1375 DR: discretionary liquid 667,820 gp after 21,170 gp for five ninth-circle scrolls and 1,500 gp jade focus; reserved war cash 395,750 gp (the fortress treasury field). No double-counting. Existing locally edited cash is preserved.';
+      if(!String(sheet.currency.notes||'').includes('18 Marpenoth 1375 DR: discretionary liquid'))
+        sheet.currency.notes=(ledger+'\\n'+String(sheet.currency.notes||'')).slice(0,2000);
+      const audit='Five 9th-circle scrolls transcribed, jade focus owned; Level 20 choices: HP roll 8, INT +1, Absorption, Reaving Dispel. Check local character edits before adjusting custom values.';
+      if(!sheet.audit.includes(audit))sheet.audit.unshift(audit);
+    }
     if(advance && sheet){
       const baseline=sheetModel.createDefault();
       if(sheet.identity.characterLevel<=12){
@@ -618,6 +655,11 @@
         ?Number(input.level20.hitDie):null,
       ability: ['STR','DEX','INT','WIS','CHA'].includes(input.level20?.ability)?input.level20.ability:null
     };
+    if(acquireNinth && sheet?.identity.characterLevel===20){
+      if(level20.hitDie===null && sheet.combat.maxHP===168)level20.hitDie=8;
+      if(level20.ability===null && intelligence===34){intelligence=35;level20.ability='INT';}
+      else if(level20.ability===null && intelligence===35)level20.ability='INT';
+    }
     const damagePresets=(Array.isArray(input.damagePresets)?input.damagePresets:[]).slice(0,40)
       .filter(x=>x&&typeof x==='object')
       .map(x=>({
@@ -630,7 +672,7 @@
       spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
       autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
       cogitation,abilities,skillOverrides,level20,sheet,damagePresets,
-      journal:(()=>{let j=String(input.journal??''); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');if(advance18&&!j.includes('Level 18: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL18_JOURNAL].filter(Boolean).join('\n\n');if(advance19&&!j.includes('Level 19: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL19_JOURNAL].filter(Boolean).join('\n\n');if((Number(input.version)||1)<20&&completePostMarquisDefaults&&!j.includes('Post-Marquis equipment purchase 301,000 gp'))j=[j,'Post-Marquis equipment purchase 301,000 gp: Ring of Spell-Battle 12,000; full Staff of Necromancy 65,000; Greater Quicken Rod 170,000; normal Maximize Rod 54,000.'].filter(Boolean).join('\n\n');if(buyHolders&&!j.includes('Two rod keychains and one Wand Bracelet'))j=[j,'Two rod keychains and one Wand Bracelet purchased at 12,000 gp each, 36,000 gp combined. Total post-Marquis purchase outlay 337,000 gp; treasury approximately 508,000 gp. Custom rod holders use approved heavier capacity.'].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
+      journal:(()=>{let j=String(input.journal??''); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');if(advance18&&!j.includes('Level 18: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL18_JOURNAL].filter(Boolean).join('\n\n');if(advance19&&!j.includes('Level 19: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL19_JOURNAL].filter(Boolean).join('\n\n');if((Number(input.version)||1)<20&&completePostMarquisDefaults&&!j.includes('Post-Marquis equipment purchase 301,000 gp'))j=[j,'Post-Marquis equipment purchase 301,000 gp: Ring of Spell-Battle 12,000; full Staff of Necromancy 65,000; Greater Quicken Rod 170,000; normal Maximize Rod 54,000.'].filter(Boolean).join('\n\n');if(buyHolders&&!j.includes('Two rod keychains and one Wand Bracelet'))j=[j,'Two rod keychains and one Wand Bracelet purchased at 12,000 gp each, 36,000 gp combined. Total post-Marquis purchase outlay 337,000 gp; treasury approximately 508,000 gp. Custom rod holders use approved heavier capacity.'].filter(Boolean).join('\n\n');if(acquireNinth&&!j.includes('Five ninth-circle scrolls transcribed'))j=[j,'18 Marpenoth 1375 DR: Five ninth-circle scrolls transcribed into Blessed Book: Effulgent Epuration, Teleportation Circle, Astral Projection, Shapechange and Mage\'s Disjunction. Scrolls cost 21,170 gp; jade Shapechange focus cost 1,500 gp. Level-20 choices confirmed: Absorption and Reaving Dispel; HP 168; INT 35 with headband. XP 199,525 after milestones and Gate. No daily spell slots or preparations auto-spent.'].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
     };
   };
   const load = () => {
