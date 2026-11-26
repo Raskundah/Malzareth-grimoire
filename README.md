@@ -1,5 +1,11 @@
 # Malzareth's Grimoire · The Ashen Crown
 
+## Ninth-circle acquisition and level-20 continuity · 26 November 2026
+
+Save migration v23 adds **seven confirmed ninth-level inscriptions** (level-20 selections Absorption and Reaving Dispel, and five purchased scrolls Effulgent Epuration, Teleportation Circle, Astral Projection, Shapechange and Mage's Disjunction). Full paraphrased spell details are included, including component costs and the correct Spell Compendium +20 maximum dispel check for Reaving Dispel. The jade circlet for Shapechange is included in the inventory. The 18 Marpenoth 1375 DR campaign checkpoint records 168 HP, Intelligence 35 equipped, XP 199,525, discretionary 667,820 gp and ring-fenced war reserve 395,750 gp. These are not extra funds. Pre-v23 browser saves are backed up before migration, and custom preparations, used flags, presets, notes, tags and gear charges survive.
+
+Offline PWA cache v24 is network-first. Refresh while connected; export a JSON backup before refreshing on Android. The app files were syntax-checked, but an actual Android device refresh cannot be tested from this connection.
+
 A small, offline-ready, mobile-first D&D 3.5 spellbook built with **plain HTML, CSS and JavaScript**. There are no libraries, accounts, logins or build tools.
 
 ## Level 20 support and streamlined UI · 26 November 2026
