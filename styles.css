@@ -289,3 +289,49 @@
 .spell-tag-editor #spell-custom-tags{width:100%;font-size:12px}
 .spell-tag-editor #spell-tag-suggest{align-self:flex-start;margin-top:8px}
 @media(max-width:720px){.tag-filter-chip{min-height:38px;padding:8px 10px}.tag-filter-actions label{width:100%;justify-content:space-between}.tag-filter-panel{padding:9px 10px}.spell-purpose-tags .tag-purpose{font-size:10px}.spell-tag-editor{padding:10px}}
+
+/* Level 20 and reduced-noise session UI. Applied after legacy selectors. */
+.compact-help{margin:6px 0 11px;color:var(--muted);font-size:12px}
+.compact-help>summary,.skill-all-panel>summary,.dice-manual-panel>summary{
+  cursor:pointer;list-style-position:inside;color:var(--gold);font-size:13px;
+  font-weight:700;padding:12px 14px;border:1px solid var(--line);
+  border-radius:11px;background:var(--surface-2);touch-action:manipulation
+}
+.compact-help p{margin:8px 10px 5px}
+.dice-live{display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+ padding:13px 18px;margin:10px 0 14px;border:1px solid rgba(228,187,122,.3);
+ border-radius:13px;background:var(--surface-2)}
+.dice-live .dice-result{padding:0;font-size:clamp(23px,4vw,32px);min-height:36px}
+.dice-live .dice-breakdown{padding:0;min-height:0;font-size:12px}
+.dice-manual-panel{margin-bottom:16px}
+.dice-manual-panel>.dice-layout{margin-top:12px}
+.dice-manual-panel .dice-stage-card{min-height:220px}
+.dice-manual-panel #dice-canvas{max-height:320px}
+.skill-priority{margin:10px 0 15px}
+.skill-priority h4{font-size:12px;text-transform:uppercase;letter-spacing:.07em;
+ color:var(--gold);margin:6px 0}
+.skill-priority .skill-check-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.skill-all-panel{margin-top:8px}
+.skill-all-panel .skill-check-list{margin-top:12px}
+.level20-panel{margin:12px 0 16px;border:1px solid rgba(228,187,122,.38)}
+.level20-panel .sheet-row-head{margin-bottom:8px}
+.level20-panel .sheet-row-head h3{margin:3px 0}
+.level20-panel .muted.small p{margin:4px 0 9px}
+.level20-actions{display:grid;grid-template-columns:minmax(150px,1fr) auto minmax(150px,1fr) auto;
+ gap:9px;align-items:end;margin:13px 0}
+.level20-actions label{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:12px}
+.level20-actions select{width:100%;min-height:40px;padding:6px 8px;border-radius:8px;
+ color:var(--ink);background:var(--surface-2);border:1px solid var(--line)}
+.level20-actions button{min-height:40px;white-space:nowrap}
+.level20-actions button:disabled{opacity:.5;cursor:default}
+@media(max-width:900px){
+ .level20-actions{grid-template-columns:minmax(0,1fr) auto}
+ .skill-priority .skill-check-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:540px){
+ .level20-actions{grid-template-columns:1fr}
+ .skill-priority .skill-check-list{grid-template-columns:1fr}
+ .dice-live{padding:10px 12px}
+ .dice-manual-panel .dice-layout{display:block}
+ .dice-manual-panel .dice-stage-card{min-height:0}
+}
