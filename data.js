@@ -30,6 +30,9 @@
     8:['Greater Planar Binding','Avascular Mass'],9:['Wish','Time Stop','Foresight','Unname']};
   // Approved level-19 additions use the campaign's established prestige-class spellbook convention.
   const level19Additions={9:['Plague of Undead','Gate']};
+  // Confirmed campaign convention: two level-20 spell choices plus five paid, copied scrolls.
+  const level20Choices={9:['Absorption','Reaving Dispel']};
+  const purchased9={9:['Effulgent Epuration','Teleportation Circle','Astral Projection','Shapechange',"Mage's Disjunction"]};
   const cyst = {
     1: ['Necrotic Awareness'],
     2: ['Necrotic Cyst','Necrotic Scrying'],
@@ -73,7 +76,10 @@
     'Whirling Blade':'Transmutation','Wraithstrike':'Transmutation','Awaken Undead':'Necromancy',
     'Limited Wish':'Universal','Greater Planar Binding':'Conjuration','Avascular Mass':'Necromancy',
     'Wish':'Universal','Time Stop':'Transmutation','Foresight':'Divination','Unname':'Necromancy',
-    'Plague of Undead':'Necromancy','Gate':'Conjuration'
+    'Plague of Undead':'Necromancy','Gate':'Conjuration',
+    'Absorption':'Abjuration','Reaving Dispel':'Abjuration',
+    'Effulgent Epuration':'Abjuration','Teleportation Circle':'Conjuration',
+    'Astral Projection':'Necromancy','Shapechange':'Transmutation',"Mage's Disjunction":'Abjuration'
   };
   const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   const make = (map,status,source) => Object.entries(map).flatMap(([level,items]) => items.map(name=>({
@@ -88,6 +94,8 @@
     ...make(previousExport,'spellbook','21 Nov user export / Ray Deflection transcription; names may need verification'),
     ...make(level14to18,'spellbook','Confirmed level-14 through level-18 spellbook additions'),
     ...make(level19Additions,'spellbook','Level 19 campaign-approved spellbook additions; no daily preparation automatically changed'),
+    ...make(level20Choices,'spellbook','Level 20 campaign-approved choices: Absorption, Reaving Dispel'),
+    ...make(purchased9,'spellbook','18 Marpenoth 1375 DR · five purchased ninth-circle scrolls transcribed into Blessed Book'),
     ...make(cyst,'cyst','Mother Cyst feat (Libris Mortis p. 28; no spellbook required)')
   ];
   // Accurate 3.5e reference fields for the two newly approved 9th-level spells.
@@ -107,8 +115,87 @@
       description:'Creates a precise portal between planes for travel, or calls extraplanar creatures subject to Gate’s restrictions. Calling incurs a 1,000 XP cost; portal travel alone has no XP cost.'
     }
   };
+  const level20SpellDetails={
+  "Absorption": {
+    "casting": "1 standard action",
+    "components": "V, S",
+    "range": "Personal",
+    "target": "You",
+    "duration": "Until expended or 10 minutes/level",
+    "save": "None",
+    "sr": "No",
+    "detailsSource": "Complete Arcane p. 96; Spell Compendium",
+    "description": "Stores 1d4+6 spell levels from ranged spells or spell-like abilities specifically targeting you; does not stop area, touch or effect spells. Stored power can fund prepared spells without expending their preparations. A spell exceeding remaining absorption is only partly absorbed."
+  },
+  "Reaving Dispel": {
+    "casting": "1 standard action",
+    "components": "V, S",
+    "range": "Medium (100 ft. + 10 ft./level)",
+    "target": "One caster, creature or object; or a 20-ft.-radius burst",
+    "duration": "Instantaneous",
+    "save": "See text",
+    "sr": "No",
+    "detailsSource": "Spell Compendium p. 169",
+    "description": "Enhanced dispel with caster-level check capped at +20 (Spell Compendium version). On a targeted dispel or counterspell, may seize and redirect successfully dispelled spell effects. Identify each target effect with Spellcraft DC 25 + spell level; unrecognized spells can be dangerous to steal. Area dispel effects cannot be reaved."
+  },
+  "Effulgent Epuration": {
+    "casting": "1 standard action",
+    "components": "V, S",
+    "range": "Close (25 ft. + 5 ft./2 levels)",
+    "target": "Effect: one magic-absorbing sphere per caster level",
+    "duration": "1 round/level",
+    "save": "Will negates (harmless)",
+    "sr": "Yes (harmless)",
+    "detailsSource": "Spell Compendium p. 78",
+    "description": "Creates a silver sphere per caster level around one creature. Each sphere can negate one spell or spell-like ability directly targeting the protected creature, then disappears. Beneficial targeted spells may be permitted through. Area spells and untargeted effects bypass the protection. Spheres can be shifted to another creature as a standard action."
+  },
+  "Teleportation Circle": {
+    "casting": "10 minutes",
+    "components": "V, M (amber dust worth 1,000 gp)",
+    "range": "0 ft.",
+    "target": "Effect: 5-ft.-radius teleportation circle on a surface",
+    "duration": "10 minutes/level (D)",
+    "save": "None",
+    "sr": "Yes",
+    "detailsSource": "Player's Handbook v3.5; 3.5 SRD",
+    "description": "Places a magical circle that sends creatures entering it to one fixed destination as greater teleport; destination must be on the same plane and adequately known. Can be made permanent separately with permanency. Amber dust worth 1,000 gp is consumed on each casting."
+  },
+  "Astral Projection": {
+    "casting": "30 minutes",
+    "components": "V, S, M (jacinth 1,000 gp plus silver bar 5 gp per person)",
+    "range": "Touch",
+    "target": "You plus one additional willing creature touched per two caster levels",
+    "duration": "See text; until dismissed or disrupted",
+    "save": "None",
+    "sr": "Yes (harmless)",
+    "detailsSource": "Player's Handbook v3.5; 3.5 SRD",
+    "description": "Projects astral forms of caster and consenting companions; original bodies remain in suspended animation. Astral copies can travel through the Astral Plane to other planes. Destruction of an astral body usually returns the creature, but severing the silver cord kills it. The followers remain dependent on the caster."
+  },
+  "Shapechange": {
+    "casting": "1 standard action",
+    "components": "V, S, F (jade circlet worth 1,500 gp; reusable)",
+    "range": "Personal",
+    "target": "You",
+    "duration": "10 minutes/level (D)",
+    "save": "None",
+    "sr": "No",
+    "detailsSource": "Player's Handbook v3.5; 3.5 SRD",
+    "description": "Assume a familiar nonunique creature form from Fine to Colossal with up to your caster level in HD (maximum 25 HD), including incorporeal forms. Gain its extraordinary and supernatural abilities while losing your own supernatural abilities; change form once per round as a free action at the permitted moment. A jade circlet is required."
+  },
+  "Mage's Disjunction": {
+    "casting": "1 standard action",
+    "components": "V",
+    "range": "Close (25 ft. + 5 ft./2 levels)",
+    "target": "Area: 40-ft.-radius burst of magical effects and items",
+    "duration": "Instantaneous",
+    "save": "Will negates (objects)",
+    "sr": "No",
+    "detailsSource": "Player's Handbook v3.5; 3.5 SRD",
+    "description": "Ends magical effects in a burst and can permanently disenchant magic items that fail their Will saves; caster-carried/touched items are excluded. Has a 1%-per-caster-level chance to destroy an antimagic field. Disjoining an artifact can permanently cost spellcasting and attract powerful attention. Use cautiously around valuable loot."
+  }
+};
   for(const spell of window.STARTER_SPELLS){
-    const detail=level19Details[spell.name];
+    const detail=level19Details[spell.name] || level20SpellDetails[spell.name];
     if(detail && spell.level===9 && spell.status==='spellbook')Object.assign(spell,detail);
   }
   window.PREFIGHT_ACQUISITION_JOURNAL = "23 Eleasis 1373 DR · BEFORE ORATHION — Eight scrolls bought at standard minimum caster level and transcribed over eight separate 24-hour periods before the existing 16:30 battle checkpoint. 2nd: Mirror Image, Heroics (150 gp each); 5th: Wall of Stone, Greater Blink, Dimension Jumper (1,125 gp each); 6th: Disintegrate, Planar Binding, Freezing Fog (1,650 gp each). Total 8,625 gp deducted from previous 271,517 gp 4 sp 8 cp liquid treasury; revised liquid treasury 262,892 gp 4 sp 8 cp. All eight entered in Malzareth's previously owned Boccob's Blessed Book (37 pages, no additional magic ink cost). Scrolls consumed. Spellcraft DCs 17/20/21, passed with established modifier. Fighter 15+ arms fragment required for each Heroics casting; one acquired with procurement for immediate use, no fixed extra gp price. This adds spells KNOWN, not magically prepared spells or unspent slots. Do not rewind active encounter or reset daily consumables. The 245,000 gp contract escrow remains contingent on victory; Orathion's hoard and equipment unvalued. Earlier protective Greater Spell Immunity scrolls have already been consumed in preparation.";
