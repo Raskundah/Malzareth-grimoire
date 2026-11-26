@@ -2,6 +2,31 @@
 
 A small, offline-ready, mobile-first D&D 3.5 spellbook built with **plain HTML, CSS and JavaScript**. There are no libraries, accounts, logins or build tools.
 
+## Level 20 support and streamlined UI · 26 November 2026
+
+The default character and existing-save migration now stage **Malzareth Vhane at level 20** as **Wizard 5 / Master Specialist 10 / Abjurant Champion 5**, with **BAB +12/+7/+2**, effective wizard spellcasting **20**, and **Martial Arcanist** (Complete Mage). Martial Arcanist raises wizard caster level to at least base attack bonus, but with BAB 12 and wizard CL 20 it adds **no new caster-level bonus**. The fifth level of Abjurant Armor makes *Shield* grant **+9 shield AC**. General caster level becomes 21 with the Orange Prism and Necromancy caster level 24 with the robe and Master Specialist.
+
+At Intelligence **34**, specialist spell slots total **71**, two more than level 19: 8th level rises to 7 and 9th level rises to 6. Level 20 grants **no general feat or wizard bonus feat** for this prestige-class advancement. An ability-score increase of +1 is available but **not selected automatically**.
+
+The player's standing skill priorities have been applied to the **11 points** earned from natural INT 28 (+9) and Abjurant Champion's 2 + INT skill points:
+- Spellcraft **22 → 23 ranks** (1 point)
+- Knowledge (arcana) **22 → 23 ranks** (1 point)
+- Concentration **22 → 23 ranks** (1 point)
+- Truespeak **3 → 7 ranks** (four cross-class ranks, **8 points**)
+
+Total: 11 points. Existing customised rank overrides are retained where they differ from the recorded level-19 baseline.
+
+**Outstanding personal choices:** The level-20 lich **d12 Hit Die roll** is not supplied, so max HP **remains the last confirmed 160**, not an invented 20th-level figure. The level-20 ability-score increase is pending, and the two new spellbook selections allowed by the campaign convention are unchosen. A **Level 20 decision tracker** in Character Folio → Overview lets the player record the actual d12 roll and one chosen ability. Each is applied once, and local save migration preserves current injuries. Spell additions are not fabricated or auto-prepared.
+
+### Easier everyday operation
+
+- **Spellbook:** Large catalogue shows only the first **40 matching spells**, with **Show more spells** for the rest. Searching, school/level/status/favourite/purpose tags still cover *all* spells, not just the visible batch. A new **Clear filters** control resets all filters. Purpose filters and long help copy are collapsed by default.
+- **Dice:** The live result stays prominent and visible. The manual 3D dice stage, history, and rarely used controls are behind an expandable section. Combat quick effects are pruned to **lich touch, Enervation, Ray of Enfeeblement, False Life, and the owned Orb of Force wand**; old automatically generated spell rolls and stale Staff of Transmutation damage formulas are removed from the quick-roll grid. This does **not** delete personal custom dice presets, which remain editable and backed up.
+- **Skills:** Initiative and saves stay instantly available. Spellcraft, Knowledge (arcana), Concentration and Truespeak are pinned as frequent rolls. All other skill checks remain searchable behind **All skills & special checks**.
+- **Rule accuracy:** Necromancy effect-caster-level calculations are updated to include the currently equipped +1 Orange Prism, +2 Master Specialist and +1 Necromancy robe. The equipment's +8 armor bonus from Vest of the Archmagi continues to prevent double stacking *Greater Mage Armor*.
+
+The **v22 local-save migration** is additive/guarded; it preserves spell edits, existing preparation/cast states, custom tags, inventory, wand charges, custom dice presets, character notes and actual HP damage. A **pre-v22 backup** is written to browser storage when an existing save migrates. Existing Android installations may need to refresh after GitHub Pages republishes its network-first offline cache. The mobile browser, GitHub Pages deployment and actual Android device were not directly tested.
+
 ## Post-Marquis equipment purchases · 25 November 2026
 
 **Player-confirmed checkpoint:** The Seventh Sovereign held **approximately 845,000 gp** after the Marquis; this supersedes the much older 99,817 gp and 262,892 gp checkpoints. Do not add historical balances together. The approximate treasury remaining **after** two custom rod clips and one Wand Bracelet is **508,000 gp**. Exact fractional currency is not reconciled.
