@@ -719,6 +719,8 @@
   };
   const dcFor = (level,school) => 10 + Number(level) + Math.floor((state.intelligence-10)/2) + (school==='Necromancy'?state.necroBonus:0);
   let levelFilter='all';
+  const LIBRARY_PAGE_SIZE=40;
+  let libraryLimit=LIBRARY_PAGE_SIZE;
   const activeTags=new Set();
   const tagsOf=spell=>Array.isArray(spell.tags)?spell.tags:(spellTagger?.tagsFor(spell)||[]);
   const spellMatchesTags=(spell,mode)=>{
@@ -785,8 +787,8 @@
     const base=state.spells.filter(s=>(levelFilter==='all'||s.level===Number(levelFilter)) && (status==='all'||s.status===status) && (schoolFilter==='all'||(schoolFilter==='unverified'?!s.school:s.school===schoolFilter)) && (!favorites||s.favorite) && (!q||[s.name,s.school,s.source,s.description,spellReference?.get(s)?.description||'',s.notes,s.components,s.range,s.target,s.duration,s.sr,...tagsOf(s)].join(' ').toLocaleLowerCase().includes(q)));
     const spells=base.filter(s=>spellMatchesTags(s,$('#tag-match-mode').value)).sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name));
     renderTagFilters(base);
-    $('#result-count').textContent=`${spells.length} ${spells.length===1?'spell':'spells'} shown`;
-    $('#spell-list').innerHTML=spells.length?spells.map(s=>{
+    $('#result-count').textContent=`${spells.length} matching · ${Math.min(spells.length,libraryLimit)} loaded`;
+    $('#spell-list').innerHTML=spells.length?spells.slice(0,libraryLimit).map(s=>{
       const available=currentCount(s.level)<prepLimit(s.level);
       const brief=s.description||spellReference?.get(s)?.description||'';
       const mechanics=[['Casting time',s.casting],['Components',s.components],['Range',s.range],
@@ -802,7 +804,9 @@
         <details class="spell-mechanics"><summary>Full spell details</summary><dl>${mechanicsHTML}</dl><p class="muted small">Reference: ${esc(s.source||'Not recorded')} · ${esc(s.detailsSource||'Campaign notes / user entry')}</p></details>
         <div class="spell-actions"><button type="button" class="text-button" data-action="edit" data-id="${esc(s.id)}">View / edit</button>${rolled?`<button type="button" class="text-button" data-action="roll-effect" data-id="${esc(s.id)}" title="${esc(rolled.type)}">⚄ Roll effect</button>`:''}<button type="button" class="star-button ${s.favorite?'starred':''}" data-action="favorite" data-id="${esc(s.id)}" aria-label="${s.favorite?'Remove from':'Add to'} favourites" title="Favourite">${s.favorite?'★':'☆'}</button><button type="button" class="add-button" data-action="quick-prepare" data-id="${esc(s.id)}" ${available?'':'disabled title="All slots are filled"'}>＋ Prepare</button></div>
       </article>`;
-    }).join(''):'<div class="empty-state"><strong>No spells found</strong><p>Try a different search or filter, or create a new inscription.</p></div>';
+    }).join('')+(spells.length>libraryLimit
+      ?'<div class="library-more"><button type="button" class="btn btn-outline" data-action="load-more">Show more spells ('+(spells.length-libraryLimit)+' remaining)</button></div>'
+      :''):'<div class="empty-state"><strong>No spells found</strong><p>Try a different search or filter, or create a new inscription.</p></div>';
     makeFilters();
   }
   function prepare(spellId){
@@ -1071,7 +1075,8 @@
     const pill=event.target.closest('[data-level]');if(pill && pill.matches('.filter-pill')){levelFilter=pill.dataset.level==='all'?'all':Number(pill.dataset.level);renderLibrary();updateStats();return;}
     const btn=event.target.closest('[data-action]');if(!btn)return;
     const {action,id,level}=btn.dataset;
-    if(action==='edit')openEditor(id);
+    if(action==='load-more'){libraryLimit+=LIBRARY_PAGE_SIZE;renderLibrary();}
+    else if(action==='edit')openEditor(id);
     else if(action==='favorite'){const s=state.spells.find(s=>s.id===id);if(s){s.favorite=!s.favorite;persist();renderLibrary();}}
     else if(action==='quick-prepare')prepare(id);
     else if(action==='roll-effect'){
@@ -1098,12 +1103,13 @@
   $('#spell-school').addEventListener('change',renderDCPreview);
   $('#delete-spell').addEventListener('click',deleteSpell);
   $('#spell-dialog').addEventListener('click',e=>{if(e.target.id==='spell-dialog')closeEditor();});
-  $('#search').addEventListener('input',renderLibrary);
+  $('#search').addEventListener('input',()=>{libraryLimit=LIBRARY_PAGE_SIZE;renderLibrary();});
   $('#status-filter').addEventListener('change',renderLibrary);
   $('#school-filter').addEventListener('change',renderLibrary);
   $('#tag-match-mode').addEventListener('change',renderLibrary);
   $('#tag-clear').addEventListener('click',()=>{activeTags.clear();renderLibrary();});
   $('#reset-library-filters').addEventListener('click',()=>{
+    libraryLimit=LIBRARY_PAGE_SIZE;
     $('#search').value='';
     $('#status-filter').value='all';
     $('#school-filter').value='all';
