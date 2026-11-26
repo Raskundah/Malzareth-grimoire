@@ -17,7 +17,7 @@ const feature=(id,name,category,effect,usesPerDay=null)=>({
 const baseline={
  identity:{
    name:'Malzareth Vhane',title:'The Seventh Keeper',
-   campaign:'The Ashen Crown',era:'18 Marpenoth 1375 DR · preparing for the Stolen Hour',
+   campaign:'The Ashen Crown',era:'19 Marpenoth 1375 DR · preparing for the Stolen Hour',
    race:'Lesser Tiefling Lich',characterClass:'Wizard 5 / Master Specialist 10 / Abjurant Champion 5',
    alignment:'Neutral Evil',origin:'Thay',size:'Medium',
    characterLevel:20,xp:199525,xpNext:210000,
@@ -35,9 +35,9 @@ const baseline={
    actionNote:'Action points: 7 last recorded, current expenditures not reconciled.'
  },
  currency:{
-   gp:667820,sp:0,cp:0,pp:0,
+   gp:660070,sp:0,cp:0,pp:0,
    fortressTreasuryGp:395750,
-   notes:'After the Marquis treasury estimates (~508,000 gp) are historical and superseded. Verified 18 Marpenoth 1375 DR discretionary liquid funds: 667,820 gp after five scrolls (21,170 gp) and jade Shapechange focus (1,500 gp). Separately ring-fenced war reserve: 395,750 gp. The fortress treasury field tracks this war reserve, not an additional third cash balance. Unliquidated valuables: 269,115 gp, not counted as cash. New payroll outlays only when actually disbursed.'
+   notes:'After the Marquis figures are historical. Verified 19 Marpenoth 1375 DR discretionary liquid funds: 660,070 gp, following two Freedom scrolls at 3,825 gp each and one 100 gp oil of Bless Weapon (7,750 gp total), in addition to five earlier scrolls and jade focus already deducted. Separate war reserve: 395,750 gp; fortress treasury field is this same reserve, not additional cash. Unliquidated valuables: 269,115 gp, not cash. No payroll prepayments presumed.'
  },
  inventory:[
    item('headband-intellect-6','Headband of Intellect +6','Magic item','Worn / head',1,{equipped:true,notes:'+6 enhancement to natural Intelligence 29 (level-20 ability increase); equipped score 35. Does not add skill points.'}),
@@ -69,6 +69,8 @@ const baseline={
    item('bag-holding-iv','Bag of Holding, Type IV','Container','Carried',1,{weightLb:60,notes:'Purchased in Suzail. Capacity 1,500 lb and 250 cubic feet. The bag itself weighs 60 lb. Contents are tracked separately.',certainty:'recent-session'}),
    item('blessed-book','Boccob\'s Blessed Book','Book / document','Carried / spellbook',1,{notes:'Already owned before the titan spell purchase; eight new spells occupy 37 pages. No further material transcription cost, 24 hours per spell.'}),
     item('jade-shapechange-circlet','Jade Circlet (Shapechange focus)','Magic focus','Carried / spell component pouch',1,{valueGp:1500,notes:'Reusable jade circlet, at least 1,500 gp, required focus for Shapechange; purchased 18 Marpenoth 1375 DR. This cost is already deducted from liquid treasury.'}),
+    item('scroll-freedom-reserve','Scroll of Freedom (9th, arcane CL 17)','Consumable','Carried / emergency spell scroll case',1,{valueGp:3825,notes:'One of two scrolls bought 19 Marpenoth 1375 DR; the other was transcribed and consumed. This scroll is held in reserve for phane stasis rescue. Cost already paid.'}),
+    item('oil-bless-weapon','Oil of Bless Weapon','Consumable','Carried / Vara weapon kit',1,{valueGp:100,notes:'D&D 3.5 oil for Vara\'s currently reported +5 greatsword. Grants good alignment temporarily, suppressing other weapon alignments, for bypassing phane regeneration. Does not bypass DR 15/epic and does not grant ghost touch; consume on application.'}),
    item('heroics-fighter-fragment','Heroics — 15th-level fighter equipment fragment','Component','Component pouch',1,{notes:'Consumable piece of armament used in combat by a fighter of at least 15th level, secured during pre-fight procurement; one casting only. No book-listed GP cost.'}),
    item('spellbooks','Personal spellbooks','Book / document','Carried',1,{notes:'Full transcription still being reconciled against Grimoire spell archive.'}),
    item('robes','Ornate robes','Clothing','Stored / spare',1,{equipped:false}),
@@ -132,7 +134,7 @@ const baseline={
  ],
  resolvedAudit:[],
  audit:[
-   'Level 20 choices confirmed: d12 roll 8 for 168 maximum HP, +1 natural Intelligence to 29 (35 equipped), Absorption and Reaving Dispel as spell selections. Five further 9th-level scroll spells transcribed. Standing-priority ranks: Spellcraft 23, Knowledge (arcana) 23, Concentration 23, Truespeak 7.',
+   'Level 20 choices confirmed: d12 roll 8 for 168 HP, +1 natural Intelligence to 29 (35 equipped), Absorption and Reaving Dispel selected. Five 9th-level scroll spells transcribed 18 Marpenoth, Freedom transcribed from one of two bought 19 Marpenoth. One Freedom scroll and Bless Weapon oil remain. Ranks: Spellcraft 23, Knowledge (arcana) 23, Concentration 23, Truespeak 7.',
    'Level 19: rolled 10 on lich d12, maximum HP 160. The 8 unspent level-18 skill points and 11 level-19 points have been allocated; compare against local skill edits before applying.',
    'Post-Marquis: roughly 845,000 gp treasury reported; 337,000 gp spent on four magic items, two custom rod keychains and one Wand Bracelet; estimated remaining treasury ~508,000 gp. Ring of Spell-Battle worn in combat, Mortal Guise stored. Staff of Necromancy began with 50 charges. Rod keychain heavier capacity and slotless design are house rules; price and retrieval actions follow Wand Bracelet.',
    'Future level-up skill priorities: Spellcraft, Knowledge (arcana), Concentration, then Truespeak. Maximise the first three toward class-skill caps; pay Truespeak cross-class costs and respect cap. Remaining points may go to secondary skills; do not retroactively alter approved level-18/19 allocation.',
