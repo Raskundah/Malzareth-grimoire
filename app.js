@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 23;
+  const DATA_VERSION = 24;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const LEVEL19_CATALOG = ['Plague of Undead','Gate'];
@@ -40,6 +40,9 @@
     && sheetModel?.createDefault()?.currency?.gp===667820;
   const completeLevel20Defaults = sheetModel?.createDefault()?.identity?.characterLevel===20
     && sheetModel?.createDefault()?.features?.some(x=>x.id==='martial-arcanist');
+  const completeFreedomDefault=defaults.some(s=>s.name==='Freedom'&&s.level===9&&s.status==='spellbook'&&!!s.description)
+    && sheetModel?.createDefault()?.inventory?.some(x=>x.id==='scroll-freedom-reserve')
+    && sheetModel?.createDefault()?.inventory?.some(x=>x.id==='oil-bless-weapon');
   const completeNewNinthDefaults = NEW_NINTH_CATALOG.every(name=>defaults.some(s=>s.name===name && s.level===9 && s.status==='spellbook' && !!s.description))
     && sheetModel?.createDefault()?.inventory?.some(x=>x.id==='jade-shapechange-circlet');
   const completeEquipmentDefaults = sheetModel?.createDefault()?.inventory?.some(x=>x.id==='orange-prism-ioun-stone')
@@ -63,7 +66,7 @@
     && defaults.some(s=>s.name==='Ice Castle' && !!s.casting && !!s.target && !!s.duration);
   const catalogueReady = completeCystDefaults && completeLevel13Defaults && completePrefightDefaults
     && completeLevel18Defaults && completeLevel19Defaults && completeLevel20Defaults && completeEquipmentDefaults && completePostMarquisDefaults && completeHolderPurchaseDefaults && completeLevel78Research && completeSpellDetails
-    && spellTagger?.revision===1 && completeNewNinthDefaults;
+    && spellTagger?.revision===1 && completeNewNinthDefaults && completeFreedomDefault;
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -170,6 +173,13 @@
         if(starter&&!spells.some(s=>s.level===9 && canonical(s.name)===canonical(name)))
           spells.push(structuredClone(starter));
       }
+    }
+    // v24: one more ninth-level inscription from the first of two Freedom scrolls.
+    // Preserve existing spell edits and never add a duplicate.
+    const acquireFreedom=(Number(input.version)||1)<24 && completeFreedomDefault;
+    if(acquireFreedom){
+      const starter=defaults.find(s=>s.name==='Freedom'&&s.level===9&&s.status==='spellbook');
+      if(starter&&!spells.some(s=>s.level===9&&s.name.toLowerCase()==='freedom'))spells.push(structuredClone(starter));
     }
     // Previously completed, approved two-year project: import every new
     // school-legal level 7/8 inscription. The current day-state is not reset.
@@ -368,6 +378,16 @@
     // If a phone briefly loads an old asset bundle, preserve existing
     // sheet information rather than replacing it with empty defaults.
     const sheet=sheetModel?.normalize(input.sheet) ?? input.sheet ?? null;
+    if(acquireFreedom && sheet){
+      const baseline=sheetModel.createDefault();
+      for(const id of ['scroll-freedom-reserve','oil-bless-weapon']){
+        const item=baseline.inventory.find(x=>x.id===id);
+        if(item&&!sheet.inventory.some(x=>x.id===id||x.name.toLowerCase()===item.name.toLowerCase()))sheet.inventory.push(structuredClone(item));
+      }
+      if(Number(sheet.currency.gp)===667820)sheet.currency.gp=660070;
+      const n='19 Marpenoth 1375 DR: purchased 2 Freedom scrolls (7,650 gp) and 1 Bless Weapon oil (100 gp), total 7,750 gp; one scroll transcribed, one held. Discretionary funds 660,070 gp, war reserve unchanged 395,750 gp.';
+      if(!String(sheet.currency.notes).includes('19 Marpenoth 1375 DR: purchased 2 Freedom'))sheet.currency.notes=(n+'\\n'+String(sheet.currency.notes||'')).slice(0,2000);
+    }
     if(acquireNinth && sheet){
       const updated=sheetModel.createDefault();
       const circlet=updated.inventory.find(x=>x.id==='jade-shapechange-circlet');
@@ -672,7 +692,7 @@
       spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
       autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
       cogitation,abilities,skillOverrides,level20,sheet,damagePresets,
-      journal:(()=>{let j=String(input.journal??''); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');if(advance18&&!j.includes('Level 18: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL18_JOURNAL].filter(Boolean).join('\n\n');if(advance19&&!j.includes('Level 19: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL19_JOURNAL].filter(Boolean).join('\n\n');if((Number(input.version)||1)<20&&completePostMarquisDefaults&&!j.includes('Post-Marquis equipment purchase 301,000 gp'))j=[j,'Post-Marquis equipment purchase 301,000 gp: Ring of Spell-Battle 12,000; full Staff of Necromancy 65,000; Greater Quicken Rod 170,000; normal Maximize Rod 54,000.'].filter(Boolean).join('\n\n');if(buyHolders&&!j.includes('Two rod keychains and one Wand Bracelet'))j=[j,'Two rod keychains and one Wand Bracelet purchased at 12,000 gp each, 36,000 gp combined. Total post-Marquis purchase outlay 337,000 gp; treasury approximately 508,000 gp. Custom rod holders use approved heavier capacity.'].filter(Boolean).join('\n\n');if(acquireNinth&&!j.includes('Five ninth-circle scrolls transcribed'))j=[j,'18 Marpenoth 1375 DR: Five ninth-circle scrolls transcribed into Blessed Book: Effulgent Epuration, Teleportation Circle, Astral Projection, Shapechange and Mage\'s Disjunction. Scrolls cost 21,170 gp; jade Shapechange focus cost 1,500 gp. Level-20 choices confirmed: Absorption and Reaving Dispel; HP 168; INT 35 with headband. XP 199,525 after milestones and Gate. No daily spell slots or preparations auto-spent.'].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
+      journal:(()=>{let j=String(input.journal??''); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');if(advance18&&!j.includes('Level 18: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL18_JOURNAL].filter(Boolean).join('\n\n');if(advance19&&!j.includes('Level 19: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL19_JOURNAL].filter(Boolean).join('\n\n');if((Number(input.version)||1)<20&&completePostMarquisDefaults&&!j.includes('Post-Marquis equipment purchase 301,000 gp'))j=[j,'Post-Marquis equipment purchase 301,000 gp: Ring of Spell-Battle 12,000; full Staff of Necromancy 65,000; Greater Quicken Rod 170,000; normal Maximize Rod 54,000.'].filter(Boolean).join('\n\n');if(buyHolders&&!j.includes('Two rod keychains and one Wand Bracelet'))j=[j,'Two rod keychains and one Wand Bracelet purchased at 12,000 gp each, 36,000 gp combined. Total post-Marquis purchase outlay 337,000 gp; treasury approximately 508,000 gp. Custom rod holders use approved heavier capacity.'].filter(Boolean).join('\n\n');if(acquireFreedom&&!j.includes('Freedom scroll transcribed for phane preparation'))j=[j,'19 Marpenoth 1375 DR: Freedom scroll transcribed for phane preparation, second held as emergency scroll; 100 gp Bless Weapon oil acquired. 7,750 gp deducted from discretionary funds. No spells prepared or scroll charges used in combat.'].filter(Boolean).join('\n\n');if(acquireNinth&&!j.includes('Five ninth-circle scrolls transcribed'))j=[j,'18 Marpenoth 1375 DR: Five ninth-circle scrolls transcribed into Blessed Book: Effulgent Epuration, Teleportation Circle, Astral Projection, Shapechange and Mage\'s Disjunction. Scrolls cost 21,170 gp; jade Shapechange focus cost 1,500 gp. Level-20 choices confirmed: Absorption and Reaving Dispel; HP 168; INT 35 with headband. XP 199,525 after milestones and Gate. No daily spell slots or preparations auto-spent.'].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
     };
   };
   const load = () => {
