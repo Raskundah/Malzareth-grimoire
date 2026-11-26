@@ -191,7 +191,11 @@
         byId('dice-history').innerHTML=history.map(h=>'<li><strong>'+h.total+'</strong> · '+escapeHtml(h.label)+' <span>('+h.dice.join(', ')+')</span></li>').join('');
       }
     }
-    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    // Quick rolls return immediately when the optional manual 3D stage is
+    // collapsed. Open it explicitly to see animated dice; screen-reader and
+    // reduced-motion users also receive instant results.
+    if(!canvas.closest?.('.dice-manual-panel')?.open
+       || window.matchMedia('(prefers-reduced-motion: reduce)').matches){
       rolling=false;rollBtn.disabled=false;
       byId('dice-result').textContent=String(total)+critical;
       byId('dice-breakdown').textContent=caption+' → ['+dice.join(', ')+'] = '+total;
