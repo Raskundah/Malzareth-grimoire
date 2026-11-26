@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 21;
+  const DATA_VERSION = 22;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const LEVEL19_CATALOG = ['Plague of Undead','Gate'];
@@ -37,6 +37,8 @@
   const completeHolderPurchaseDefaults = sheetModel?.createDefault()?.inventory?.some(x=>x.id==='wand-bracelet'&&x.valueGp===12000)
     && sheetModel?.createDefault()?.inventory?.some(x=>x.id==='rod-keychains'&&x.qty===2&&x.valueGp===12000)
     && sheetModel?.createDefault()?.currency?.gp===508000;
+  const completeLevel20Defaults = sheetModel?.createDefault()?.identity?.characterLevel===20
+    && sheetModel?.createDefault()?.features?.some(x=>x.id==='martial-arcanist');
   const completeEquipmentDefaults = sheetModel?.createDefault()?.inventory?.some(x=>x.id==='orange-prism-ioun-stone')
     && sheetModel?.createDefault()?.combat?.saveResistance===5;
   // Only migrate after the entire added spell-catalog script has loaded;
@@ -57,7 +59,7 @@
     && Number(window.SPELL_FACT_AUDIT.matched)>=200
     && defaults.some(s=>s.name==='Ice Castle' && !!s.casting && !!s.target && !!s.duration);
   const catalogueReady = completeCystDefaults && completeLevel13Defaults && completePrefightDefaults
-    && completeLevel18Defaults && completeLevel19Defaults && completeEquipmentDefaults && completePostMarquisDefaults && completeHolderPurchaseDefaults && completeLevel78Research && completeSpellDetails
+    && completeLevel18Defaults && completeLevel19Defaults && completeLevel20Defaults && completeEquipmentDefaults && completePostMarquisDefaults && completeHolderPurchaseDefaults && completeLevel78Research && completeSpellDetails
     && spellTagger?.revision===1;
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
@@ -73,13 +75,16 @@
       const spell = spells.find(s => s.name === name && s.level === Number(level));
       if(spell) prepared.push({id: uid(), spellId: spell.id, used:false});
     }));
-    const slots = calcSlots(34,19).totals;
+    const slots = calcSlots(34,20).totals;
     return {
       version:catalogueReady ? DATA_VERSION : 1,spells,prepared,slots,
-      manualSlots:[...slots],autoSlots:true,spellcastingLevel:19,
+      manualSlots:[...slots],autoSlots:true,spellcastingLevel:20,
       intelligence:34,necroBonus:2,presets:[],
       cogitation:{level:6,used:false,spellId:null},
-      abilities:{STR:10,DEX:18,WIS:12,CHA:20},skillOverrides:{},
+      abilities:{STR:10,DEX:18,WIS:12,CHA:20},skillOverrides:{
+        concentration:{ranks:23,extra:0},spellcraft:{ranks:23,extra:0},
+        'knowledge-arcana':{ranks:23,extra:0},truespeak:{ranks:7,extra:0}
+      },level20:{hitDie:null,ability:null},
       sheet:sheetModel?.createDefault() || null,damagePresets:[],
       journal:[window.LEVEL13_JOURNAL,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n'),lastSaved:new Date().toISOString()
     };
@@ -231,6 +236,8 @@
     if(advance && spellcastingLevel===12)spellcastingLevel=13;
     if(advance18 && spellcastingLevel<18)spellcastingLevel=18;
     if(advance19 && spellcastingLevel===18)spellcastingLevel=19;
+    const advance20=(Number(input.version)||1)<22 && completeLevel20Defaults;
+    if(advance20 && spellcastingLevel===19)spellcastingLevel=20;
     const calculated = calcSlots(intelligence,spellcastingLevel).totals;
     const readSlots = (list, fallback) => Array.from({length:10},(_,l)=>{
       const n=Number(list?.[l]);
@@ -317,6 +324,18 @@
       for(const [id,[previous,latest]] of Object.entries(finalRanks)){
         const entry=skillOverrides[id];
         if(!entry||entry.ranks===previous)skillOverrides[id]={ranks:latest,extra:entry?.extra??0};
+      }
+    }
+    if(advance20){
+      // User's standing skill priorities: 3 class-skill ranks, then 4
+      // Truespeak cross-class ranks (8 points), total 11 points at level 20.
+      for(const [id,before,after] of [
+        ['spellcraft',22,23],['knowledge-arcana',22,23],
+        ['concentration',22,23],['truespeak',3,7]
+      ]){
+        const previous=skillOverrides[id];
+        if(!previous || previous.ranks===before)
+          skillOverrides[id]={ranks:after,extra:previous?.extra??0};
       }
     }
     const countAt = level => prepared.filter(p=>spells.find(s=>s.id===p.spellId)?.level===level).length;
@@ -566,6 +585,39 @@
       const auditNote='Post-Marquis holder purchases: two rod keychains and one Wand Bracelet, 12,000 gp each, 36,000 gp total; estimated remaining ~508,000 gp. Rod holder weight allowance is campaign-specific.';
       if(!sheet.audit.includes(auditNote))sheet.audit.unshift(auditNote);
     }
+    if(advance20 && sheet && Number(sheet.identity.characterLevel)<=19){
+      const baseline=sheetModel.createDefault();
+      sheet.identity.characterLevel=20;
+      if(String(sheet.identity.characterClass).includes('Abjurant Champion 4'))
+        sheet.identity.characterClass='Wizard 5 / Master Specialist 10 / Abjurant Champion 5';
+      if(String(sheet.identity.era).includes('level 19'))
+        sheet.identity.era=String(sheet.identity.era).replace('level 19','level 20');
+      sheet.identity.xpNext=Math.max(Number(sheet.identity.xpNext)||0,210000);
+      sheet.identity.xpNote=baseline.identity.xpNote;
+      // Maximum HP remains at the known level-19 value until the user rolls.
+      // No ability score, prepared spell, or XP is invented.
+      if(Number(sheet.combat.bab)===11)sheet.combat.bab=12;
+      for(const newFeature of baseline.features.filter(x=>x.id==='martial-arcanist')){
+        if(!sheet.features.some(x=>x.id===newFeature.id))sheet.features.push(structuredClone(newFeature));
+      }
+      for(const feature of sheet.features){
+        const updated=baseline.features.find(x=>x.id===feature.id);
+        if(!updated)continue;
+        if(feature.id==='abjurant-armor'&&String(feature.effect).includes('Shield grants +8'))
+          Object.assign(feature,{effect:updated.effect,category:updated.category});
+        if(feature.id==='caster-level'&&String(feature.effect).includes('Level 19:'))
+          feature.effect=updated.effect;
+        if(feature.id==='undead'&&String(feature.effect).includes('19d12'))
+          feature.effect=updated.effect;
+      }
+      const note='Level 20: Abjurant Champion 5 staged (Martial Arcanist), +1 BAB, casting level 20. HP d12 roll, one ability increase, and two house-rule spell choices unconfirmed. Standing-priority skill ranks assigned: Spellcraft 23, Knowledge (arcana) 23, Concentration 23, Truespeak 7.';
+      if(!sheet.audit.includes(note))sheet.audit.unshift(note);
+    }
+    const level20 = {
+      hitDie: Number.isInteger(Number(input.level20?.hitDie)) && Number(input.level20.hitDie)>=1 && Number(input.level20.hitDie)<=12
+        ?Number(input.level20.hitDie):null,
+      ability: ['STR','DEX','INT','WIS','CHA'].includes(input.level20?.ability)?input.level20.ability:null
+    };
     const damagePresets=(Array.isArray(input.damagePresets)?input.damagePresets:[]).slice(0,40)
       .filter(x=>x&&typeof x==='object')
       .map(x=>({
@@ -577,7 +629,7 @@
       version:catalogueReady ? DATA_VERSION : (Number(input.version) || 1),
       spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
       autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
-      cogitation,abilities,skillOverrides,sheet,damagePresets,
+      cogitation,abilities,skillOverrides,level20,sheet,damagePresets,
       journal:(()=>{let j=String(input.journal??''); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');if(advance18&&!j.includes('Level 18: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL18_JOURNAL].filter(Boolean).join('\n\n');if(advance19&&!j.includes('Level 19: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL19_JOURNAL].filter(Boolean).join('\n\n');if((Number(input.version)||1)<20&&completePostMarquisDefaults&&!j.includes('Post-Marquis equipment purchase 301,000 gp'))j=[j,'Post-Marquis equipment purchase 301,000 gp: Ring of Spell-Battle 12,000; full Staff of Necromancy 65,000; Greater Quicken Rod 170,000; normal Maximize Rod 54,000.'].filter(Boolean).join('\n\n');if(buyHolders&&!j.includes('Two rod keychains and one Wand Bracelet'))j=[j,'Two rod keychains and one Wand Bracelet purchased at 12,000 gp each, 36,000 gp combined. Total post-Marquis purchase outlay 337,000 gp; treasury approximately 508,000 gp. Custom rod holders use approved heavier capacity.'].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
     };
   };
@@ -599,6 +651,31 @@
   // Shared, local-only state interface for the Dice tab's skill checks.
   window.GRIMOIRE = {
     getState:()=>state,
+    recordLevel20HitDie(value){
+      const die=Number(value);
+      if(state.sheet?.identity.characterLevel!==20||state.level20?.hitDie!==null
+        ||!Number.isInteger(die)||die<1||die>12)return false;
+      state.level20.hitDie=die;
+      const c=state.sheet.combat;
+      // Preserve injuries: increase both HP values by the new Hit Die
+      // only when the level-19 maximum is the expected 160.
+      if(c.maxHP===160){
+        c.maxHP+=die;
+        if(c.currentHP>0)c.currentHP+=die;
+      }else{
+        // Do not silently overwrite custom HP; record only the roll.
+        state.sheet.audit.unshift('Level 20 hit die rolled '+die+'; HP was already custom-edited, so maximum HP needs manual reconciliation.');
+      }
+      persist();render();window.refreshGrimoireSkills?.();return true;
+    },
+    recordLevel20Ability(code){
+      if(state.sheet?.identity.characterLevel!==20||state.level20?.ability!==null
+        ||!['STR','DEX','INT','WIS','CHA'].includes(code))return false;
+      if(code==='INT')state.intelligence=Math.min(99,state.intelligence+1);
+      else state.abilities[code]=Math.min(99,(Number(state.abilities[code])||10)+1);
+      state.level20.ability=code;
+      persist();render();window.refreshGrimoireSkills?.();return true;
+    },
     updateSkill(id,ranks,extra){
       if(!/^[a-z0-9-]{1,80}$/.test(id))return;
       state.skillOverrides[id]={
