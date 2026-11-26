@@ -73,6 +73,29 @@
       return stat(name,score,signed(mod(score)));
     }).join('');
   }
+  function renderLevel20(){
+    const panel=$('sheet-level20-panel'),s=get(),milestone=s.level20||{};
+    panel.hidden=sheet().identity.characterLevel!==20;
+    if(panel.hidden)return;
+    const hp=milestone.hitDie,ability=milestone.ability;
+    const hit=$('level20-hitdie'),choice=$('level20-ability');
+    hit.innerHTML='<option value="">'+(hp===null?'Choose rolled result':'Recorded: '+hp)+'</option>'+
+      Array.from({length:12},(_,i)=>'<option value="'+(i+1)+'">'+(i+1)+'</option>').join('');
+    hit.disabled=hp!==null;
+    if(hp!==null)hit.value=String(hp);
+    $('level20-save-hitdie').disabled=hp!==null;
+    choice.disabled=!!ability;
+    choice.value=ability||'';
+    $('level20-save-ability').disabled=!!ability;
+    const done=[hp!==null,!!ability].filter(Boolean).length;
+    $('level20-progress').textContent=done+'/2 personal choices recorded';
+    $('level20-rules').innerHTML=
+      '<p><b>Abjurant Champion 5</b> · BAB +12 · Martial Arcanist · Wizard casting 20. '+
+      'Shield gives +9 AC. '+(hp===null?'<b>HP remains at known level-19 maximum until you roll a d12.</b>':'HP roll '+hp+' recorded.')+'</p>'+
+      '<p><b>11 skill points already allocated</b> by your standing priorities: Spellcraft 23, '+
+      'Knowledge (arcana) 23, Concentration 23, Truespeak 7. '+(ability?'Ability increase: +1 '+esc(ability)+'.':'One level-20 ability increase remains to be chosen.')+'</p>';
+    $('level20-spells-note').textContent='Two campaign-approved spellbook additions remain for you to choose. No unselected spells or XP expenditure have been fabricated.';
+  }
   function renderCombat(){
     const sh=sheet(),c=sh.combat,x=calcCombat(),hp=c.currentHP,temp=c.tempHP;
     $('sheet-vitals').innerHTML=`<div class="sheet-summary compact">${stat('Current HP',hp,'Max '+c.maxHP)}${stat('Temporary HP',temp)}${stat('Action points',c.actionPoints,'Last reported; verify uses')}${stat('Speed',x.speedFt+' ft.',x.haste?'Haste active':'Base '+c.speedFt+' ft.')}</div>
@@ -205,7 +228,7 @@
     if(!sheet())return;
     for(const button of document.querySelectorAll('[data-sheet-tab]'))button.classList.toggle('active',button.dataset.sheetTab===tab);
     for(const key of ['overview','inventory','feats','audit'])$('sheet-'+key).hidden=tab!==key;
-    renderIdentity();renderCombat();profileFields();renderInventory();renderFeats();renderAudit();
+    renderIdentity();renderLevel20();renderCombat();profileFields();renderInventory();renderFeats();renderAudit();
   }
   function setTab(name){
     if(!['overview','inventory','feats','audit'].includes(name))return;
@@ -375,6 +398,16 @@
   $('sheet-temp-hp').addEventListener('change',e=>save(sh=>{sh.combat.tempHP=whole(e.target.value,0,0,9999);}));
   $('sheet-action-points').addEventListener('change',e=>save(sh=>{sh.combat.actionPoints=whole(e.target.value,0,0,9999);}));
   $('sheet-conditions').addEventListener('change',e=>save(sh=>{sh.combat.conditions=e.target.value;}));
+  $('level20-save-hitdie').addEventListener('click',()=>{
+    const die=Number($('level20-hitdie').value);
+    if(!die||!api.recordLevel20HitDie(die))return;
+    render();
+  });
+  $('level20-save-ability').addEventListener('click',()=>{
+    const chosen=$('level20-ability').value;
+    if(!chosen||!api.recordLevel20Ability(chosen))return;
+    render();
+  });
   $('sheet-profile-form').addEventListener('submit',saveProfile);
   $('sheet-currency-form').addEventListener('submit',saveCurrency);
   $('sheet-form').addEventListener('submit',saveEntry);
