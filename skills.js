@@ -8,10 +8,10 @@
   const BASE_ABILITIES={STR:10,DEX:18,INT:30,WIS:12,CHA:20};
   // [id, name, ability, ranks, total, group, trainedOnly, notes]
   const base=[
-    ['concentration','Concentration','CHA',22,27,'Arcane',false,'Undead: Charisma instead of Constitution'],
+    ['concentration','Concentration','CHA',23,28,'Arcane',false,'Undead: Charisma instead of Constitution'],
     ['craft','Craft (any)','INT',0,10,'Practical',false,'Specify a craft when rolling'],
     ['decipher-script','Decipher Script','INT',18,28,'Arcane'],
-    ['knowledge-arcana','Knowledge (arcana)','INT',22,32,'Knowledge'],
+    ['knowledge-arcana','Knowledge (arcana)','INT',23,33,'Knowledge'],
     ['knowledge-architecture','Knowledge (architecture & engineering)','INT',2,12,'Knowledge'],
     ['knowledge-dungeoneering','Knowledge (dungeoneering)','INT',2,12,'Knowledge'],
     ['knowledge-geography','Knowledge (geography)','INT',1,11,'Knowledge'],
@@ -22,7 +22,7 @@
     ['knowledge-religion','Knowledge (religion)','INT',4,14,'Knowledge'],
     ['knowledge-planes','Knowledge (the planes)','INT',20,30,'Knowledge'],
     ['profession','Profession (any)','WIS',0,1,'Practical',true,'Needs training for normal skill use'],
-    ['spellcraft','Spellcraft','INT',22,37,'Arcane',false,'Includes Skill Focus +3 and synergy +2'],
+    ['spellcraft','Spellcraft','INT',23,38,'Arcane',false,'Includes Skill Focus +3 and synergy +2'],
     ['appraise','Appraise','INT',0,10,'Practical'],
     ['balance','Balance','DEX',0,4,'Movement'],
     ['bluff','Bluff','CHA',4,11,'Social',false,'Includes lesser tiefling racial +2'],
@@ -52,7 +52,7 @@
     ['tumble','Tumble','DEX',0,4,'Movement',true,'Trained only'],
     ['use-rope','Use Rope','DEX',0,4,'Practical'],
     ['use-magic-device','Use Magic Device','CHA',4,9,'Arcane',true,'Scroll activation variant available below'],
-    ['truespeak','Truespeak','INT',3,13,'Arcane',true,'Three cross-class ranks: 1 from level 18 (2 points), 2 from level 19 (4 points). The target’s personal truename must first be discovered; speaking it requires a check (Tome of Magic).']
+    ['truespeak','Truespeak','INT',7,17,'Arcane',true,'Seven cross-class ranks: includes 4 new ranks at level 20 (8 skill points). The target’s personal truename must first be discovered; speaking it requires a check (Tome of Magic).']
   ].map(([id,name,ability,ranks,total,group,trainedOnly=false,notes=''])=>
     ({id,name,ability,ranks,total,group,trainedOnly,notes}));
   // Variant modifiers are derived from the base skill's *current* bonus,
