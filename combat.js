@@ -10,7 +10,7 @@
   const sign=n=>n>=0?'+'+n:String(n);
   const mod=n=>Math.floor((Number(n)-10)/2);
   const state=()=>api.getState();
-  const casterContext=()=>({casterLevel:state().spellcastingLevel,necroLevel:state().spellcastingLevel+1});
+  const casterContext=()=>({casterLevel:state().spellcastingLevel+1,necroLevel:state().spellcastingLevel+4});
   let effects=[];
   function touchBonus(kind){
     const s=state(),c=s.sheet?.combat;
@@ -31,27 +31,20 @@
     const add=(id,label,formula,note='')=>out.push({id,label,formula,note});
     const cha=mod(s.abilities.CHA),lich='1d8'+(cha<0?cha:cha>0?'+'+cha:'');
     add('lich-touch','Lich damaging touch',lich,'Negative energy to living targets; Will half. Touch attack is separate.');
-    const spellNames=[
-      'Orb of Force','Disrupt Undead','Acid Splash','Undead Torch','Enervation',
-      'Ray of Enfeeblement','False Life','Spectral Hand','Spectral Dragon',
-      'Necrotic Bloat','Necrotic Burst','Necrotic Eruption','Necrotic Termination',
-      'Heartfreeze'
-    ];
-    for(const name of spellNames){
-      if(!has(name))continue;
-      const roll=refs?.rollFor({name},casterContext());
-      if(roll)add('spell-'+name.toLowerCase().replace(/[^a-z0-9]+/g,'-'),roll.label,roll.formula,
-        roll.attack?roll.attack+' touch attack required when targeting a hostile creature.':'');
-    }
+    // Keep this view focused on rolls Malzareth actually makes in play.
+    // The old list automatically rendered 14+ obscure spells and stale staff
+    // formulas, making routine attacks hard to find.
+    if(has('Enervation'))add('spell-enervation','Enervation · negative levels','1d4',
+      'Ranged touch and spell resistance first; this is negative levels, not hit point damage. Staff of Necromancy expends 2 charges when used.');
+    if(has('Ray of Enfeeblement'))add('spell-ray-enfeeblement','Ray of Enfeeblement · Strength penalty','1d6+5',
+      'Ranged touch and spell resistance first. Strength penalty (not ability damage); nonstacking with itself.');
+    if(has('False Life'))add('spell-false-life','False Life · temporary HP','1d10+10',
+      'At caster level 20 or greater: 1d10+10 temporary HP, does not stack with another False Life.');
     const inv=s.sheet?.inventory||[];
-    const item=id=>inv.find(x=>x.id===id&&x.qty>0);
-    if(item('wand-orb-force')){
-      add('wand-orb-force','Wand of Orb of Force (CL 7) · force damage','7d6','Ranged touch hit first. Does not automatically spend a wand charge.');
-    }
-    if(item('staff-transmutation')){
-      add('staff-disintegrate','Staff Disintegrate (CL 13) · failed save','26d6','Ranged touch followed by Fortitude save; 3 staff charges if used.');
-      add('staff-disintegrate-save','Staff Disintegrate · successful Fortitude save','5d6','Use this instead if the target makes its Fortitude save. Does not spend charges.');
-    }
+    const owns=id=>inv.some(x=>x.id===id&&x.qty>0);
+    if(owns('wand-orb-force'))
+      add('wand-orb-force','Wand of Orb of Force · damage','7d6',
+        'Ranged touch hit first, CL 7. Charges are tracked separately and are not spent by rolling.');
     return out;
   }
   function render(){
