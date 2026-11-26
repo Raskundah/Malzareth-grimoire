@@ -793,7 +793,7 @@
         ['Target / area / effect',s.target],['Duration',s.duration],['Saving throw',s.save],['Spell resistance',s.sr]];
       const mechanicsHTML=mechanics.map(([label,value])=>'<div><dt>'+esc(label)+'</dt><dd class="'+(value?'':'not-verified')+'">'+esc(value||'Not yet verified')+'</dd></div>').join('');
       const rolled=spellReference?.rollFor(s,{
-        casterLevel:state.spellcastingLevel+1,necroLevel:state.spellcastingLevel+3
+        casterLevel:state.spellcastingLevel+1,necroLevel:state.spellcastingLevel+4
       });
       return `<article class="spell-card">
         <div class="spell-top"><span class="spell-level" title="${esc(labelLevel(s.level))}">${s.level}</span><div class="spell-head"><h3>${esc(s.name)}</h3><div class="spell-tags">${s.school?`<span class="tag ${s.school==='Necromancy'?'necro':''}">${esc(s.school)}</span>`:'<span class="tag">School unverified</span>'}${s.status==='cyst'?'<span class="tag cyst">Mother Cyst</span>':''}<span class="tag spell-dc" title="Saving throw DC, if applicable">DC ${dcFor(s.level,s.school)}</span></div></div></div>
@@ -1077,7 +1077,7 @@
     else if(action==='roll-effect'){
       const spell=state.spells.find(s=>s.id===id);
       const effect=spellReference?.rollFor(spell,{
-        casterLevel:state.spellcastingLevel+1,necroLevel:state.spellcastingLevel+3
+        casterLevel:state.spellcastingLevel+1,necroLevel:state.spellcastingLevel+4
       });
       if(!effect)return;
       setView('dice');
@@ -1103,6 +1103,17 @@
   $('#school-filter').addEventListener('change',renderLibrary);
   $('#tag-match-mode').addEventListener('change',renderLibrary);
   $('#tag-clear').addEventListener('click',()=>{activeTags.clear();renderLibrary();});
+  $('#reset-library-filters').addEventListener('click',()=>{
+    $('#search').value='';
+    $('#status-filter').value='all';
+    $('#school-filter').value='all';
+    $('#tag-match-mode').value='any';
+    $('#only-faves').checked=false;
+    levelFilter='all';
+    activeTags.clear();
+    renderLibrary();
+    updateStats();
+  });
   $('#spell-tag-suggest').addEventListener('click',()=>{
     const tags=spellTagger?.tagsFor({name:$('#spell-name').value,status:$('#spell-status').value})||[];
     if(!tags.length){toast('No curated suggestions for this spell. Add tags manually.');return;}
