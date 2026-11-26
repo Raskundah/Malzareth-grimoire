@@ -62,7 +62,7 @@
           <div class="section-header"><div><p class="eyebrow">THE ARCHIVE</p><h2 id="library-title">Spell <em>Codex</em></h2><p class="muted">Search every incantation in Malzareth's collection.</p></div><button class="btn btn-accent" type="button" id="add-spell">＋ New spell</button></div>
           <div class="tool-strip"><label class="search-wrap"><span aria-hidden="true">⌕</span><input type="search" id="search" placeholder="Search spells, descriptions, notes…" aria-label="Search spells" autocomplete="off"></label><select id="status-filter" aria-label="Filter spells by type"><option value="all">All spells</option><option value="spellbook">Spellbook</option><option value="cyst">Mother Cyst</option></select><select id="school-filter" aria-label="Filter spells by school"><option value="all">All schools</option><option>Abjuration</option><option>Conjuration</option><option>Divination</option><option>Enchantment</option><option>Evocation</option><option>Illusion</option><option>Necromancy</option><option>Transmutation</option><option>Universal</option><option value="unverified">Unverified school</option></select></div>
           <div id="level-filters" class="filter-row" role="group" aria-label="Filter by spell level"></div>
-          <details id="tag-filter-panel" class="tag-filter-panel" open>
+          <details id="tag-filter-panel" class="tag-filter-panel">
             <summary>Purpose tags <span id="tag-selection-summary" class="muted small">All purposes</span></summary>
             <div class="tag-filter-contents">
               <div id="tag-filter-primary" class="tag-filter-chips" role="group" aria-label="Filter by spell purpose"></div>
@@ -73,7 +73,7 @@
               </div>
             </div>
           </details>
-          <p class="muted small">Expand <b>Full spell details</b> for casting time, components, range, target/area, duration, saves and spell resistance. Unverified fields are labelled; your own notes take priority.</p>
+          <details class="compact-help"><summary>Spellbook tips</summary><p class="muted small">Open Full spell details on a spell to see casting time, components, range, duration, saves and resistance. Your notes take priority.</p></details>
           <div class="listing-meta"><span id="result-count">0 spells</span><label class="checkbox-label"><input id="only-faves" type="checkbox"> Favourites only</label></div>
           <div id="spell-list" class="spell-list"></div>
         </section>
@@ -111,6 +111,17 @@
           </div>
           <div class="sheet-panel" id="sheet-overview">
             <div class="sheet-identity" id="sheet-identity"></div>
+             <section id="sheet-level20-panel" class="settings-card level20-panel" aria-labelledby="level20-title" hidden>
+               <div class="sheet-row-head"><div><p class="eyebrow">ADVANCEMENT TRACKER</p><h3 id="level20-title">Level 20 · Final choices</h3></div><span id="level20-progress" class="muted small"></span></div>
+               <div id="level20-rules" class="muted small"></div>
+               <div class="level20-actions">
+                 <label>Hit Die (1d12)<select id="level20-hitdie"><option value="">Roll pending</option></select></label>
+                 <button class="btn btn-outline" id="level20-save-hitdie" type="button">Record HP roll</button>
+                 <label>+1 ability score<select id="level20-ability"><option value="">Choose ability</option><option value="INT">Intelligence</option><option value="STR">Strength</option><option value="DEX">Dexterity</option><option value="WIS">Wisdom</option><option value="CHA">Charisma</option></select></label>
+                 <button class="btn btn-outline" id="level20-save-ability" type="button">Apply ability</button>
+               </div>
+               <p class="muted small" id="level20-spells-note">Two campaign-convention spellbook selections remain unconfirmed. Add them in the Spellbook after choosing.</p>
+             </section>
             <div class="sheet-summary" id="sheet-summary"></div>
             <div class="sheet-two-col">
               <section class="settings-card"><h3>Vitality &amp; encounters</h3>
@@ -123,8 +134,8 @@
               </section>
               <section class="settings-card"><h3>Defences &amp; spell buffs</h3>
                 <div id="sheet-defences"></div>
-                <div class="sheet-buffs"><label><input type="checkbox" data-sheet-buff="greaterMageArmor"> Greater Mage Armour (+6 armour)</label>
-                  <label><input type="checkbox" data-sheet-buff="shield"> Shield (+4 shield)</label>
+                <div class="sheet-buffs"><label><input type="checkbox" data-sheet-buff="greaterMageArmor"> Greater Mage Armour (overlaps equipped vest)</label>
+                  <label><input type="checkbox" data-sheet-buff="shield"> Shield (Abjurant Armour scales with level)</label>
                   <label><input type="checkbox" data-sheet-buff="haste"> Haste (+1 dodge)</label></div>
                 <p class="muted small">Gear bonuses already present in the recorded AC are not added twice. Dexterity changes update AC and attacks.</p>
               </section>
@@ -183,17 +194,19 @@
 
         <section id="view-dice" class="view" hidden aria-labelledby="dice-title">
           <div class="section-header"><div><p class="eyebrow">FATE &amp; FORTUNE</p><h2 id="dice-title">Arcane <em>Dice</em></h2><p class="muted">Roll animated three-dimensional dice, even offline.</p></div></div>
+          <div class="dice-live"><div class="dice-result" id="dice-result" role="status" aria-live="polite">Ready to roll</div><div class="dice-breakdown" id="dice-breakdown" aria-live="polite">Tap a quick check below or open the 3D roller.</div></div>
+          <details class="dice-manual-panel"><summary>⚄ Manual dice and 3D animation</summary>
           <div class="dice-layout">
-            <div class="dice-stage-card"><canvas id="dice-canvas" width="640" height="490" role="img" aria-label="Animated three-dimensional polyhedral die"></canvas><div class="dice-result" id="dice-result" role="status" aria-live="polite">Choose dice and roll</div></div>
+            <div class="dice-stage-card"><canvas id="dice-canvas" width="640" height="490" role="img" aria-label="Animated three-dimensional polyhedral die"></canvas></div>
             <div class="dice-controls settings-card"><h3>Roll the bones</h3>
               <div class="dice-fields"><label>Die<select id="die-type"><option value="4">d4</option><option value="6">d6</option><option value="8">d8</option><option value="10">d10</option><option value="12">d12</option><option value="20" selected>d20</option><option value="100">d100</option></select></label>
               <label>Quantity<input id="dice-count" type="number" value="1" min="1" max="10"></label><label>Modifier<input id="dice-modifier" type="number" value="0" min="-100" max="100"></label></div>
               <button class="btn btn-accent dice-roll-button" id="roll-dice" type="button">⚄ Roll dice</button>
-              <div class="dice-breakdown" id="dice-breakdown" aria-live="polite">Results will appear here.</div>
               <h3>Recent rolls</h3><ol class="dice-history" id="dice-history"><li class="muted">No rolls yet.</li></ol>
               <p class="muted small">The 3D animation is a visual effect. Results use your device's secure random-number generator.</p>
             </div>
           </div>
+          </details>
           <section class="settings-card combat-rolls-card" aria-labelledby="combat-rolls-title">
             <div class="skill-heading"><p class="eyebrow">LIVE ATTACK BONUSES &amp; EFFECTS</p><h3 id="combat-rolls-title">Combat quick rolls</h3>
               <p class="muted small">Melee and ranged touch attacks use the Character Folio's current BAB, ability bonuses, Haste and attack adjustments. Damage and other effects roll separately.</p></div>
@@ -219,8 +232,9 @@
             <div class="skill-heading"><div><p class="eyebrow">MALZARETH'S CHARACTER SHEET</p><h3 id="skill-checks-title">Skills &amp; quick checks</h3><p class="muted small">One-tap d20 checks based on the latest post-lich skill ledger. Intelligence changes automatically update INT-based checks.</p></div></div>
             <div class="skill-tools"><label class="search-wrap"><span aria-hidden="true">⌕</span><input type="search" id="skill-search" placeholder="Search skills, Knowledge, saves…" aria-label="Search skills"></label><label class="skill-situational">Situational bonus <input id="skill-situational" type="number" value="0" min="-100" max="100" aria-label="Extra situational modifier for skill checks"></label></div>
             <div class="skill-quick" id="skill-quick-rolls" aria-label="Initiative and saving throw shortcuts"></div>
-            <div id="skill-list" class="skill-check-list"></div>
-            <p class="muted small">Tap a skill to roll it. Use the pencil to adjust ranks or miscellaneous bonuses after levelling, acquiring items or receiving buffs. Trained-only skills without ranks are marked unavailable.</p>
+            <div class="skill-priority"><h4>Frequent skills</h4><div id="skill-favourites" class="skill-check-list"></div></div>
+             <details id="skill-all-panel" class="skill-all-panel"><summary>All skills &amp; special checks</summary><div id="skill-list" class="skill-check-list"></div></details>
+            <p class="muted small">Search to find any skill; the full list stays tucked away until needed. Edit ranks with the pencil. Custom rolls are preserved.</p>
           </section>
         </section>
 
@@ -229,11 +243,11 @@
           <div class="journal-card"><label for="journal-notes" class="field-label">Your campaign notes</label><textarea id="journal-notes" rows="10" placeholder="Research to pursue… spells learned from scrolls… who sold me what…"></textarea><p class="muted small">Notes save automatically in this browser.</p></div>
           <div class="settings-card"><h3>Spellcasting settings</h3><p class="muted small">Save DCs update automatically for each spell: 10 + spell level + Intelligence modifier, plus the Necromancy bonus where applicable.</p>
           <div class="casting-settings">
-            <label>Intelligence score<input id="intelligence-score" type="number" min="1" max="99" value="30"></label>
-            <label>Wizard-equivalent spellcasting level<input id="wizard-spell-level" type="number" min="1" max="20" value="13"></label>
+            <label>Intelligence score<input id="intelligence-score" type="number" min="1" max="99" value="34"></label>
+            <label>Wizard-equivalent spellcasting level<input id="wizard-spell-level" type="number" min="1" max="20" value="20"></label>
             <label>Necromancy DC bonus<input id="necro-bonus" type="number" min="0" max="20" value="2"></label>
           </div>
-          <p class="muted small">Wizard 5 + Master Specialist 8 = spellcasting level 13. This controls spell slots, not additional bonuses to caster level. Necromancy DC bonus 2 reflects Spell Focus and Greater Spell Focus.</p>
+          <p class="muted small">Wizard 5 + Master Specialist 10 + Abjurant Champion 5 = effective wizard casting level 20. These settings control spell slots, not additional caster-level bonuses. Necromancy DC bonus 2 reflects Spell Focus and Greater Spell Focus.</p>
           <div class="skill-abilities"><h4>Skill check ability scores</h4><p class="muted small">Used for the Dice tab; Intelligence is set above. Current values are from Malzareth's post-lich sheet.</p>
             <div class="casting-settings"><label>Strength<input id="ability-str" type="number" min="1" max="99" value="10"></label><label>Dexterity<input id="ability-dex" type="number" min="1" max="99" value="17"></label><label>Wisdom<input id="ability-wis" type="number" min="1" max="99" value="12"></label><label>Charisma<input id="ability-cha" type="number" min="1" max="99" value="20"></label></div>
           </div>
@@ -246,7 +260,7 @@
         </section>
       </main>
     </div>
-    <footer class="footer"><span>THE ASHEN CROWN · PRIVATE CAMPAIGN TOOL</span><span>Version 6 · Level 13 &amp; Campaign Ledger · Offline-ready</span></footer>
+    <footer class="footer"><span>THE ASHEN CROWN · PRIVATE CAMPAIGN TOOL</span><span>Level 20 · Streamlined Grimoire · Offline-ready</span></footer>
   </div>
 
   <nav class="mobile-nav" aria-label="Mobile navigation"><button data-view="library" class="active" type="button"><span>▤</span>Spellbook</button><button data-view="prepared" type="button"><span>✧</span>Prepared</button><button data-view="character" type="button"><span>♜</span>Character</button><button data-view="dice" type="button"><span>⚄</span>Dice</button><button data-view="journal" type="button"><span>◈</span>Notes</button></nav>
