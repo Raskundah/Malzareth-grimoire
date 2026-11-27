@@ -290,6 +290,23 @@ function attackSequence(bab,epic,modifier,haste,rapid){
  const top=bab+epic+modifier-(rapid?2:0),count=Math.min(4,Math.max(1,Math.ceil(bab/5)));
  return [...Array(1+Number(haste)+Number(rapid)).fill(top),...Array.from({length:count-1},(_,i)=>top-5*(i+1))];
 }
+
+function weaponAudit(id,c){
+ const ability=id==='vara'?c.str:c.dex;
+ if(![ability,c.bab,c.epic].every(Number.isFinite))return null;
+ const mod=Math.floor((ability-10)/2);
+ if(id==='vara'){
+  const base=c.bab+c.epic+mod+5+2+2;
+  const damage=Math.floor(1.5*mod)+5+4+2;
+  return {attack:base,damage,sequence:attackSequence(c.bab,c.epic,mod+9,false,false),note:'Conditional +5 greatsword, Weapon Focus and Greater Weapon Focus (+2 attack), Weapon Specialization and Greater Weapon Specialization (+4 damage), slashing Melee Weapon Mastery (+2 attack/damage). No rage, charge, Power Attack, Haste or other buffs. Weapon identity and supplementary feat details still require original-book verification.'};
+ }
+ if(id==='sylrissa'){
+  const base=c.bab+c.epic+mod+5+1;
+  const damage=5+Math.floor(mod/2);
+  return {attack:base,damage,sequence:attackSequence(c.bab,c.epic,mod+6,true,true),note:'Conditional +5 light crossbow, Weapon Focus (+1, inferred prerequisite), Crossbow Sniper (half Dex to damage). Sequence includes Haste and Rapid Shot; excludes Point Blank Shot, Bracers of Murder, Hit-and-Run, Recitation and precision dice. Splitting delivery and supplementary rules remain unverified.'};
+ }
+ return null;
+}
 const activeTabs={vara:'Combat',sylrissa:'Combat',voss:'Combat'};
 
 function preparationAudit(spells,wis){
@@ -347,6 +364,8 @@ function render(){
  const seq=attackSequence(c.bab,c.epic,mod,false,false);
  box('Attack sequence audit','Audit','<p>Illustrative +5 weapon, ability modifier and epic attack only: <strong>'+seq.map(x=>'+'+x).join(' / ')+'</strong></p><p>Excludes weapon feats, situational bonuses, range, Power Attack, Rapid Shot and other effects. Assumes Medium size and +5 weapon; Vara’s exact main weapon and Sylrissa’s Splitting delivery remain unresolved. Haste adds one highest-bonus attack; epic attack does not unlock iteratives. <a href="https://www.d20srd.org/srd/combat/combatStatistics.htm" target="_blank" rel="noopener">SRD attack rules</a></p>');
  }}
+ const weapon=weaponAudit(id,c);
+ if(weapon)box('Weapon modifier reconciliation','Audit','<p><strong>Conditional attack: '+safe(weapon.attack)+'; weapon damage: '+(id==='vara'?'2d6':'1d8')+' + '+safe(weapon.damage)+'</strong></p><p>Full attack profile: '+weapon.sequence.map(x=>safe(x)).join(' / ')+'</p><p>'+safe(weapon.note)+'</p><p>Core rules: <a href="https://www.d20srd.org/srd/combat/combatStatistics.htm">attack and damage</a> · <a href="https://www.d20srd.org/srd/feats.htm">core feats</a> · <a href="https://www.d20srd.org/srd/epic/basics.htm">epic progression</a>. Read-only estimate; does not replace saved attack or damage fields.</p>');
  box('Stat verification','Audit','<p>'+safe(AUDIT[id])+'</p><p>Campaign snapshot: 24 Marpenoth 1375 DR, level 21. Recovered saves are historical totals, not recomputed temporary buffs. Blank inputs remain unverified. Current HP and used resources are independent local session data.</p><p>'+safe(c.notes)+'</p>');
  const quick=document.createElement('div');quick.className='party-summary';quick.innerHTML=[['HP',c.hp==null?'?':c.hp+' / '+(c.maxHP??'?')],['XP',c.xp??'?'],['AC',c.ac??'?'],['Action points',c.ap??'?']].map(([k,v])=>'<div><small>'+safe(k)+'</small><strong>'+safe(v)+'</strong></div>').join('');nav.before(quick);
  const records=boxes.find(b=>b.querySelector('h3')?.textContent==='Character records');
