@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 25;
+  const DATA_VERSION = 26;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const LEVEL19_CATALOG = ['Plague of Undead','Gate'];
@@ -66,7 +66,7 @@
     && defaults.some(s=>s.name==='Ice Castle' && !!s.casting && !!s.target && !!s.duration);
   const catalogueReady = completeCystDefaults && completeLevel13Defaults && completePrefightDefaults
     && completeLevel18Defaults && completeLevel19Defaults && completeLevel20Defaults && completeEquipmentDefaults && completePostMarquisDefaults && completeHolderPurchaseDefaults && completeLevel78Research && completeSpellDetails
-    && spellTagger?.revision===1 && completeNewNinthDefaults && completeFreedomDefault && !!sheetModel?.addProcurement;
+    && spellTagger?.revision===1 && completeNewNinthDefaults && completeFreedomDefault && !!sheetModel?.equipProcurement;
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -87,7 +87,7 @@
       manualSlots:[...slots],autoSlots:true,spellcastingLevel:20,
       intelligence:35,necroBonus:2,presets:[],
       cogitation:{level:6,used:false,spellId:null},
-      abilities:{STR:10,DEX:18,WIS:12,CHA:20},skillOverrides:{
+      abilities:{STR:16,DEX:24,WIS:18,CHA:26},skillOverrides:{
         concentration:{ranks:23,extra:0},spellcraft:{ranks:23,extra:0},
         'knowledge-arcana':{ranks:23,extra:0},truespeak:{ranks:7,extra:0}
       },level20:{hitDie:8,ability:'INT'},
@@ -671,6 +671,7 @@
       if(!sheet.audit.includes(note))sheet.audit.unshift(note);
     }
     if((Number(input.version)||1)<25 && sheet && sheetModel?.addProcurement)sheetModel.addProcurement(sheet);
+    if((Number(input.version)||1)<26 && sheet && sheetModel?.equipProcurement)sheetModel.equipProcurement(sheet,abilities);
     const level20 = {
       hitDie: Number.isInteger(Number(input.level20?.hitDie)) && Number(input.level20.hitDie)>=1 && Number(input.level20.hitDie)<=12
         ?Number(input.level20.hitDie):null,

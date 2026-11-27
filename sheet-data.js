@@ -158,6 +158,37 @@ function addProcurement(sheet){
  if(!sheet.audit.includes(procurementNote))sheet.audit.unshift(procurementNote);
 }
 addProcurement(baseline);
+
+function equipProcurement(sheet,abilities){
+ const upgrades=[
+ ['procure-scythe',null,'+5 Spellblade Scythe (Greater Dispel Magic)','Weapon','Wielded',null],
+ ['procure-ring','ring-protection-5','Ring of Protection +5 / Freedom of Movement / Enduring Arcana','Magic item','Worn / ring 1',99000],
+ ['procure-boots','boots-of-speed','Boots of Speed / Vagabond / Dexterity +6','Magic item','Worn / feet',54000],
+ ['procure-amulet','amulet-natural-armour-5','Amulet of Natural Armour +5 / Wisdom +6','Magic item','Worn / throat',86000],
+ ['procure-eye','third-eye-clarity','Third Eye Conceal / Clarity','Magic item','Worn / face',124500],
+ ['procure-mantle','cloak-displacement-minor','Epic Mantle: SR 40 / Displacement / Charisma +6','Magic item','Worn / shoulders',362000],
+ ['procure-gauntlets',null,'Gauntlets of the Sorcerer King','Magic item','Worn / hands',46000]];
+ for(const [id,oldId,name,category,location,valueGp] of upgrades){
+  const order=sheet.inventory.find(x=>x.id===id);
+  const old=oldId&&sheet.inventory.find(x=>x.id===oldId);
+  const target=old||order||item(id,name,category,location);
+  const description=procurementRows.find(x=>x[0]===id)[3];
+  Object.assign(target,{name,category,location,valueGp,equipped:true,certainty:'recorded',notes:((old?.notes||'')+' '+description+' Delivered and equipped.').trim()});
+  if(!sheet.inventory.includes(target))sheet.inventory.push(target);
+  if(old&&order)sheet.inventory=sheet.inventory.filter(x=>x!==order);
+ }
+ if(abilities)for(const [k,before] of Object.entries({STR:10,DEX:18,WIS:12,CHA:20}))if(abilities[k]===before)abilities[k]+=6;
+ if(sheet.combat.initiativeMisc===6)sheet.combat.initiativeMisc=8;
+ const defense='SR 40; continuous freedom of movement, mind blank protection and 20% displacement; +4 effective CL against dispels; Spellblade protects against targeted Greater Dispel Magic while wielded.';
+ if(!sheet.combat.defencesNotes.includes('SR 40'))sheet.combat.defencesNotes+=' '+defense;
+ const ledger='Equipment delivered: 602,500 gp paid. Liquid treasury 1,884,300 gp; discretionary 1,238,550 gp; military 395,750 gp; civil 250,000 gp.';
+ if([660070,1841050].includes(sheet.currency.gp))sheet.currency.gp=1238550;
+ sheet.currency.notes=(ledger+' '+sheet.currency.notes).slice(0,2000);
+ sheet.audit=sheet.audit.filter(x=>x!==procurementNote);
+ if(!sheet.audit.includes(ledger))sheet.audit.unshift(ledger);
+}
+
+equipProcurement(baseline);
 const clone = value=>JSON.parse(JSON.stringify(value));
 const n=(x,fallback,min=-999999999,max=999999999)=>Number.isFinite(Number(x))&&x!==''&&x!==null&&x!==undefined?
  Math.max(min,Math.min(max,Number(x))):fallback;
@@ -202,5 +233,5 @@ function normalize(input){
  original.resolvedAudit=Array.isArray(input.resolvedAudit)?input.resolvedAudit.slice(0,50).map(x=>str(x,'',550)):[];
  return original;
 }
-window.SHEET_MODEL={createDefault:()=>clone(baseline),normalize,addProcurement};
+window.SHEET_MODEL={createDefault:()=>clone(baseline),normalize,addProcurement,equipProcurement};
 })();
