@@ -16,7 +16,8 @@
     const s=state(),c=s.sheet?.combat;
     if(!c)return 0;
     const ability=kind==='melee'?'STR':'DEX';
-    const base=c.bab+mod(s.abilities[ability])+c.attackMisc+(c.buffs.haste?1:0);
+    const epic=Math.max(0,Math.ceil(((s.sheet?.identity?.characterLevel||20)-20)/2));
+    const base=c.bab+epic+mod(s.abilities[ability])+c.attackMisc+(c.buffs.haste?1:0);
     const situational=Math.max(-100,Math.min(100,Math.trunc(Number($('combat-attack-mod').value)||0)));
     return base+situational+(kind==='melee' && $('combat-spectral-hand').checked?2:0);
   }
