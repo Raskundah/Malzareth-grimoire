@@ -23,6 +23,7 @@
   function calcCombat(){
     const s=get(),c=sheet().combat,a=s.abilities;
     const dex=mod(a.DEX),wis=mod(a.WIS),str=mod(a.STR),cha=mod(a.CHA);
+    const epicAttack=Math.max(0,Math.ceil((sheet().identity.characterLevel-20)/2)),epicSave=Math.max(0,Math.floor((sheet().identity.characterLevel-20)/2));
     const haste=c.buffs.haste?1:0,mage=c.buffs.greaterMageArmor?Math.max(0,6-(Number(c.armorMisc)||0)):0,
       shield=c.buffs.shield?4+Math.max(0,Math.min(5,whole(sheet().identity.characterLevel,18)-15)):0;
     const ac=10+dex+c.naturalArmor+c.enhanceNatural+c.deflection+
@@ -31,14 +32,14 @@
     const flat=10+c.naturalArmor+c.enhanceNatural+c.deflection+
       c.armorMisc+c.shieldMisc+mage+shield;
     const saves={
-      fort:c.baseSaves.fort+c.saveResistance+c.saveMisc.fort,
-      ref:c.baseSaves.ref+dex+c.saveResistance+c.saveMisc.ref+haste,
-      will:c.baseSaves.will+wis+c.saveResistance+c.saveMisc.will
+      fort:c.baseSaves.fort+c.saveResistance+c.saveMisc.fort+epicSave,
+      ref:c.baseSaves.ref+dex+c.saveResistance+c.saveMisc.ref+haste+epicSave,
+      will:c.baseSaves.will+wis+c.saveResistance+c.saveMisc.will+epicSave
     };
     const hd=whole(sheet().identity.characterLevel,12,1,99);
     return {ac,touch,flat,saves,
-      initiative:dex+c.initiativeMisc,melee:c.bab+str+c.attackMisc+haste,
-      ranged:c.bab+dex+c.attackMisc+haste,grapple:c.bab+str,
+      initiative:dex+c.initiativeMisc,melee:c.bab+epicAttack+str+c.attackMisc+haste,
+      ranged:c.bab+epicAttack+dex+c.attackMisc+haste,grapple:c.bab+epicAttack+str,
       speedFt:haste?Math.min(2*c.speedFt,c.speedFt+30):c.speedFt,
       lichDC:10+Math.floor(hd/2)+cha,haste,mage,shield};
   }
@@ -105,7 +106,7 @@
     $('sheet-action-points').value=c.actionPoints;
     $('sheet-defences').innerHTML=`<div class="sheet-summary compact">${stat('Armour Class',x.ac)}${stat('Touch AC',x.touch)}${stat('Flat-footed AC',x.flat)}${stat('Damage Reduction','15/ bludgeoning + magic')}</div>`;
     for(const [key,val] of Object.entries(c.buffs))document.querySelectorAll('[data-sheet-buff="'+key+'"]').forEach(el=>el.checked=val);
-    $('sheet-attacks').innerHTML=`<div class="sheet-summary compact">${stat('Initiative',signed(x.initiative))}${stat('BAB',signed(c.bab))}${stat('Melee touch',signed(x.melee))}${stat('Ranged touch',signed(x.ranged))}${stat('Grapple',signed(x.grapple))}${stat('Lich ability DC',x.lichDC)}</div>
+    $('sheet-attacks').innerHTML=`<div class="sheet-summary compact">${stat('Initiative',signed(x.initiative))}${stat('Base BAB',signed(c.bab),'Epic attack '+signed(Math.max(0,Math.ceil((sheet().identity.characterLevel-20)/2))))}${stat('Melee touch',signed(x.melee))}${stat('Ranged touch',signed(x.ranged))}${stat('Grapple',signed(x.grapple))}${stat('Lich ability DC',x.lichDC)}</div>
       <div class="sheet-summary compact">${stat('Fortitude',signed(x.saves.fort))}${stat('Reflex',signed(x.saves.ref))}${stat('Will',signed(x.saves.will))}</div>
       <p class="muted small">Negative energy touch: 1d8+5; Will DC ${x.lichDC} halves. Paralysing touch: Fort DC ${x.lichDC}. Fear aura: Will DC ${x.lichDC} (targets below 5 HD).</p>
       ${x.haste?'<p class="muted small">Haste active: +1 attack rolls, +1 Reflex, +1 dodge AC, +30 ft speed (max double); one extra attack with a weapon on full attack, not an extra spell.</p>':''}
