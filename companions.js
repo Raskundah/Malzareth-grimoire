@@ -262,7 +262,7 @@ app.querySelector('.site-header').after(bar);
 const panel=document.createElement('section');panel.id='party-folio';panel.hidden=true;bar.after(panel);
 const style=document.createElement('style');style.textContent=
 '.party-switcher{display:flex;gap:.55rem;align-items:center;flex-wrap:wrap;margin:1rem 0;padding:.75rem;border:1px solid #776a85;border-radius:.7rem}.party-switcher label{font-weight:700}.party-switcher select{max-width:100%;min-width:12rem}.party-switcher p{flex-basis:100%;margin:0}.party-mode #app>.hero,.party-mode #app>.status-grid,.party-mode #app>.main-grid,.party-mode #header-add,.party-mode .mobile-nav{display:none!important}#party-folio[hidden]{display:none!important}#party-folio{padding-bottom:2rem}#party-folio .party-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:.7rem}#party-folio label{display:flex;flex-direction:column;gap:.25rem;font-size:.86rem}#party-folio input,#party-folio textarea{width:100%;box-sizing:border-box}#party-folio textarea{min-height:8rem;resize:vertical}#party-folio .party-box{border:1px solid #776a85;border-radius:.7rem;padding:1rem;margin:.8rem 0}#party-folio .party-row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:end;margin:.5rem 0}#party-folio .party-row label{flex:1;min-width:80px}#party-folio .party-row button{flex-shrink:0}#party-folio .party-roll{white-space:pre-wrap;min-height:2rem;font-weight:600}#party-folio details>summary{cursor:pointer;font-weight:700}#party-folio button{min-height:36px}#party-folio .party-note{color:inherit;opacity:.85;font-size:.88rem}';
-style.textContent+=' .party-tabs{display:flex;flex-wrap:wrap;gap:.45rem;margin:1rem 0}.party-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;margin:1rem 0}.party-summary>div{padding:.7rem;border:1px solid #776a85;border-radius:.55rem;min-width:0}.party-summary small,.party-summary strong{display:block;overflow-wrap:anywhere}.party-reference{border-bottom:1px solid #776a8560;padding:.7rem 0}.party-reference p{margin:.45rem 0;line-height:1.55}.party-reference summary{cursor:pointer}.party-box[hidden]{display:none!important}@media(max-width:480px){.party-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}';document.head.append(style);
+style.textContent+=' .party-native-notice{border:1px solid #776a85;padding:.75rem;margin:.75rem 0;border-radius:.6rem}.party-native-notice[hidden]{display:none!important} .party-tabs{display:flex;flex-wrap:wrap;gap:.45rem;margin:1rem 0}.party-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;margin:1rem 0}.party-summary>div{padding:.7rem;border:1px solid #776a85;border-radius:.55rem;min-width:0}.party-summary small,.party-summary strong{display:block;overflow-wrap:anywhere}.party-reference{border-bottom:1px solid #776a8560;padding:.7rem 0}.party-reference p{margin:.45rem 0;line-height:1.55}.party-reference summary{cursor:pointer}.party-box[hidden]{display:none!important}@media(max-width:480px){.party-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}';document.head.append(style);
 const q=s=>bar.querySelector(s), status=t=>q('#party-status').textContent=t;
 function save(){if(loadError){status(loadError);return false;}try{localStorage.setItem(KEY,JSON.stringify(state));status('Companion records saved on this device.');return true;}catch(e){status('Save failed: '+e.message+'. Export a backup before closing.');return false;}}
 const select=q('#party-select');select.value=state.active;
@@ -304,7 +304,7 @@ function render(){
  nav.addEventListener('click',e=>{const b=e.target.closest('[data-party-tab]');if(b)showTab(b.dataset.partyTab);});showTab(activeTabs[id]||'Combat');
 }
 select.addEventListener('change',()=>{state.active=select.value;save();render();});
-panel.addEventListener('change',e=>{const t=e.target,c=state.characters[state.active];if(!c)return;if(t.dataset.field){const k=t.dataset.field;if(!own(c,k))return;c[k]=t.type==='number'?bounded(n(t.value),-100000,1000000000):t.value;save();if(['initiative','fort','ref','will','attack'].includes(k))render();}else if(t.dataset.list){const arr=c[t.dataset.list],r=arr?.[Number(t.dataset.i)];if(!r||!own(r,t.dataset.key))return;const k=t.dataset.key;r[k]=t.type==='checkbox'?t.checked:t.type==='number'?bounded(n(t.value),0,100000):t.value;save();if(t.dataset.list==='lingering')render();}});
+panel.addEventListener('change',e=>{const t=e.target,c=state.characters[state.active];if(!c)return;if(t.dataset.field){const k=t.dataset.field;if(!own(c,k))return;c[k]=t.type==='number'?bounded(n(t.value),-100000,1000000000):t.value;save();if(['initiative','fort','ref','will','attack'].includes(k))render();else if(['hp','maxHP','xp','ac','ap'].includes(k)){const quick=panel.querySelector('.party-summary');if(quick){const vals=[c.hp==null?'?':c.hp+' / '+(c.maxHP??'?'),c.xp??'?',c.ac??'?',c.ap??'?'];quick.querySelectorAll('strong').forEach((el,i)=>el.textContent=vals[i]);}}}else if(t.dataset.list){const arr=c[t.dataset.list],r=arr?.[Number(t.dataset.i)];if(!r||!own(r,t.dataset.key))return;const k=t.dataset.key;r[k]=t.type==='checkbox'?t.checked:t.type==='number'?bounded(n(t.value),0,100000):t.value;save();if(t.dataset.list==='lingering')render();}});
 panel.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const c=state.characters[state.active];if(!c)return;const output=msg=>{const el=panel.querySelector('#party-roll-result');if(el)el.textContent=msg;};try{
  if(b.dataset.roll){if(b.dataset.mod==='')return;const d=rollDie(20),m=Number(b.dataset.mod);output(b.dataset.roll+': '+d+' '+(m<0?'− '+Math.abs(m):'+ '+m)+' = '+(d+m));return;}
  const a=b.dataset.act,kind=b.dataset.list,i=Number(b.dataset.i),arr=c[kind];if(!a)return;
@@ -325,5 +325,62 @@ panel.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)retu
 q('#party-export').addEventListener('click',()=>{const raw=loadError?localStorage.getItem(KEY):JSON.stringify(state,null,2);const url=URL.createObjectURL(new Blob([raw??''],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='ashen-crown-companions-'+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 q('#party-import').addEventListener('click',()=>q('#party-file').click());
 q('#party-file').addEventListener('change',async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>2000000)throw Error('Backup too large');const next=normalize(JSON.parse(await file.text()));if(!confirm('Replace the three local companion records? Malzareth’s grimoire is unaffected.'))return;const old=localStorage.getItem(KEY);if(old)localStorage.setItem(KEY+'-pre-import',old);localStorage.setItem(KEY,JSON.stringify(next));state=next;loadError='';select.value=state.active;render();status('Companion backup imported. Previous data retained in pre-import backup.');}catch(err){status('Import failed: '+err.message);}finally{e.target.value='';}});
+
+/* Level-21 native Malzareth folio migration. Only the known level-20 checkpoint is
+   eligible; keep all prepared spells, inventory and custom edits intact. */
+const nativeNotice=document.createElement('div');nativeNotice.className='party-box party-native-notice';
+bar.after(nativeNotice);
+function renderNativeNotice(){
+ const st=window.GRIMOIRE?.getState?.(), sh=st?.sheet;
+ if(!sh)return;
+ const level=sh.identity.characterLevel;
+ nativeNotice.hidden=state.active!=='malzareth'||level>=21;
+ if(level>=21)return;
+ nativeNotice.innerHTML='<p class="muted small">Campaign advancement: Malzareth is level 21, Factotum 1 and Epic Spellcasting. The native folio can apply the confirmed advancement without changing prepared spells or equipment.</p><button class="btn btn-small btn-outline" type="button" id="party-malz-upgrade">Apply confirmed level-21 advancement</button>';
+ nativeNotice.querySelector('button').addEventListener('click',applyMalzareth);
+}
+function applyMalzareth(){
+ const api=window.GRIMOIRE,st=api?.getState?.(),sh=st?.sheet;
+ if(!sh||sh.identity.characterLevel!==20||sh.combat.maxHP!==168||sh.combat.bab!==12||!sh.identity.characterClass.includes('Abjurant Champion 5')){status('Native sheet does not match the known level-20 checkpoint. No changes made; reconcile level, HP and BAB first.');return;}
+ const expected=[['spellcraft',23,24],['knowledge-arcana',23,24],['truespeak',7,21]];
+ for(const [id,old,target] of expected){const current=st.skillOverrides?.[id]?.ranks;if(current!==old&&current!==target&&!(id==='truespeak'&&current===8)){status('Custom or missing '+id+' ranks detected. No changes made; reconcile before applying.');return;}}
+ if(!confirm('Advance Malzareth to level 21 (180 HP, Factotum 1, Epic Spellcasting, 15 AP, approved skill ranks)? Truespeak is set to 21 from the latest session; the older app recorded 7 instead of 8. Existing prepared spells, gear and charges are preserved.'))return;
+ try{
+  const raw=localStorage.getItem('ashen-crown-grimoire-v1');
+  localStorage.setItem('ashen-crown-grimoire-v1-pre-epic21',raw||JSON.stringify(st));
+ }catch(e){status('Backup could not be saved. Advancement cancelled.');return;}
+ const feat={id:'epic-spellcasting',name:'Epic Spellcasting',source:'Epic Level Handbook / SRD',effect:'Requires 24 ranks each in Spellcraft and Knowledge (arcana), and 9th-level arcane casting. Two epic arcane spells per day after development; each requires a Spellcraft check against its development DC.',kind:'Epic',notes:'No epic spell developed yet.',usesPerDay:null,usedToday:0};
+ const features=[
+ ['factotum-inspiration','Inspiration','Factotum 1','2 inspiration points per encounter. Separate from action points. Refresh at encounter start.'],
+ ['factotum-insight','Cunning Insight','Factotum 1','Spend 1 inspiration before an attack, damage or save roll: add Intelligence modifier (+12) as a competence bonus. Does not stack with Pale Green Prism competence bonus; normally net +11 on attacks/saves if that +1 is already included. Not a caster-level check bonus.'],
+ ['factotum-knowledge','Cunning Knowledge','Factotum 1','Spend 1 inspiration to gain +1 on a ranked skill check, once per day per skill. Bonus equals Factotum class level.'],
+ ['factotum-trapfinding','Trapfinding','Factotum 1','Search for traps with DC above 20 and use Disable Device on magical traps.'],
+ ['factotum-proficiencies','Factotum proficiencies','Factotum 1','All simple and martial weapons, light armor and shields except tower shields. Arcane spell failure still applies. All skills are class skills for Factotum advancement.'],
+ ['epic-attack','Epic attack bonus','Epic level 21','+1 attack and grapple where BAB is referenced, but no extra iterative attacks. Pre-epic BAB remains +12; epic saving throw bonus is +0.'],
+ ['epic-capacity','Epic spell capacity','Epic Spellcasting','Two epic spell slots per day; ordinary wizard spell slots and wizard base caster level 20 unchanged. Develop epic spells before casting.']
+ ];
+ api.updateSheet(sheet=>{
+  const c=sheet.combat;
+  sheet.identity.characterLevel=21;
+  sheet.identity.characterClass='Wizard 5 / Master Specialist 10 / Abjurant Champion 5 / Factotum 1';
+  if(sheet.identity.xp===199525||sheet.identity.xp===210525)sheet.identity.xp=210525;
+  sheet.identity.xpNext=231000;
+  sheet.identity.era='24 Marpenoth 1375 DR · Epic advancement';
+  sheet.identity.xpNote='Level 21 advancement: 210,525 XP confirmed in session; custom XP retained if different.';
+  c.maxHP=180;if(c.currentHP>0)c.currentHP=Math.min(180,c.currentHP+12);c.actionPoints=15;c.actionNote='15 action points refreshed at level 21. Spend during play; do not refresh at rest.';
+  for(const [id,old,target] of expected){const v=st.skillOverrides[id];st.skillOverrides[id]={ranks:target,extra:v?.extra??0};}
+  if(!sheet.feats.some(x=>x.id===feat.id||x.name===feat.name))sheet.feats.push(feat);
+  for(const [id,name,category,effect] of features)if(!sheet.features.some(x=>x.id===id))sheet.features.push({id,name,category,effect,notes:'',usesPerDay:null,usedToday:0});
+  const undead=sheet.features.find(x=>x.id==='undead');if(undead)undead.effect=undead.effect.replace(/20d12 HD \(20th d12 HP roll pending\)/,'21d12 HD (180 maximum HP)');
+  const m=sheet.features.find(x=>x.id==='martial-arcanist');if(m)m.effect='Wizard base caster level is at least pre-epic BAB plus epic attack bonus. At level 21: +12 BAB +1 epic attack < wizard CL 20, so no increase.';
+  sheet.audit.unshift('Level 21: Factotum 1; Epic Spellcasting; d12=12; 180 HP; Spellcraft and Knowledge arcana 24 ranks; Truespeak 21 per latest session (prior app had 7 rather than 8; reconcile historical one-rank discrepancy). Spellcasting progression remains 20. +1 epic attack, +0 epic saves.');
+  if(sheet.currency.gp===660070&&sheet.currency.fortressTreasuryGp===395750){sheet.currency.gp=2031050;sheet.currency.notes='24 Marpenoth 1375 DR: 2,031,050 gp discretionary; separate 395,750 gp war reserve; total liquid 2,426,800 gp after Sylrissa upgrade. Do not add previous checkpoints.';}
+ });
+ window.refreshGrimoireSheet?.();window.refreshGrimoireSkills?.();window.refreshCombatRolls?.();
+ status('Malzareth level-21 advancement saved. Existing spell preparations and inventory preserved.');renderNativeNotice();
+}
+select.addEventListener('change',renderNativeNotice);
+renderNativeNotice();
+
 if(loadError)status(loadError);else {try{const raw=localStorage.getItem(KEY);if(raw&&(JSON.parse(raw).auditRevision||0)<2){localStorage.setItem(KEY+'-pre-audit-v2',raw);save();}}catch(e){status('Audit backup failed; export your companion records.');}}render();
 })();
