@@ -52,7 +52,7 @@
     ['tumble','Tumble','DEX',0,4,'Movement',true,'Trained only'],
     ['use-rope','Use Rope','DEX',0,4,'Practical'],
     ['use-magic-device','Use Magic Device','CHA',4,9,'Arcane',true,'Scroll activation variant available below'],
-    ['truespeak','Truespeak','INT',7,17,'Arcane',true,'Seven cross-class ranks: includes 4 new ranks at level 20 (8 skill points). The target’s personal truename must first be discovered; speaking it requires a check (Tome of Magic).']
+    ['truespeak','Truespeak','INT',7,17,'Arcane',true,'Historical level-20 app default: seven ranks; level-21 Factotum advancement uses the latest campaign total of 21 ranks, with a one-rank historical discrepancy noted in the audit. Truespeak is a class skill for Factotum. Personal truenames must first be discovered (Tome of Magic).']
   ].map(([id,name,ability,ranks,total,group,trainedOnly=false,notes=''])=>
     ({id,name,ability,ranks,total,group,trainedOnly,notes}));
   // Variant modifiers are derived from the base skill's *current* bonus,
