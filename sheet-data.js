@@ -150,6 +150,14 @@ const baseline={
    'Four skill points over the simple historical allocation remain approved by the campaign; keep the rank ledger and note the house rule.'
  ]
 };
+
+const procurementRows=[["procure-scythe","Spellblade upgrade — Greater Dispel Magic",6000,"Weapon; targeted spell protection while wielded."],["procure-ring","Combined Protection +5 / Freedom of Movement / Enduring Arcana",49000,"Ring 1; replaces existing protection ring on delivery; +4 CL against dispels."],["procure-boots","Boots of Speed / Vagabond / Dexterity +6",42000,"Feet; retain 10 rounds haste/day; +2 luck initiative, +6 enhancement Dexterity."],["procure-amulet","Natural Armour +5 / Wisdom +6",36000,"Throat; retain natural armour enhancement; +6 enhancement Wisdom."],["procure-eye","Third Eye Conceal / Clarity",121500,"Face; retain Clarity daily use; continuous mind blank protection."],["procure-mantle","Epic SR 40 / Displacement / Charisma +6 mantle",302000,"Shoulders; retain 20% miss chance; +6 enhancement Charisma; resistance +5 already on Vest. Epic crafter required."],["procure-gauntlets","Gauntlets of the Sorcerer King",46000,"Hands; Glove of Storing property and +6 enhancement Strength."]];
+const procurementNote="24 Marpenoth 1375 DR: approved equipment procurement estimate 602,500 gp; liquid 2,486,800 gp; uncommitted discretionary 1,238,550 gp; military 395,750 gp; civil 250,000 gp. Pending delivery and final pricing; no automatic cash deduction or stat changes.";
+function addProcurement(sheet){
+ for(const [id,name,cost,description] of procurementRows){if(!sheet.inventory.some(x=>x.id===id))sheet.inventory.push(item(id,name,'Commission','Pending delivery',1,{equipped:false,valueGp:null,certainty:'commissioned',notes:description+' Estimated net cost '+cost.toLocaleString('en-GB')+' gp; not equipped.'}));}
+ if(!sheet.audit.includes(procurementNote))sheet.audit.unshift(procurementNote);
+}
+addProcurement(baseline);
 const clone = value=>JSON.parse(JSON.stringify(value));
 const n=(x,fallback,min=-999999999,max=999999999)=>Number.isFinite(Number(x))&&x!==''&&x!==null&&x!==undefined?
  Math.max(min,Math.min(max,Number(x))):fallback;
@@ -194,5 +202,5 @@ function normalize(input){
  original.resolvedAudit=Array.isArray(input.resolvedAudit)?input.resolvedAudit.slice(0,50).map(x=>str(x,'',550)):[];
  return original;
 }
-window.SHEET_MODEL={createDefault:()=>clone(baseline),normalize};
+window.SHEET_MODEL={createDefault:()=>clone(baseline),normalize,addProcurement};
 })();

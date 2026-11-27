@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'ashen-crown-grimoire-v1';
   const MAX_LEVEL = 9;
-  const DATA_VERSION = 24;
+  const DATA_VERSION = 25;
   const PREFIGHT_NAMES = ['Mirror Image','Heroics','Wall of Stone','Greater Blink','Dimension Jumper','Disintegrate','Planar Binding','Freezing Fog'];
   const LEVEL13_NAMES = ['Waves of Exhaustion','Greater Teleport','Sword of Darkness'];
   const LEVEL19_CATALOG = ['Plague of Undead','Gate'];
@@ -66,7 +66,7 @@
     && defaults.some(s=>s.name==='Ice Castle' && !!s.casting && !!s.target && !!s.duration);
   const catalogueReady = completeCystDefaults && completeLevel13Defaults && completePrefightDefaults
     && completeLevel18Defaults && completeLevel19Defaults && completeLevel20Defaults && completeEquipmentDefaults && completePostMarquisDefaults && completeHolderPurchaseDefaults && completeLevel78Research && completeSpellDetails
-    && spellTagger?.revision===1 && completeNewNinthDefaults && completeFreedomDefault;
+    && spellTagger?.revision===1 && completeNewNinthDefaults && completeFreedomDefault && !!sheetModel?.addProcurement;
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -670,6 +670,7 @@
       const note='Level 20: Abjurant Champion 5 staged (Martial Arcanist), +1 BAB, casting level 20. HP d12 roll, one ability increase, and two house-rule spell choices unconfirmed. Standing-priority skill ranks assigned: Spellcraft 23, Knowledge (arcana) 23, Concentration 23, Truespeak 7.';
       if(!sheet.audit.includes(note))sheet.audit.unshift(note);
     }
+    if((Number(input.version)||1)<25 && sheet && sheetModel?.addProcurement)sheetModel.addProcurement(sheet);
     const level20 = {
       hitDie: Number.isInteger(Number(input.level20?.hitDie)) && Number(input.level20.hitDie)>=1 && Number(input.level20.hitDie)<=12
         ?Number(input.level20.hitDie):null,
