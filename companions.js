@@ -273,6 +273,9 @@ const numInput=(key,label,value)=>'<label>'+safe(label)+'<input type="number" st
 const textInput=(key,label,value)=>'<label>'+safe(label)+'<input type="text" data-field="'+key+'" value="'+safe(value)+'"></label>';
 const textarea=(key,label,value)=>'<label>'+safe(label)+'<textarea data-field="'+key+'">'+safe(value)+'</textarea></label>';
 const check=(name,mod)=>'<button type="button" class="btn btn-small btn-outline" data-roll="'+safe(name)+'" data-mod="'+safe(mod??'')+'" '+(mod==null?'disabled title="Enter the modifier first"':'')+'>'+safe(name)+(mod==null?' ?':' '+(mod>=0?'+':'')+mod)+'</button>';
+// SRD cleric 20 table; domain slots are separate, not interchangeable with ordinary slots.
+const clericCapacity=wis=>{const mod=Math.floor((wis-10)/2);return [6,5,5,5,5,5,4,4,4,4].map((base,level)=>{const bonus=level===0||mod<level?0:1+Math.floor((mod-level)/4);return {level,base,bonus,domain:level?1:0,ordinary:base+bonus,dc:10+level+mod};});};
+const directSources={'Cleric spellcasting':'https://www.d20srd.org/srd/classes/cleric.htm','Hierophant — Divine Reach':'https://www.d20srd.org/srd/prestigeClasses/hierophant.htm#divineReach','Epic Spellcasting':'https://www.d20srd.org/srd/epic/feats.htm#epicSpellcasting','Superior Initiative':'https://www.d20srd.org/srd/epic/feats.htm#superiorInitiative','Lingering Damage':'https://www.d20srd.org/srd/epic/feats.htm#lingeringDamage'};
 const activeTabs={vara:'Combat',sylrissa:'Combat',voss:'Combat'};
 function render(){
  const id=state.active;document.body.classList.toggle('party-mode',id!=='malzareth');panel.hidden=id==='malzareth';if(panel.hidden)return;
@@ -292,9 +295,13 @@ function render(){
  const setBox=(b,t)=>{b.dataset.partySection=t;};
  boxes.forEach(b=>{const heading=b.querySelector('h3')?.textContent||'';setBox(b,/Vitals|Dice/.test(heading)?'Combat':/Daily resources|Maneuvers &|Divine preparation/.test(heading)?'Resources':'Skills & notes');});
  const box=(title,tab,html)=>{const b=document.createElement('section');b.className='party-box';setBox(b,tab);b.innerHTML='<h3>'+safe(title)+'</h3>'+html;panel.append(b);return b;};
+ if(id==='voss'){
+ const rows=Number.isFinite(c.wis)?clericCapacity(c.wis):[];
+ box('Divine spell capacity (derived)','Resources','<p>Effective cleric progression 20; caster level 21. Wisdom '+safe(c.wis??'unknown')+'. Domain slots are separate. No spells are automatically prepared. DCs exclude spell-specific modifiers.</p><div style="overflow-x:auto"><table style="width:100%;text-align:center"><thead><tr><th>Level</th><th>Base</th><th>Bonus</th><th>Ordinary</th><th>Domain</th><th>DC</th></tr></thead><tbody>'+rows.map(r=>'<tr>'+[r.level,r.base,r.bonus,r.ordinary,r.domain,r.dc].map(v=>'<td>'+v+'</td>').join('')+'</tr>').join('')+'</tbody></table></div><p><a href="https://www.d20srd.org/srd/classes/cleric.htm" target="_blank" rel="noopener">SRD cleric table and spellcasting rules</a></p>');
+ }
  for(const [group,entries] of Object.entries(REFERENCE[id])){
   const tab=group==='Magic items'?'Equipment':group==='Support spells (not prepared)'?'Resources':'Abilities';
-  box(group,tab,entries.map(([name,source,desc])=>'<details class="party-reference"><summary>'+safe(name)+'</summary><p class="muted small">'+safe(source)+'</p><p>'+safe(desc)+'</p></details>').join(''));
+  box(group,tab,entries.map(([name,source,desc])=>'<details class="party-reference"><summary>'+safe(name)+'</summary><p class="muted small">'+safe(source)+(directSources[name]?' · <a href="'+directSources[name]+'" target="_blank" rel="noopener">SRD rule</a>':' · Sourcebook citation; page verification pending')+'</p><p>'+safe(desc)+'</p></details>').join(''));
  }
  box('Stat verification','Audit','<p>'+safe(AUDIT[id])+'</p><p>Campaign snapshot: 24 Marpenoth 1375 DR, level 21. Recovered saves are historical totals, not recomputed temporary buffs. Blank inputs remain unverified. Current HP and used resources are independent local session data.</p><p>'+safe(c.notes)+'</p>');
  const quick=document.createElement('div');quick.className='party-summary';quick.innerHTML=[['HP',c.hp==null?'?':c.hp+' / '+(c.maxHP??'?')],['XP',c.xp??'?'],['AC',c.ac??'?'],['Action points',c.ap??'?']].map(([k,v])=>'<div><small>'+safe(k)+'</small><strong>'+safe(v)+'</strong></div>').join('');nav.before(quick);
