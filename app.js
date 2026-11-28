@@ -81,11 +81,11 @@
       const spell = spells.find(s => s.name === name && s.level === Number(level));
       if(spell) prepared.push({id: uid(), spellId: spell.id, used:false});
     }));
-    const slots = calcSlots(35,20).totals;
+    const slots = calcSlots(38,20).totals;
     return {
       version:catalogueReady ? DATA_VERSION : 1,spells,prepared,slots,
       manualSlots:[...slots],autoSlots:true,spellcastingLevel:20,
-      intelligence:35,necroBonus:2,presets:[],
+      intelligence:38,intTomeRevision:1,necroBonus:2,presets:[],
       cogitation:{level:6,used:false,spellId:null},
       abilities:{STR:16,DEX:24,WIS:18,CHA:26},skillOverrides:{
         concentration:{ranks:23,extra:0},spellcraft:{ranks:23,extra:0},
@@ -682,6 +682,8 @@
       if(level20.ability===null && intelligence===34){intelligence=35;level20.ability='INT';}
       else if(level20.ability===null && intelligence===35)level20.ability='INT';
     }
+    const intTomeMigration=(input.intTomeRevision||0)<1;
+    if(intTomeMigration&&spellcastingLevel===20){if(intelligence===35||intelligence===40)intelligence=38;else if(intelligence===34&&sheet?.identity.characterLevel>=20)intelligence=38;if(autoSlots)slots.splice(0,slots.length,...calcSlots(intelligence,spellcastingLevel).totals);if(sheet?.inventory){sheet.inventory=sheet.inventory.filter(x=>!/^Tome of Clear Thought\s*\+5(?:\s*\(.*\))?$/i.test(String(x.name||'')));const headband=sheet.inventory.find(x=>x.id==='headband-intellect-6');if(headband)headband.notes='+6 enhancement. Campaign base Intelligence 27 +5 inherent (replaces +2) =32; equipped 38. Does not add skill points.';}}
     const damagePresets=(Array.isArray(input.damagePresets)?input.damagePresets:[]).slice(0,40)
       .filter(x=>x&&typeof x==='object')
       .map(x=>({
@@ -692,9 +694,9 @@
     return {
       version:catalogueReady ? DATA_VERSION : (Number(input.version) || 1),
       spells,prepared,slots,manualSlots:autoSlots ? manualSlots : [...slots],
-      autoSlots,spellcastingLevel,intelligence,necroBonus,presets,
+      autoSlots,spellcastingLevel,intelligence,intTomeRevision:1,necroBonus,presets,
       cogitation,abilities,skillOverrides,level20,sheet,damagePresets,
-      journal:(()=>{let j=String(input.journal??''); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');if(advance18&&!j.includes('Level 18: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL18_JOURNAL].filter(Boolean).join('\n\n');if(advance19&&!j.includes('Level 19: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL19_JOURNAL].filter(Boolean).join('\n\n');if((Number(input.version)||1)<20&&completePostMarquisDefaults&&!j.includes('Post-Marquis equipment purchase 301,000 gp'))j=[j,'Post-Marquis equipment purchase 301,000 gp: Ring of Spell-Battle 12,000; full Staff of Necromancy 65,000; Greater Quicken Rod 170,000; normal Maximize Rod 54,000.'].filter(Boolean).join('\n\n');if(buyHolders&&!j.includes('Two rod keychains and one Wand Bracelet'))j=[j,'Two rod keychains and one Wand Bracelet purchased at 12,000 gp each, 36,000 gp combined. Total post-Marquis purchase outlay 337,000 gp; treasury approximately 508,000 gp. Custom rod holders use approved heavier capacity.'].filter(Boolean).join('\n\n');if(acquireFreedom&&!j.includes('Freedom scroll transcribed for phane preparation'))j=[j,'19 Marpenoth 1375 DR: Freedom scroll transcribed for phane preparation, second held as emergency scroll; 100 gp Bless Weapon oil acquired. 7,750 gp deducted from discretionary funds. No spells prepared or scroll charges used in combat.'].filter(Boolean).join('\n\n');if(acquireNinth&&!j.includes('Five ninth-circle scrolls transcribed'))j=[j,'18 Marpenoth 1375 DR: Five ninth-circle scrolls transcribed into Blessed Book: Effulgent Epuration, Teleportation Circle, Astral Projection, Shapechange and Mage\'s Disjunction. Scrolls cost 21,170 gp; jade Shapechange focus cost 1,500 gp. Level-20 choices confirmed: Absorption and Reaving Dispel; HP 168; INT 35 with headband. XP 199,525 after milestones and Gate. No daily spell slots or preparations auto-spent.'].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
+      journal:(()=>{let j=String(input.journal??'');if(intTomeMigration)j=[j,'Tome of Clear Thought +5 consumed: replaces prior +2 inherent bonus, does not stack. Permanent Intelligence 27+5+6=38; with Arcane Ascendancy +6 net enhancement increase, 44. Migration adjusts known unbuffed 35 or double-counted 40 to 38; other locally edited scores retained for review. No preparations expended.'].filter(Boolean).join('\n\n'); if(advance&&!j.includes('78,674 / 91,000'))j=[j,window.LEVEL13_JOURNAL].filter(Boolean).join('\n\n');if(acquire&&!j.includes('Eight scrolls bought at standard minimum'))j=[j,window.PREFIGHT_ACQUISITION_JOURNAL].filter(Boolean).join('\n\n');if(advance18&&!j.includes('Level 18: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL18_JOURNAL].filter(Boolean).join('\n\n');if(advance19&&!j.includes('Level 19: Wizard 5 / Master Specialist 10'))j=[j,window.LEVEL19_JOURNAL].filter(Boolean).join('\n\n');if((Number(input.version)||1)<20&&completePostMarquisDefaults&&!j.includes('Post-Marquis equipment purchase 301,000 gp'))j=[j,'Post-Marquis equipment purchase 301,000 gp: Ring of Spell-Battle 12,000; full Staff of Necromancy 65,000; Greater Quicken Rod 170,000; normal Maximize Rod 54,000.'].filter(Boolean).join('\n\n');if(buyHolders&&!j.includes('Two rod keychains and one Wand Bracelet'))j=[j,'Two rod keychains and one Wand Bracelet purchased at 12,000 gp each, 36,000 gp combined. Total post-Marquis purchase outlay 337,000 gp; treasury approximately 508,000 gp. Custom rod holders use approved heavier capacity.'].filter(Boolean).join('\n\n');if(acquireFreedom&&!j.includes('Freedom scroll transcribed for phane preparation'))j=[j,'19 Marpenoth 1375 DR: Freedom scroll transcribed for phane preparation, second held as emergency scroll; 100 gp Bless Weapon oil acquired. 7,750 gp deducted from discretionary funds. No spells prepared or scroll charges used in combat.'].filter(Boolean).join('\n\n');if(acquireNinth&&!j.includes('Five ninth-circle scrolls transcribed'))j=[j,'18 Marpenoth 1375 DR: Five ninth-circle scrolls transcribed into Blessed Book: Effulgent Epuration, Teleportation Circle, Astral Projection, Shapechange and Mage\'s Disjunction. Scrolls cost 21,170 gp; jade Shapechange focus cost 1,500 gp. Level-20 choices confirmed: Absorption and Reaving Dispel; HP 168; INT 35 with headband. XP 199,525 after milestones and Gate. No daily spell slots or preparations auto-spent.'].filter(Boolean).join('\n\n');return j.slice(0,100000);})(),lastSaved:new Date().toISOString()
     };
   };
   const load = () => {
@@ -703,9 +705,9 @@
       if (!raw) return stateFactory();
       const previous = JSON.parse(raw);
       const next = normalizeData(previous);
-      if ((Number(previous.version) || 1) < next.version) {
+      if ((Number(previous.version) || 1) < next.version || (previous.intTomeRevision||0)<1) {
         // Persist the migration once so intentional later deletions are kept.
-        try { localStorage.setItem(STORAGE_KEY+'-pre-v'+next.version+'-backup', raw); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
+        try { localStorage.setItem(STORAGE_KEY+((previous.intTomeRevision||0)<1?'-pre-int-tome-v1-backup':'-pre-v'+next.version+'-backup'), raw); localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
         catch(e) { console.warn('Unable to persist grimoire migration', e); }
       }
       return next;
