@@ -40,7 +40,7 @@ const baseline={
    notes:'After the Marquis figures are historical. Verified 19 Marpenoth 1375 DR discretionary liquid funds: 660,070 gp, following two Freedom scrolls at 3,825 gp each and one 100 gp oil of Bless Weapon (7,750 gp total), in addition to five earlier scrolls and jade focus already deducted. Separate war reserve: 395,750 gp; fortress treasury field is this same reserve, not additional cash. Unliquidated valuables: 269,115 gp, not cash. No payroll prepayments presumed.'
  },
  inventory:[
-   item('headband-intellect-6','Headband of Intellect +6','Magic item','Worn / head',1,{equipped:true,notes:'+6 enhancement to natural Intelligence 29 (level-20 ability increase); equipped score 35. Does not add skill points.'}),
+   item('headband-intellect-6','Headband of Intellect +6','Magic item','Worn / head',1,{equipped:true,notes:'+6 enhancement; natural Intelligence 27 plus +5 inherent (Tome of Clear Thought, replaces prior +2) =32; equipped score 38. Does not add skill points.'}),
    item('ring-protection-5','Ring of Protection +5','Magic item','Worn / ring 1',1,{equipped:true,notes:'+5 deflection AC included in baseline.'}),
    item('cloak-displacement-minor','Minor Cloak of Displacement','Magic item','Worn / shoulders',1,{equipped:true,notes:'Continuous 20% miss chance against eligible attacks. Old Cloak of Resistance +5 was sold; Vest of the Archmagi gives +5 resistance instead.'}),
    item('ring-mortal-guise','Ring of Mortal Guise','Magic item','Carried / social-use swap',1,{equipped:false,notes:'Retained. Swap into ring 2 outside combat when needed: Disguise Self at will and +10 Disguise. Ring of Spell-Battle occupies ring 2 in combat.'}),
